@@ -54,5 +54,9 @@
     "typescript": "~5.9.2",
     "zod": "catalog:",
     "zod-validation-error": "^3.4.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.3",
+    "react-native-url-polyfill": "^3.0.0"
   }
 }
