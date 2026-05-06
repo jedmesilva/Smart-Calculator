@@ -162,7 +162,7 @@ export function FormulasScreen({ onSelect, onClose }: { onSelect: (f: Formula) =
 
   return (
     <View style={[styles.overlay, { paddingTop: topPad }]}>
-      <View style={{ paddingHorizontal: 28, paddingTop: 22, paddingBottom: 14 }}>
+      <View style={{ paddingHorizontal: 28, paddingTop: 10, paddingBottom: 12 }}>
         <View style={styles.overlayHeaderRow}>
           <Text style={styles.overlayTitle}>{showMine ? "Minhas fórmulas" : "Fórmulas"}</Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
@@ -257,8 +257,8 @@ const styles = StyleSheet.create({
   },
   overlayHeader: {
     paddingHorizontal: 28,
-    paddingTop: 22,
-    paddingBottom: 16,
+    paddingTop: 10,
+    paddingBottom: 14,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
