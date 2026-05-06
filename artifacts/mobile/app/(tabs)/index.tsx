@@ -276,12 +276,17 @@ export default function SigmaScreen() {
       >
         <View style={styles.formulaRowLeft}>
           <Feather name="book-open" size={11} color={activeFormula ? c.mid : c.ghost} />
-          <Text style={[styles.formulaRowName, activeFormula ? styles.formulaRowNameActive : {}]}>
-            {activeFormula ? activeFormula.name : "Modo livre"}
-          </Text>
-          {activeFormula && (
-            <Text style={styles.formulaRowSymbolic}>{activeFormula.symbolic}</Text>
-          )}
+          <View style={styles.formulaRowInfo}>
+            <Text style={styles.formulaRowLabel}>fórmula</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Text style={[styles.formulaRowName, activeFormula ? styles.formulaRowNameActive : {}]} numberOfLines={1}>
+                {activeFormula ? activeFormula.name : "Modo livre"}
+              </Text>
+              {activeFormula && (
+                <Text style={styles.formulaRowSymbolic} numberOfLines={1}>{activeFormula.symbolic}</Text>
+              )}
+            </View>
+          </View>
         </View>
         {activeFormula ? (
           <Pressable
@@ -456,7 +461,7 @@ const styles = StyleSheet.create({
   formulaRow: {
     flexShrink: 0,
     paddingHorizontal: 28,
-    height: 44,
+    height: 54,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -464,11 +469,22 @@ const styles = StyleSheet.create({
   formulaRowLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 8,
     flex: 1,
   },
+  formulaRowInfo: {
+    flex: 1,
+    gap: 1,
+  },
+  formulaRowLabel: {
+    fontSize: 9,
+    fontFamily: "Inter_500Medium",
+    color: "#AEADA8",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
   formulaRowName: {
-    fontSize: 11,
+    fontSize: 12,
     color: "#AEADA8",
     fontFamily: "Inter_400Regular",
   },
@@ -480,7 +496,6 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     fontSize: 11,
     color: "#6B6B66",
-    marginLeft: 4,
   },
   removeBtn: {
     flexDirection: "row",
