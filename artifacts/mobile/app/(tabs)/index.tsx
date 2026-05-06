@@ -368,15 +368,15 @@ const styles = StyleSheet.create({
   displayPanel: {
     flexShrink: 0,
     paddingHorizontal: 28,
-    paddingBottom: 24,
+    paddingBottom: 36,
     justifyContent: "space-between",
-    minHeight: 220,
+    minHeight: 300,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 24,
+    marginBottom: 36,
   },
   headerLeft: {
     flexDirection: "row",
