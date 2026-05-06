@@ -119,7 +119,7 @@ export function HistoryOverlay({ onClose, onSelect }: { onClose: () => void; onS
         </Pressable>
       </View>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.overlayBody} showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.overlayBody, { paddingBottom: 28 + insets.bottom }]} showsVerticalScrollIndicator={false}>
         {MOCK_SESSIONS.map((s) => (
           <Pressable key={s.id} onPress={onSelect} style={({ pressed }) => [styles.sessionRow, pressed && styles.rowPressed]}>
             <View style={{ flex: 1, minWidth: 0 }}>
@@ -205,7 +205,7 @@ export function FormulasScreen({ onSelect, onClose }: { onSelect: (f: Formula) =
         </ScrollView>
       )}
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.overlayBody, { paddingTop: 10 }]} showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.overlayBody, { paddingTop: 10, paddingBottom: 28 + insets.bottom }]} showsVerticalScrollIndicator={false}>
         {list.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>{showMine ? "Nenhuma fórmula salva ainda" : "Nenhum resultado"}</Text>
