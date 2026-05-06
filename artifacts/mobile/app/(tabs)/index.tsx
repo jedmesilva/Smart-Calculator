@@ -619,7 +619,7 @@ const styles = StyleSheet.create({
     paddingLeft: 18,
     paddingRight: 12,
     flexDirection: "row",
-    alignItems: "flex-end",
+    alignItems: "center",
     gap: 10,
   },
   textInput: {
