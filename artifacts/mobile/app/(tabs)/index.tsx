@@ -299,40 +299,35 @@ export default function SigmaScreen() {
       </View>
 
       {/* ── FORMULA ROW ── */}
-      <Pressable
-        onPress={() => setScreen("formulas")}
-        style={({ pressed }) => [styles.formulaRow, pressed && { backgroundColor: c.panel }]}
-      >
-        <View style={styles.formulaRowLeft}>
-          <Feather name="book-open" size={11} color={activeFormula ? c.mid : c.ghost} />
-          <View style={styles.formulaRowInfo}>
+      <View style={styles.formulaRow}>
+        {/* Linha 1: label + chevron → navega para fórmulas */}
+        <Pressable
+          onPress={() => setScreen("formulas")}
+          style={({ pressed }) => [styles.formulaRowHeader, pressed && { opacity: 0.6 }]}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Feather name="book-open" size={11} color={c.ghost} />
             <Text style={styles.formulaRowLabel}>fórmula</Text>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Text style={[styles.formulaRowName, activeFormula ? styles.formulaRowNameActive : {}]} numberOfLines={1}>
-                {activeFormula ? activeFormula.name : "Modo livre"}
-              </Text>
-              {activeFormula && (
-                <Text style={styles.formulaRowSymbolic} numberOfLines={1}>{activeFormula.symbolic}</Text>
-              )}
-            </View>
           </View>
-        </View>
-        {activeFormula ? (
-          <Pressable
-            onPress={(e) => { e.stopPropagation(); setActiveFormula(null); }}
-            style={styles.removeBtn}
-            hitSlop={8}
+          <Feather name="chevron-right" size={11} color={c.ghost} />
+        </Pressable>
+
+        {/* Linha 2: estado da fórmula + remover */}
+        <View style={styles.formulaRowState}>
+          <Text
+            style={[styles.formulaRowName, activeFormula ? styles.formulaRowNameActive : {}]}
+            numberOfLines={1}
           >
-            <Feather name="x" size={11} color={c.faint} />
-            <Text style={styles.removeBtnText}>remover</Text>
-          </Pressable>
-        ) : (
-          <View style={styles.alterRow}>
-            <Text style={styles.alterText}>alterar</Text>
-            <Feather name="chevron-right" size={11} color={c.ghost} />
-          </View>
-        )}
-      </Pressable>
+            {activeFormula ? activeFormula.name : "Modo livre"}
+          </Text>
+          {activeFormula && (
+            <Pressable onPress={() => setActiveFormula(null)} style={styles.removeBtn} hitSlop={8}>
+              <Feather name="x" size={11} color={c.faint} />
+              <Text style={styles.removeBtnText}>remover</Text>
+            </Pressable>
+          )}
+        </View>
+      </View>
 
       {/* ── CHAT + INPUT ── */}
       <KeyboardAvoidingView
@@ -491,20 +486,18 @@ const styles = StyleSheet.create({
   formulaRow: {
     flexShrink: 0,
     paddingHorizontal: 28,
-    height: 54,
+    paddingVertical: 10,
+    gap: 5,
+  },
+  formulaRowHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  formulaRowLeft: {
+  formulaRowState: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    flex: 1,
-  },
-  formulaRowInfo: {
-    flex: 1,
-    gap: 1,
+    justifyContent: "space-between",
   },
   formulaRowLabel: {
     fontSize: 9,
@@ -517,15 +510,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#AEADA8",
     fontFamily: "Inter_400Regular",
+    flex: 1,
   },
   formulaRowNameActive: {
     color: "#1A1A18",
     fontFamily: "Inter_600SemiBold",
-  },
-  formulaRowSymbolic: {
-    fontFamily: "Inter_400Regular",
-    fontSize: 11,
-    color: "#6B6B66",
   },
   removeBtn: {
     flexDirection: "row",
@@ -536,16 +525,6 @@ const styles = StyleSheet.create({
   removeBtnText: {
     fontSize: 11,
     color: "#AEADA8",
-    fontFamily: "Inter_400Regular",
-  },
-  alterRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-  },
-  alterText: {
-    fontSize: 11,
-    color: "#C8C7C2",
     fontFamily: "Inter_400Regular",
   },
   chatContent: {
