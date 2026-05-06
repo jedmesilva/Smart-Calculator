@@ -130,6 +130,35 @@ function LoadingDots() {
   );
 }
 
+const SUGGESTIONS = [
+  "Quanto rende R$ 5.000 a 1% ao mês por 12 meses?",
+  "Qual é o IMC de alguém com 70 kg e 1,75 m?",
+  "Qual a área de um círculo com raio 8 cm?",
+  "Velocidade média de 150 km em 2 horas?",
+];
+
+/* ─── EMPTY STATE ─── */
+function EmptyChat({ onSuggest }: { onSuggest: (text: string) => void }) {
+  return (
+    <View style={[styles.emptyWrap, { transform: [{ scaleY: -1 }] }]}>
+      <Text style={styles.emptyσ}>σ</Text>
+      <Text style={styles.emptyTitle}>Nova sessão</Text>
+      <Text style={styles.emptySubtitle}>Descreva qualquer cálculo em português</Text>
+      <View style={styles.emptyChips}>
+        {SUGGESTIONS.map((s) => (
+          <Pressable
+            key={s}
+            onPress={() => onSuggest(s)}
+            style={({ pressed }) => [styles.emptyChip, pressed && { opacity: 0.6 }]}
+          >
+            <Text style={styles.emptyChipText} numberOfLines={2}>{s}</Text>
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 /* ─── MAIN ─── */
 export default function SigmaScreen() {
   const insets = useSafeAreaInsets();
@@ -316,11 +345,12 @@ export default function SigmaScreen() {
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           inverted
-          contentContainerStyle={styles.chatContent}
+          contentContainerStyle={chat.length === 0 ? styles.chatContentEmpty : styles.chatContent}
           showsVerticalScrollIndicator={false}
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={isLoading ? <LoadingDots /> : null}
+          ListEmptyComponent={<EmptyChat onSuggest={(text) => { setQuery(text); inputRef.current?.focus(); }} />}
         />
 
         {/* INPUT BAR */}
@@ -522,6 +552,51 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     paddingVertical: 16,
     gap: 10,
+  },
+  chatContentEmpty: {
+    flex: 1,
+  },
+  emptyWrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+    paddingBottom: 24,
+    gap: 6,
+  },
+  emptyσ: {
+    fontSize: 36,
+    color: "#DEDED9",
+    fontFamily: "Inter_400Regular",
+    marginBottom: 4,
+  },
+  emptyTitle: {
+    fontSize: 15,
+    fontFamily: "Inter_600SemiBold",
+    color: "#AEADA8",
+    letterSpacing: -0.2,
+  },
+  emptySubtitle: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    color: "#C8C7C2",
+    marginBottom: 16,
+  },
+  emptyChips: {
+    width: "100%",
+    gap: 6,
+  },
+  emptyChip: {
+    backgroundColor: "#EFEFEC",
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  emptyChipText: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    color: "#6B6B66",
+    lineHeight: 17,
   },
   userBubbleWrap: {
     flexDirection: "row",
