@@ -196,7 +196,7 @@ export function FormulasScreen({ onSelect, onClose }: { onSelect: (f: Formula) =
       </View>
 
       {!showMine && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.catScroll} contentContainerStyle={{ paddingHorizontal: 28, gap: 6, paddingBottom: 8, flexDirection: "row", alignItems: "center" }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.catScroll} contentContainerStyle={{ paddingHorizontal: 28, gap: 6, flexDirection: "row", alignItems: "flex-start" }}>
           {cats.map((cat) => (
             <Pressable key={cat} onPress={() => setCategory(cat)} style={[styles.catChip, category === cat && styles.catChipActive]}>
               <Text style={[styles.catChipText, category === cat && styles.catChipTextActive]}>{cat}</Text>
@@ -436,6 +436,9 @@ const styles = StyleSheet.create({
   },
   catScroll: {
     flexShrink: 0,
+    flexGrow: 0,
+    height: 40,
+    marginBottom: 6,
   },
   catChip: {
     paddingVertical: 5,
