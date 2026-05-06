@@ -151,6 +151,15 @@ export default function SigmaScreen() {
   const botPad = Platform.OS === "web" ? 0 : insets.bottom;
   const kbOffset = Platform.OS === "ios" ? 0 : 0;
 
+  const handleNewSession = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setChat([]);
+    setQuery("");
+    setSavedIds(new Set());
+    setActiveFormula(null);
+    setScreen("main");
+  }, []);
+
   const handleSend = useCallback(() => {
     if (!query.trim() || isLoading) return;
     const text = query.trim();
@@ -220,7 +229,7 @@ export default function SigmaScreen() {
             <Text style={styles.logo}>sigma</Text>
           </View>
           <View style={styles.headerRight}>
-            <Pressable style={styles.headerIconBtn} hitSlop={8}>
+            <Pressable onPress={handleNewSession} style={styles.headerIconBtn} hitSlop={8}>
               <Feather name="plus" size={16} color={c.ghost} />
             </Pressable>
             <Pressable onPress={() => setScreen("history")} style={styles.headerIconBtn} hitSlop={8}>
