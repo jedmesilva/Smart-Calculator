@@ -196,7 +196,7 @@ export function FormulasScreen({ onSelect, onClose }: { onSelect: (f: Formula) =
       </View>
 
       {!showMine && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.catScroll} contentContainerStyle={{ paddingHorizontal: 28, gap: 6, paddingBottom: 8 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.catScroll} contentContainerStyle={{ paddingHorizontal: 28, gap: 6, paddingBottom: 8, flexDirection: "row", alignItems: "center" }}>
           {cats.map((cat) => (
             <Pressable key={cat} onPress={() => setCategory(cat)} style={[styles.catChip, category === cat && styles.catChipActive]}>
               <Text style={[styles.catChipText, category === cat && styles.catChipTextActive]}>{cat}</Text>
