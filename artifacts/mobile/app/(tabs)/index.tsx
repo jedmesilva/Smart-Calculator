@@ -630,6 +630,7 @@ const styles = StyleSheet.create({
     maxHeight: 100,
     lineHeight: 19,
     padding: 0,
+    textAlignVertical: "center",
   },
   sendBtn: {
     width: 30,
