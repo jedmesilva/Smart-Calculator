@@ -147,8 +147,8 @@ export default function SigmaScreen() {
   const displayNum = current?.resultFormatted ?? "0";
   const numFontSize = displayNum.length > 12 ? 38 : displayNum.length > 8 ? 50 : 64;
 
-  const topPad = Platform.OS === "web" ? Math.max(insets.top, 67) : insets.top;
-  const botPad = Platform.OS === "web" ? Math.max(insets.bottom, 34) : insets.bottom;
+  const topPad = Platform.OS === "web" ? 0 : insets.top;
+  const botPad = Platform.OS === "web" ? 0 : insets.bottom;
   const kbOffset = Platform.OS === "ios" ? 0 : 0;
 
   const handleSend = useCallback(() => {

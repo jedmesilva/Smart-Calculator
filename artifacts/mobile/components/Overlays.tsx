@@ -57,8 +57,8 @@ export type Formula = typeof MOCK_FORMULAS[0] & { isUser?: boolean };
 export function CalcOverlay({ onClose }: { onClose: () => void }) {
   const insets = useSafeAreaInsets();
   const d = MOCK_OVERLAY;
-  const topPad = Platform.OS === "web" ? Math.max(insets.top, 44) : insets.top;
-  const botPad = Platform.OS === "web" ? Math.max(insets.bottom, 34) : insets.bottom;
+  const topPad = Platform.OS === "web" ? 0 : insets.top;
+  const botPad = Platform.OS === "web" ? 0 : insets.bottom;
 
   return (
     <View style={[styles.overlay, { paddingTop: topPad }]}>
@@ -108,7 +108,7 @@ export function CalcOverlay({ onClose }: { onClose: () => void }) {
 /* ─── HISTORY OVERLAY ─── */
 export function HistoryOverlay({ onClose, onSelect }: { onClose: () => void; onSelect: () => void }) {
   const insets = useSafeAreaInsets();
-  const topPad = Platform.OS === "web" ? Math.max(insets.top, 44) : insets.top;
+  const topPad = Platform.OS === "web" ? 0 : insets.top;
 
   return (
     <View style={[styles.overlay, { paddingTop: topPad }]}>
@@ -142,7 +142,7 @@ export function HistoryOverlay({ onClose, onSelect }: { onClose: () => void; onS
 /* ─── FORMULAS SCREEN ─── */
 export function FormulasScreen({ onSelect, onClose }: { onSelect: (f: Formula) => void; onClose: () => void }) {
   const insets = useSafeAreaInsets();
-  const topPad = Platform.OS === "web" ? Math.max(insets.top, 44) : insets.top;
+  const topPad = Platform.OS === "web" ? 0 : insets.top;
 
   const [showMine, setShowMine] = useState(false);
   const [search, setSearch] = useState("");
