@@ -619,7 +619,7 @@ const styles = StyleSheet.create({
     paddingLeft: 18,
     paddingRight: 12,
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-end",
     gap: 10,
   },
   textInput: {
@@ -627,6 +627,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#1A1A18",
     fontFamily: "Inter_400Regular",
+    minHeight: 30,
     maxHeight: 100,
     lineHeight: 19,
     padding: 0,
