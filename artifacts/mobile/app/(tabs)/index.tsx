@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import colors from "@/constants/colors";
 import { CalcOverlay, HistoryOverlay, FormulasScreen, type Formula } from "@/components/Overlays";
+import { MenuOverlay } from "@/components/MenuOverlay";
 
 const c = colors.light;
 
@@ -163,7 +164,7 @@ function EmptyChat({ onSuggest }: { onSuggest: (text: string) => void }) {
 export default function SigmaScreen() {
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
-  const [screen, setScreen] = useState<"main" | "calc" | "history" | "formulas">("main");
+  const [screen, setScreen] = useState<"main" | "calc" | "history" | "formulas" | "menu">("main");
   const [activeFormula, setActiveFormula] = useState<Formula | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [chat, setChat] = useState<ChatItem[]>(INITIAL_CHAT);
@@ -252,7 +253,7 @@ export default function SigmaScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Pressable style={styles.headerIconBtn} hitSlop={8}>
+            <Pressable onPress={() => setScreen("menu")} style={styles.headerIconBtn} hitSlop={8}>
               <Feather name="menu" size={15} color={c.ghost} />
             </Pressable>
             <Text style={styles.logo}>sigma</Text>
@@ -392,6 +393,7 @@ export default function SigmaScreen() {
           onClose={() => setScreen("main")}
         />
       )}
+      {screen === "menu" && <MenuOverlay onClose={() => setScreen("main")} />}
     </View>
   );
 }
