@@ -312,7 +312,7 @@ export default function SigmaScreen() {
           <Feather name="chevron-right" size={11} color={c.ghost} />
         </Pressable>
 
-        {/* Linha 2: estado da fórmula + remover */}
+        {/* Linha 2: estado da fórmula + ações */}
         <View style={styles.formulaRowState}>
           <Text
             style={[styles.formulaRowName, activeFormula ? styles.formulaRowNameActive : {}]}
@@ -320,12 +320,17 @@ export default function SigmaScreen() {
           >
             {activeFormula ? activeFormula.name : "Modo dinâmico"}
           </Text>
-          {activeFormula && (
-            <Pressable onPress={() => setActiveFormula(null)} style={styles.removeBtn} hitSlop={8}>
-              <Feather name="x" size={11} color={c.faint} />
-              <Text style={styles.removeBtnText}>remover</Text>
+          <View style={styles.formulaRowActions}>
+            <Pressable onPress={() => setScreen("formulas")} style={styles.alterBtn} hitSlop={8}>
+              <Text style={styles.alterBtnText}>alterar</Text>
             </Pressable>
-          )}
+            {activeFormula && (
+              <Pressable onPress={() => setActiveFormula(null)} style={styles.removeBtn} hitSlop={8}>
+                <Feather name="x" size={11} color={c.faint} />
+                <Text style={styles.removeBtnText}>remover</Text>
+              </Pressable>
+            )}
+          </View>
         </View>
       </View>
 
@@ -515,6 +520,20 @@ const styles = StyleSheet.create({
   formulaRowNameActive: {
     color: "#1A1A18",
     fontFamily: "Inter_600SemiBold",
+  },
+  formulaRowActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    flexShrink: 0,
+  },
+  alterBtn: {
+    paddingVertical: 4,
+  },
+  alterBtnText: {
+    fontSize: 11,
+    color: "#AEADA8",
+    fontFamily: "Inter_400Regular",
   },
   removeBtn: {
     flexDirection: "row",
