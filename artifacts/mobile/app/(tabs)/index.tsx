@@ -318,7 +318,7 @@ export default function SigmaScreen() {
             style={[styles.formulaRowName, activeFormula ? styles.formulaRowNameActive : {}]}
             numberOfLines={1}
           >
-            {activeFormula ? activeFormula.name : "Modo livre"}
+            {activeFormula ? activeFormula.name : "Modo dinâmico"}
           </Text>
           {activeFormula && (
             <Pressable onPress={() => setActiveFormula(null)} style={styles.removeBtn} hitSlop={8}>
