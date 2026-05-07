@@ -14,7 +14,7 @@ import { logger } from "../lib/logger";
 import type { ConversationMessage, ContextAgentResult, RawEntity } from "./types";
 
 const CONTEXT_EXTRACT_SYSTEM = `Você é um extrator de entidades numéricas para uma calculadora inteligente.
-Leia a conversa e extraia TODOS os valores numéricos, quantidades e medidas mencionados.
+Leia a conversa e extraia TODOS os valores numéricos, quantidades e medidas mencionados — inclusive valores implícitos derivados de cálculos anteriores.
 
 RETORNE APENAS JSON VÁLIDO, sem markdown, sem texto adicional.
 
@@ -40,6 +40,15 @@ Regras de conversão:
 - "label": nome descritivo do que esse valor representa, em português
 - "humanReadable": como o usuário escreveu, formatado claramente
 - Extraia valores de TODAS as mensagens da conversa, não só a última
+
+IMPORTANTE — valores de resultados anteriores:
+- Mensagens do assistente no formato "Resultado: X = Y | Valores usados: a=v1, b=v2 | Expressão: ..."
+  contêm dados de cálculos anteriores — extraia esses valores também
+- Derive valores intermediários quando possível:
+  Ex: "Expressão: 50 - (50/10) * 3" → extraia também "preço por item = 5" (50/10)
+  Ex: "Resultado: troco = 35 R$" → extraia "troco disponível = 35"
+- Se o usuário continua uma compra ou operação da conversa anterior, o "resultado anterior"
+  serve como ponto de partida (ex: "comprei mais 2 itens" → troco atual = resultado anterior)
 
 Campo "needsHistory":
 - Defina como true APENAS se o usuário mencionar claramente valores ou cálculos anteriores
