@@ -6,7 +6,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/inter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -20,20 +20,40 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
-function RootLayoutNav() {
+function AuthGate() {
   const { session, loading } = useAuth();
+  const router = useRouter();
+  const segments = useSegments();
+
+  useEffect(() => {
+    if (loading) return;
+
+    const inAuthScreen = segments[0] === "auth";
+
+    if (!session && !inAuthScreen) {
+      router.replace("/auth");
+    } else if (session && inAuthScreen) {
+      router.replace("/(tabs)");
+    }
+  }, [session, loading, segments]);
+
+  return null;
+}
+
+function RootLayoutNav() {
+  const { loading } = useAuth();
 
   if (loading) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      {session ? (
+    <>
+      <AuthGate />
+      <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
-      ) : (
         <Stack.Screen name="auth" />
-      )}
-      <Stack.Screen name="+not-found" />
-    </Stack>
+        <Stack.Screen name="+not-found" />
+      </Stack>
+    </>
   );
 }
 
