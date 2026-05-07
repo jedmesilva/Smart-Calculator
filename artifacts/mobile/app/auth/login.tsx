@@ -45,7 +45,6 @@ function Field({ label, error, focused, ...props }: FieldProps) {
           !!error && fieldStyles.inputError,
         ]}
       >
-        {props.children}
         <TextInput
           placeholderTextColor={c.ghost}
           style={fieldStyles.input}
@@ -79,12 +78,8 @@ const fieldStyles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "transparent",
   },
-  inputFocused: {
-    borderColor: c.text,
-  },
-  inputError: {
-    borderColor: c.destructive,
-  },
+  inputFocused: { borderColor: c.text },
+  inputError: { borderColor: c.destructive },
   input: {
     flex: 1,
     paddingVertical: 14,
@@ -117,7 +112,6 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const [forgotMode, setForgotMode] = useState(false);
@@ -135,20 +129,9 @@ export default function LoginScreen() {
     let valid = true;
     setEmailError(null);
     setPasswordError(null);
-
-    if (!email.trim()) {
-      setEmailError("Informe seu e-mail.");
-      valid = false;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setEmailError("Formato de e-mail inválido.");
-      valid = false;
-    }
-
-    if (!password) {
-      setPasswordError("Informe sua senha.");
-      valid = false;
-    }
-
+    if (!email.trim()) { setEmailError("Informe seu e-mail."); valid = false; }
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setEmailError("Formato de e-mail inválido."); valid = false; }
+    if (!password) { setPasswordError("Informe sua senha."); valid = false; }
     return valid;
   }
 
@@ -156,12 +139,7 @@ export default function LoginScreen() {
     if (!validateFields()) return;
     setLoading(true);
     setError(null);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
-
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error) setError(translateError(error.message));
     setLoading(false);
   }
@@ -172,6 +150,18 @@ export default function LoginScreen() {
     await supabase.auth.resetPasswordForEmail(forgotEmail.trim());
     setForgotLoading(false);
     setForgotSuccess(true);
+  }
+
+  function enterForgotMode() {
+    setForgotMode(true);
+    setForgotEmail(email);
+    setForgotSuccess(false);
+    setError(null);
+  }
+
+  function exitForgotMode() {
+    setForgotMode(false);
+    setForgotSuccess(false);
   }
 
   return (
@@ -188,171 +178,176 @@ export default function LoginScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Pressable
-          onPress={() => router.back()}
+          onPress={forgotMode ? exitForgotMode : () => router.back()}
           style={styles.backBtn}
           hitSlop={10}
         >
           <Feather name="arrow-left" size={20} color={c.text} />
         </Pressable>
 
+        {/* Header — muda conforme o modo */}
         <View style={styles.header}>
           <Text style={styles.sigma}>σ</Text>
-          <Text style={styles.title}>Entrar na sua conta</Text>
-          <Text style={styles.subtitle}>
-            Bem-vindo de volta. Digite suas credenciais abaixo.
-          </Text>
+          {forgotMode ? (
+            <>
+              <Text style={styles.title}>Recuperar senha</Text>
+              <Text style={styles.subtitle}>
+                Informe seu e-mail e enviaremos um link para redefinir sua senha.
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.title}>Entrar na sua conta</Text>
+              <Text style={styles.subtitle}>
+                Bem-vindo de volta. Digite suas credenciais abaixo.
+              </Text>
+            </>
+          )}
         </View>
 
-        <View style={styles.form}>
-          <Field
-            label="E-mail"
-            error={emailError ?? undefined}
-            focused={focusedField === "email"}
-            value={email}
-            onChangeText={(t) => { setEmail(t); setEmailError(null); setError(null); }}
-            placeholder="voce@email.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="next"
-            onSubmitEditing={() => passwordRef.current?.focus()}
-            onFocus={() => setFocusedField("email")}
-            onBlur={() => setFocusedField(null)}
-          />
-
-          <View style={fieldStyles.wrap}>
-            <Text style={fieldStyles.label}>Senha</Text>
-            <View
-              style={[
-                fieldStyles.inputContainer,
-                focusedField === "password" && fieldStyles.inputFocused,
-                !!passwordError && fieldStyles.inputError,
-              ]}
-            >
-              <TextInput
-                ref={passwordRef}
-                value={password}
-                onChangeText={(t) => { setPassword(t); setPasswordError(null); setError(null); }}
-                placeholder="Sua senha"
-                placeholderTextColor={c.ghost}
-                secureTextEntry={!showPass}
-                autoCapitalize="none"
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
-                onFocus={() => setFocusedField("password")}
-                onBlur={() => setFocusedField(null)}
-                style={[fieldStyles.input, { paddingRight: 52 }]}
-              />
-              <Pressable
-                onPress={() => setShowPass((v) => !v)}
-                style={styles.eyeBtn}
-                hitSlop={8}
-              >
-                <Feather
-                  name={showPass ? "eye-off" : "eye"}
-                  size={16}
-                  color={c.faint}
-                />
-              </Pressable>
-            </View>
-            {!!passwordError && (
-              <View style={fieldStyles.errorRow}>
-                <Feather name="alert-circle" size={11} color={c.destructive} />
-                <Text style={fieldStyles.errorText}>{passwordError}</Text>
-              </View>
-            )}
-          </View>
-
-          <Pressable
-            onPress={() => { setForgotMode((v) => !v); setForgotSuccess(false); }}
-            style={styles.forgotLink}
-          >
-            <Text style={styles.forgotLinkText}>
-              {forgotMode ? "Cancelar" : "Esqueceu a senha?"}
-            </Text>
-          </Pressable>
-
-          {forgotMode && (
-            <View style={styles.forgotBox}>
-              {forgotSuccess ? (
-                <View style={styles.forgotSuccess}>
-                  <Feather name="check-circle" size={15} color="#16a34a" />
-                  <Text style={styles.forgotSuccessText}>
-                    Link enviado! Verifique sua caixa de entrada.
+        {/* Formulário de recuperação de senha */}
+        {forgotMode ? (
+          <View style={styles.form}>
+            {forgotSuccess ? (
+              <View style={styles.successBox}>
+                <Feather name="check-circle" size={20} color="#16a34a" />
+                <View style={{ flex: 1, gap: 4 }}>
+                  <Text style={styles.successTitle}>Link enviado!</Text>
+                  <Text style={styles.successDesc}>
+                    Verifique sua caixa de entrada e siga as instruções para redefinir a senha.
                   </Text>
                 </View>
-              ) : (
-                <>
-                  <Text style={styles.forgotDesc}>
-                    Digite seu e-mail para receber o link de redefinição de senha.
-                  </Text>
-                  <View
-                    style={[
-                      fieldStyles.inputContainer,
-                      forgotFocused && fieldStyles.inputFocused,
-                    ]}
-                  >
-                    <TextInput
-                      value={forgotEmail}
-                      onChangeText={setForgotEmail}
-                      placeholder="voce@email.com"
-                      placeholderTextColor={c.ghost}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      onFocus={() => setForgotFocused(true)}
-                      onBlur={() => setForgotFocused(false)}
-                      style={fieldStyles.input}
-                    />
-                  </View>
-                  <Pressable
-                    onPress={handleForgotPassword}
-                    disabled={forgotLoading || !forgotEmail.trim()}
-                    style={({ pressed }) => [
-                      styles.forgotSendBtn,
-                      (pressed || forgotLoading || !forgotEmail.trim()) && { opacity: 0.6 },
-                    ]}
-                  >
-                    {forgotLoading ? (
-                      <ActivityIndicator size="small" color={c.background} />
-                    ) : (
-                      <Text style={styles.forgotSendText}>Enviar link</Text>
-                    )}
-                  </Pressable>
-                </>
+              </View>
+            ) : (
+              <>
+                <Field
+                  label="E-mail"
+                  focused={forgotFocused}
+                  value={forgotEmail}
+                  onChangeText={setForgotEmail}
+                  placeholder="voce@email.com"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="done"
+                  onSubmitEditing={handleForgotPassword}
+                  onFocus={() => setForgotFocused(true)}
+                  onBlur={() => setForgotFocused(false)}
+                />
+
+                <Pressable
+                  onPress={handleForgotPassword}
+                  disabled={forgotLoading || !forgotEmail.trim()}
+                  style={({ pressed }) => [
+                    styles.submitBtn,
+                    (pressed || forgotLoading || !forgotEmail.trim()) && { opacity: 0.6 },
+                  ]}
+                >
+                  {forgotLoading ? (
+                    <ActivityIndicator size="small" color={c.background} />
+                  ) : (
+                    <Text style={styles.submitText}>Enviar link</Text>
+                  )}
+                </Pressable>
+              </>
+            )}
+
+            <Pressable onPress={exitForgotMode} style={styles.backToLoginBtn}>
+              <Text style={styles.backToLoginText}>Voltar para o login</Text>
+            </Pressable>
+          </View>
+        ) : (
+          /* Formulário de login */
+          <View style={styles.form}>
+            <Field
+              label="E-mail"
+              error={emailError ?? undefined}
+              focused={focusedField === "email"}
+              value={email}
+              onChangeText={(t) => { setEmail(t); setEmailError(null); setError(null); }}
+              placeholder="voce@email.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
+              onFocus={() => setFocusedField("email")}
+              onBlur={() => setFocusedField(null)}
+            />
+
+            <View style={fieldStyles.wrap}>
+              <Text style={fieldStyles.label}>Senha</Text>
+              <View
+                style={[
+                  fieldStyles.inputContainer,
+                  focusedField === "password" && fieldStyles.inputFocused,
+                  !!passwordError && fieldStyles.inputError,
+                ]}
+              >
+                <TextInput
+                  ref={passwordRef}
+                  value={password}
+                  onChangeText={(t) => { setPassword(t); setPasswordError(null); setError(null); }}
+                  placeholder="Sua senha"
+                  placeholderTextColor={c.ghost}
+                  secureTextEntry={!showPass}
+                  autoCapitalize="none"
+                  returnKeyType="done"
+                  onSubmitEditing={handleLogin}
+                  onFocus={() => setFocusedField("password")}
+                  onBlur={() => setFocusedField(null)}
+                  style={[fieldStyles.input, { paddingRight: 52 }]}
+                />
+                <Pressable
+                  onPress={() => setShowPass((v) => !v)}
+                  style={styles.eyeBtn}
+                  hitSlop={8}
+                >
+                  <Feather name={showPass ? "eye-off" : "eye"} size={16} color={c.faint} />
+                </Pressable>
+              </View>
+              {!!passwordError && (
+                <View style={fieldStyles.errorRow}>
+                  <Feather name="alert-circle" size={11} color={c.destructive} />
+                  <Text style={fieldStyles.errorText}>{passwordError}</Text>
+                </View>
               )}
             </View>
-          )}
 
-          {!!error && (
-            <View style={styles.errorBox}>
-              <Feather name="alert-circle" size={13} color={c.destructive} />
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          )}
+            <Pressable onPress={enterForgotMode} style={styles.forgotLink}>
+              <Text style={styles.forgotLinkText}>Esqueceu a senha?</Text>
+            </Pressable>
 
-          <Pressable
-            onPress={handleLogin}
-            disabled={loading}
-            style={({ pressed }) => [
-              styles.submitBtn,
-              (pressed || loading) && { opacity: 0.8 },
-            ]}
-          >
-            {loading ? (
-              <ActivityIndicator size="small" color={c.background} />
-            ) : (
-              <Text style={styles.submitText}>Entrar</Text>
+            {!!error && (
+              <View style={styles.errorBox}>
+                <Feather name="alert-circle" size={13} color={c.destructive} />
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
             )}
-          </Pressable>
-        </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Não tem conta? </Text>
-          <Pressable onPress={() => router.replace("/auth/signup")}>
-            <Text style={styles.footerLink}>Criar conta</Text>
-          </Pressable>
-        </View>
+            <Pressable
+              onPress={handleLogin}
+              disabled={loading}
+              style={({ pressed }) => [
+                styles.submitBtn,
+                (pressed || loading) && { opacity: 0.8 },
+              ]}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color={c.background} />
+              ) : (
+                <Text style={styles.submitText}>Entrar</Text>
+              )}
+            </Pressable>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Não tem conta? </Text>
+              <Pressable onPress={() => router.replace("/auth/signup")}>
+                <Text style={styles.footerLink}>Criar conta</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -420,39 +415,33 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_500Medium",
     color: c.mid,
   },
-  forgotBox: {
-    backgroundColor: c.panel,
-    borderRadius: 16,
-    padding: 16,
+  successBox: {
+    flexDirection: "row",
+    alignItems: "flex-start",
     gap: 12,
+    backgroundColor: "#f0fdf4",
+    borderRadius: 14,
+    padding: 16,
   },
-  forgotDesc: {
+  successTitle: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    color: "#16a34a",
+  },
+  successDesc: {
     fontSize: 13,
     fontFamily: "Inter_400Regular",
-    color: c.mid,
+    color: "#15803d",
     lineHeight: 20,
   },
-  forgotSendBtn: {
-    backgroundColor: c.text,
-    borderRadius: 12,
-    paddingVertical: 13,
+  backToLoginBtn: {
     alignItems: "center",
+    paddingVertical: 4,
   },
-  forgotSendText: {
-    fontSize: 13,
-    fontFamily: "Inter_600SemiBold",
-    color: c.background,
-  },
-  forgotSuccess: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  forgotSuccessText: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-    color: "#16a34a",
-    flex: 1,
+  backToLoginText: {
+    fontSize: 14,
+    fontFamily: "Inter_500Medium",
+    color: c.mid,
   },
   errorBox: {
     flexDirection: "row",
@@ -485,7 +474,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: 28,
+    paddingTop: 12,
     paddingBottom: 8,
   },
   footerText: {
