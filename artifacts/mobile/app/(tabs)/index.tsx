@@ -47,11 +47,8 @@ function UserBubble({ text }: { text: string }) {
 /* ─── ASSISTANT BUBBLE (resposta conversacional) ─── */
 function AssistantBubble({ text }: { text: string }) {
   return (
-    <View style={styles.loadingWrap}>
-      <View style={styles.loadingDot} />
-      <View style={styles.assistantBubble}>
-        <Text style={styles.assistantText}>{text}</Text>
-      </View>
+    <View style={styles.assistantBubble}>
+      <Text style={styles.assistantText}>{text}</Text>
     </View>
   );
 }
@@ -59,20 +56,17 @@ function AssistantBubble({ text }: { text: string }) {
 /* ─── QUESTION BUBBLE ─── */
 function QuestionBubble({ message, missing }: { message: string; missing: MissingVariable[] }) {
   return (
-    <View style={styles.loadingWrap}>
-      <View style={styles.loadingDot} />
-      <View style={styles.questionBubble}>
-        <Text style={styles.questionMessage}>{message}</Text>
-        <View style={styles.missingList}>
-          {missing.map((m, i) => (
-            <View key={i} style={styles.missingItem}>
-              <Text style={styles.missingDot}>•</Text>
-              <Text style={styles.missingSymbol}>{m.symbol}</Text>
-              <Text style={styles.missingName}>{m.name}</Text>
-              <Text style={styles.missingDesc}>{m.description}</Text>
-            </View>
-          ))}
-        </View>
+    <View style={styles.questionBubble}>
+      <Text style={styles.questionMessage}>{message}</Text>
+      <View style={styles.missingList}>
+        {missing.map((m, i) => (
+          <View key={i} style={styles.missingItem}>
+            <Text style={styles.missingDot}>•</Text>
+            <Text style={styles.missingSymbol}>{m.symbol}</Text>
+            <Text style={styles.missingName}>{m.name}</Text>
+            <Text style={styles.missingDesc}>{m.description}</Text>
+          </View>
+        ))}
       </View>
     </View>
   );
@@ -81,15 +75,12 @@ function QuestionBubble({ message, missing }: { message: string; missing: Missin
 /* ─── ERROR BUBBLE ─── */
 function ErrorBubble({ message }: { message: string }) {
   return (
-    <View style={styles.loadingWrap}>
-      <View style={styles.loadingDot} />
-      <View style={styles.errorBubble}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 }}>
-          <Feather name="alert-circle" size={14} color="#D93025" />
-          <Text style={styles.errorTitle}>Atenção</Text>
-        </View>
-        <Text style={styles.errorText}>{message}</Text>
+    <View style={styles.errorBubble}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 }}>
+        <Feather name="alert-circle" size={14} color="#D93025" />
+        <Text style={styles.errorTitle}>Atenção</Text>
       </View>
+      <Text style={styles.errorText}>{message}</Text>
     </View>
   );
 }
@@ -201,11 +192,8 @@ function ResultRow({
 /* ─── LOADING DOTS ─── */
 function LoadingDots() {
   return (
-    <View style={styles.loadingWrap}>
-      <View style={styles.loadingDot} />
-      <View style={styles.loadingBubble}>
-        <ActivityIndicator size="small" color={c.ghost} />
-      </View>
+    <View style={styles.loadingBubble}>
+      <ActivityIndicator size="small" color={c.ghost} />
     </View>
   );
 }
@@ -794,11 +782,8 @@ const styles = StyleSheet.create({
   questionBubble: {
     backgroundColor: "#FBF8F0",
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#E8E2CC",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    flex: 1,
     maxWidth: "88%",
     gap: 8,
   },
@@ -845,11 +830,8 @@ const styles = StyleSheet.create({
   errorBubble: {
     backgroundColor: "#FDF2F1",
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#F0D0CE",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    flex: 1,
     maxWidth: "88%",
   },
   errorTitle: {
