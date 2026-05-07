@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   FlatList,
   ActivityIndicator,
   Platform,
+  Animated,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
@@ -52,8 +53,46 @@ function ResultRow({
   isSaved: boolean;
   onSave: () => void;
 }) {
+  const [justSaved, setJustSaved] = useState(false);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const savedAnim = useRef(new Animated.Value(isSaved ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.timing(savedAnim, {
+      toValue: isSaved ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  }, [isSaved]);
+
+  const handleSave = () => {
+    if (isSaved) return;
+    setJustSaved(true);
+    Animated.sequence([
+      Animated.spring(scaleAnim, {
+        toValue: 1.04,
+        useNativeDriver: true,
+        speed: 50,
+        bounciness: 6,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        speed: 50,
+        bounciness: 4,
+      }),
+    ]).start();
+    onSave();
+    setTimeout(() => setJustSaved(false), 2000);
+  };
+
+  const saveBg = savedAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["#F7F6F3", "#EFEFEC"],
+  });
+
   return (
-    <View style={styles.resultCard}>
+    <Animated.View style={[styles.resultCard, { transform: [{ scale: scaleAnim }] }]}>
       <View style={styles.resultCardTop}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={styles.resultFormula}>{result.formulaName}</Text>
@@ -79,19 +118,24 @@ function ResultRow({
       </View>
       {!isSaved ? (
         <Pressable
-          onPress={onSave}
-          style={({ pressed }) => [styles.saveRow, pressed && { backgroundColor: c.surface }]}
+          onPress={handleSave}
+          style={({ pressed }) => [
+            styles.saveRow,
+            pressed && styles.saveRowPressed,
+          ]}
         >
-          <Feather name="bookmark" size={11} color={c.ghost} />
+          <Feather name="bookmark" size={11} color={c.mid} />
           <Text style={styles.saveText}>Salvar como minha fórmula</Text>
         </Pressable>
       ) : (
-        <View style={styles.saveRow}>
-          <Feather name="bookmark" size={11} color={c.faint} />
-          <Text style={[styles.saveText, { color: c.faint }]}>Salva em Minhas fórmulas</Text>
-        </View>
+        <Animated.View style={[styles.saveRow, styles.saveRowSaved, { backgroundColor: saveBg }]}>
+          <Feather name="check" size={11} color={justSaved ? "#5A7A5A" : c.faint} />
+          <Text style={[styles.saveText, justSaved ? styles.saveTextJustSaved : styles.saveTextSaved]}>
+            {justSaved ? "Salvo em Minhas fórmulas!" : "Salvo em Minhas fórmulas"}
+          </Text>
+        </Animated.View>
       )}
-    </View>
+    </Animated.View>
   );
 }
 
@@ -660,7 +704,7 @@ const styles = StyleSheet.create({
   },
   viewBtnText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#6B6B66" },
   saveRow: {
-    paddingVertical: 8,
+    paddingVertical: 9,
     paddingHorizontal: 16,
     borderTopWidth: 1,
     borderTopColor: "#E8E7E3",
@@ -668,7 +712,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  saveText: { fontSize: 11, color: "#C8C7C2", fontFamily: "Inter_400Regular" },
+  saveRowPressed: {
+    backgroundColor: "#E8E7E3",
+  },
+  saveRowSaved: {
+    borderTopColor: "#E8E7E3",
+  },
+  saveText: { fontSize: 11, color: "#AEADA8", fontFamily: "Inter_500Medium" },
+  saveTextSaved: { color: "#AEADA8", fontFamily: "Inter_400Regular" },
+  saveTextJustSaved: { color: "#5A7A5A", fontFamily: "Inter_600SemiBold" },
   loadingWrap: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   loadingDot: {
     width: 5,

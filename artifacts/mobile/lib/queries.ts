@@ -94,7 +94,26 @@ export function useToggleSaveFormula() {
         if (error) throw error;
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["saved_formulas"] }),
+    onMutate: async ({ formulaId, isSaved }) => {
+      await qc.cancelQueries({ queryKey: ["saved_formulas"] });
+      const previous = qc.getQueryData<Set<string>>(["saved_formulas"]);
+      qc.setQueryData<Set<string>>(["saved_formulas"], (old) => {
+        const next = new Set(old ?? []);
+        if (isSaved) {
+          next.delete(formulaId);
+        } else {
+          next.add(formulaId);
+        }
+        return next;
+      });
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous !== undefined) {
+        qc.setQueryData(["saved_formulas"], context.previous);
+      }
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["saved_formulas"] }),
   });
 }
 

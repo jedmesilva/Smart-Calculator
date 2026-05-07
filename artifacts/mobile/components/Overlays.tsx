@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 import colors from "@/constants/colors";
 import type { ResultData } from "@/lib/apiClient";
 import { exportAsPDF, copyToClipboard } from "@/lib/exportCalc";
@@ -354,17 +355,26 @@ export function FormulasScreen({
                     hitSlop={8}
                     onPress={(e) => {
                       e.stopPropagation();
+                      Haptics.impactAsync(
+                        isSaved
+                          ? Haptics.ImpactFeedbackStyle.Light
+                          : Haptics.ImpactFeedbackStyle.Medium
+                      );
                       toggleSave.mutate({ formulaId: f.id, isSaved });
                     }}
-                    style={[styles.bookmarkPill, isSaved && styles.bookmarkPillSaved]}
+                    style={({ pressed }) => [
+                      styles.bookmarkPill,
+                      isSaved && styles.bookmarkPillSaved,
+                      pressed && styles.bookmarkPillPressed,
+                    ]}
                   >
                     <Feather
-                      name="bookmark"
+                      name={isSaved ? "bookmark" : "bookmark"}
                       size={12}
                       color={isSaved ? "#fff" : c.ghost}
                     />
                     <Text style={[styles.bookmarkPillText, isSaved && styles.bookmarkPillTextSaved]}>
-                      {isSaved ? "salva" : "salvar"}
+                      {isSaved ? "salva ✓" : "salvar"}
                     </Text>
                   </Pressable>
                 </View>
@@ -669,6 +679,10 @@ const styles = StyleSheet.create({
   },
   bookmarkPillSaved: {
     backgroundColor: c.text,
+  },
+  bookmarkPillPressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.94 }],
   },
   bookmarkPillText: {
     fontSize: 11,
