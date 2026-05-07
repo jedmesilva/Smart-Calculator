@@ -1,3 +1,5 @@
+import { parse } from "mathjs";
+import { latexToSvg } from "./mathRenderer";
 import type { ExpressionResult } from "../agents/types";
 import type { ValidationResult } from "../agents/types";
 
@@ -16,6 +18,8 @@ export type ResultData = {
   resultLabel: string;
   formulaSymbolic: string;
   formulaSubstituted: string;
+  svgSymbolic?: string | null;
+  svgSubstituted?: string | null;
   variables: { symbol: string; name: string; value: string }[];
   steps: string[];
   note: string | null;
@@ -37,6 +41,44 @@ type VarsLike = Pick<
   | "formulaSubstituted"
 >;
 
+/* ── Geração de LaTeX via mathjs ── */
+function toLatexSymbolic(expression: string, solveFor: string): string | null {
+  try {
+    const tex = parse(expression)
+      .toTex()
+      .replace(/\bPI\b/g, "\\pi")
+      .replace(/\bE\b(?=[^a-zA-Z])/g, "e");
+    return `${solveFor} = ${tex}`;
+  } catch {
+    return null;
+  }
+}
+
+function toLatexSubstituted(
+  expression: string,
+  extracted: Record<string, number>,
+  solveFor: string
+): string | null {
+  try {
+    // Substitui os valores na expressão, do símbolo mais longo para o mais curto
+    // para evitar substituições parciais (ex: "altura_cm" antes de "altura")
+    const sorted = Object.entries(extracted).sort(
+      (a, b) => b[0].length - a[0].length
+    );
+    let subst = expression;
+    for (const [sym, val] of sorted) {
+      subst = subst.replace(new RegExp(`\\b${sym}\\b`, "g"), String(val));
+    }
+    const tex = parse(subst)
+      .toTex()
+      .replace(/\bPI\b/g, "\\pi")
+      .replace(/\bE\b(?=[^a-zA-Z])/g, "e");
+    return `${solveFor} = ${tex}`;
+  } catch {
+    return null;
+  }
+}
+
 export function buildResult(
   formulaName: string,
   symbolic: string,
@@ -48,6 +90,7 @@ export function buildResult(
     warning?: string;
     searchUsed?: boolean;
     proof?: ValidationResult;
+    formulaExpression?: string | null;
   } = {}
 ): Omit<ResultData, "conversationalResponse"> {
   const formatted = formatPtBR(computedValue, vars.resultUnit);
@@ -74,6 +117,19 @@ export function buildResult(
         detail: "Verificação não realizada.",
       };
 
+  // svgSymbolic: apenas quando temos a expressão do DB (fórmula com símbolos conhecidos)
+  const latexSym = options.formulaExpression
+    ? toLatexSymbolic(options.formulaExpression, vars.solveFor)
+    : null;
+  const svgSymbolic = latexSym ? latexToSvg(latexSym) : null;
+
+  // svgSubstituted: usa expressão do DB com valores substituídos, ou a do agente
+  const subExpr = options.formulaExpression ?? vars.expression;
+  const latexSub = subExpr
+    ? toLatexSubstituted(subExpr, vars.extracted, vars.solveFor)
+    : null;
+  const svgSubstituted = latexSub ? latexToSvg(latexSub) : null;
+
   return {
     formulaId: options.formulaId ?? null,
     formulaCategory: options.formulaCategory ?? null,
@@ -83,6 +139,8 @@ export function buildResult(
     resultLabel: vars.resultLabel,
     formulaSymbolic: symbolic,
     formulaSubstituted: vars.formulaSubstituted,
+    svgSymbolic,
+    svgSubstituted,
     variables,
     steps,
     note: null,

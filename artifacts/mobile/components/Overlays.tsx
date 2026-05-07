@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { MathView } from "@/components/MathView";
 import {
   View,
   Text,
@@ -98,14 +99,21 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
         contentContainerStyle={styles.overlayBody}
         showsVerticalScrollIndicator={false}
       >
-        {(data.formulaSymbolic || data.formulaSubstituted) && (
+        {(data.svgSymbolic || data.svgSubstituted || data.formulaSymbolic || data.formulaSubstituted) && (
           <View style={styles.formulaBox}>
-            {!!data.formulaSymbolic && (
+            {data.svgSymbolic ? (
+              <MathView svg={data.svgSymbolic} color="#3A3A38" />
+            ) : !!data.formulaSymbolic ? (
               <Text style={styles.formulaSymbolic}>{data.formulaSymbolic}</Text>
-            )}
-            {!!data.formulaSubstituted && (
+            ) : null}
+            {data.svgSubstituted ? (
+              <>
+                <View style={styles.formulaDivider} />
+                <MathView svg={data.svgSubstituted} color="#7A7A72" />
+              </>
+            ) : !!data.formulaSubstituted ? (
               <Text style={styles.formulaSubstituted}>{data.formulaSubstituted}</Text>
-            )}
+            ) : null}
           </View>
         )}
 
@@ -542,6 +550,13 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 18,
     marginBottom: 28,
+    overflow: "hidden",
+  },
+  formulaDivider: {
+    height: 1,
+    backgroundColor: c.ghost,
+    marginVertical: 4,
+    opacity: 0.4,
   },
   formulaSymbolic: {
     fontFamily: "Inter_400Regular",

@@ -292,6 +292,7 @@ export async function runCalculationPipeline(opts: {
         formulaCategory: formula.category,
         searchUsed: expressionResult.searchUsed,
         proof: validation,
+        formulaExpression: formula.expression,
       })
     ),
     runConversationalAgent({ query, formula, expressionResult, computedValue, validation, context, sessionSummary, userName }),
