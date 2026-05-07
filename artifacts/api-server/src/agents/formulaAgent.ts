@@ -7,7 +7,7 @@
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { db } from "@workspace/db";
 import { formulas } from "@workspace/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, ilike } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import type {
   ConversationMessage,
@@ -73,7 +73,7 @@ function parseJson(raw: string, ctx: string): any {
   }
 }
 
-/* ── Modo dinâmico: identifica fórmula via LLM ── */
+/* ── Modo dinâmico: identifica fórmula via LLM, depois enriquece com dados do DB ── */
 async function identifyFormulaDynamic(
   query: string,
   context: ConversationMessage[]
@@ -104,16 +104,32 @@ async function identifyFormulaDynamic(
     };
   }
 
+  // Tenta enriquecer com dados do DB (expression + expression_meta) pelo nome
+  let dbFormula: typeof formulas.$inferSelect | undefined;
+  try {
+    const [match] = await db
+      .select()
+      .from(formulas)
+      .where(ilike(formulas.name, parsed.name))
+      .limit(1);
+    dbFormula = match;
+    if (dbFormula) {
+      logger.info({ name: dbFormula.name }, "formulaAgent: matched DB formula in dynamic mode");
+    }
+  } catch (err) {
+    logger.warn({ err }, "formulaAgent: DB lookup failed in dynamic mode, using LLM-only result");
+  }
+
   return {
     status: "found",
     formula: {
-      id: null,
-      name: parsed.name,
-      description: parsed.description ?? "",
-      symbolic: parsed.symbolic ?? "",
-      category: parsed.category ?? "Outro",
-      expression: null,
-      expression_meta: null,
+      id: dbFormula?.id ?? null,
+      name: dbFormula?.name ?? parsed.name,
+      description: dbFormula?.description ?? parsed.description ?? "",
+      symbolic: dbFormula?.symbolic ?? parsed.symbolic ?? "",
+      category: dbFormula?.category ?? parsed.category ?? "Outro",
+      expression: dbFormula?.expression ?? null,
+      expression_meta: dbFormula?.expression_meta ?? null,
     },
   };
 }
