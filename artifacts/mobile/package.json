@@ -57,6 +57,9 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",
+    "expo-clipboard": "~8.0.8",
+    "expo-print": "~15.0.8",
+    "expo-sharing": "~14.0.8",
     "react-native-url-polyfill": "^3.0.0"
   }
 }

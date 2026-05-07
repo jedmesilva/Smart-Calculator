@@ -8,11 +8,13 @@ import {
   StyleSheet,
   Platform,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import type { ResultData } from "@/lib/apiClient";
+import { exportAsPDF, copyToClipboard } from "@/lib/exportCalc";
 import {
   useFormulas,
   useSavedFormulaIds,
@@ -31,14 +33,61 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 0 : insets.top;
   const botPad = Platform.OS === "web" ? 0 : insets.bottom;
+  const [exporting, setExporting] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleExportPDF = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      await exportAsPDF(data);
+    } catch (err: any) {
+      Alert.alert("Erro ao exportar", err?.message ?? "Tente novamente.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleCopy = async () => {
+    await copyToClipboard(data);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <View style={[styles.overlay, { paddingTop: topPad }]}>
       <View style={styles.overlayHeader}>
         <Text style={styles.overlayTitle}>{data.formulaName}</Text>
-        <Pressable onPress={onClose} style={styles.iconBtn} hitSlop={12}>
-          <Feather name="x" size={18} color={c.faint} />
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable
+            onPress={handleCopy}
+            style={[styles.exportBtn, copied && styles.exportBtnActive]}
+            hitSlop={8}
+          >
+            <Feather name={copied ? "check" : "copy"} size={13} color={copied ? "#fff" : c.mid} />
+            <Text style={[styles.exportBtnText, copied && styles.exportBtnTextActive]}>
+              {copied ? "copiado!" : "copiar"}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={handleExportPDF}
+            disabled={exporting}
+            style={[styles.exportBtn, styles.exportBtnPDF, exporting && { opacity: 0.6 }]}
+            hitSlop={8}
+          >
+            {exporting ? (
+              <ActivityIndicator size="small" color="#fff" style={{ width: 13, height: 13 }} />
+            ) : (
+              <Feather name="share" size={13} color="#fff" />
+            )}
+            <Text style={[styles.exportBtnText, styles.exportBtnTextActive]}>
+              {exporting ? "gerando…" : "PDF"}
+            </Text>
+          </Pressable>
+          <Pressable onPress={onClose} style={styles.iconBtn} hitSlop={12}>
+            <Feather name="x" size={18} color={c.faint} />
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView
@@ -341,12 +390,42 @@ const styles = StyleSheet.create({
     zIndex: 60,
   },
   overlayHeader: {
-    paddingHorizontal: 28,
+    paddingHorizontal: 20,
     paddingTop: 10,
     paddingBottom: 14,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: 8,
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    flexShrink: 0,
+  },
+  exportBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 9,
+    backgroundColor: c.surface,
+  },
+  exportBtnActive: {
+    backgroundColor: c.text,
+  },
+  exportBtnPDF: {
+    backgroundColor: c.text,
+  },
+  exportBtnText: {
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+    color: c.mid,
+  },
+  exportBtnTextActive: {
+    color: "#fff",
   },
   overlayHeaderRow: {
     flexDirection: "row",
