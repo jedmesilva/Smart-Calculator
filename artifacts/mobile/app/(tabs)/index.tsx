@@ -13,53 +13,21 @@ import { Feather } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
+import { useQueryClient } from "@tanstack/react-query";
 import colors from "@/constants/colors";
-import { CalcOverlay, HistoryOverlay, FormulasScreen, type Formula } from "@/components/Overlays";
+import { CalcOverlay, HistoryOverlay, FormulasScreen } from "@/components/Overlays";
 import { MenuOverlay } from "@/components/MenuOverlay";
+import { useAuth } from "@/contexts/AuthContext";
+import { calculate, type ResultData } from "@/lib/apiClient";
+import { supabase } from "@/lib/supabase";
+import { createSession, saveMessages, touchSession } from "@/lib/queries";
+import type { DbFormula } from "@/lib/queries";
 
 const c = colors.light;
 
 type ChatItem =
   | { kind: "user"; id: string; text: string }
   | { kind: "result"; id: string; result: ResultData };
-
-type ResultData = {
-  formulaName: string;
-  resultFormatted: string;
-  resultUnit: string;
-  resultLabel: string;
-  formulaSymbolic: string;
-  formulaSubstituted: string;
-};
-
-const INITIAL_CHAT: ChatItem[] = [
-  { kind: "user", id: "1", text: "Quanto rende R$ 1.000 aplicado a 1% ao mês por 12 meses?" },
-  {
-    kind: "result",
-    id: "2",
-    result: {
-      formulaName: "Juros Compostos",
-      resultFormatted: "1.126,83",
-      resultUnit: "R$",
-      resultLabel: "montante final",
-      formulaSymbolic: "M = C × (1 + i)ⁿ",
-      formulaSubstituted: "M = 1000 × (1 + 0,01)¹²",
-    },
-  },
-  { kind: "user", id: "3", text: "E se fossem 24 meses?" },
-  {
-    kind: "result",
-    id: "4",
-    result: {
-      formulaName: "Juros Compostos",
-      resultFormatted: "1.269,73",
-      resultUnit: "R$",
-      resultLabel: "montante final",
-      formulaSymbolic: "M = C × (1 + i)ⁿ",
-      formulaSubstituted: "M = 1000 × (1 + 0,01)²⁴",
-    },
-  },
-];
 
 /* ─── USER BUBBLE ─── */
 function UserBubble({ text }: { text: string }) {
@@ -89,7 +57,9 @@ function ResultRow({
       <View style={styles.resultCardTop}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={styles.resultFormula}>{result.formulaName}</Text>
-          <Text style={styles.resultSubstituted} numberOfLines={1}>{result.formulaSubstituted}</Text>
+          <Text style={styles.resultSubstituted} numberOfLines={1}>
+            {result.formulaSubstituted}
+          </Text>
         </View>
         <View style={styles.resultRight}>
           <View style={{ alignItems: "flex-end" }}>
@@ -98,14 +68,20 @@ function ResultRow({
             )}
             <Text style={styles.resultNum}>{result.resultFormatted}</Text>
           </View>
-          <Pressable onPress={onView} style={({ pressed }) => [styles.viewBtn, pressed && { backgroundColor: c.ghost }]}>
+          <Pressable
+            onPress={onView}
+            style={({ pressed }) => [styles.viewBtn, pressed && { backgroundColor: c.ghost }]}
+          >
             <Text style={styles.sigmaSmall}>σ</Text>
             <Text style={styles.viewBtnText}>ver</Text>
           </Pressable>
         </View>
       </View>
       {!isSaved ? (
-        <Pressable onPress={onSave} style={({ pressed }) => [styles.saveRow, pressed && { backgroundColor: c.surface }]}>
+        <Pressable
+          onPress={onSave}
+          style={({ pressed }) => [styles.saveRow, pressed && { backgroundColor: c.surface }]}
+        >
           <Feather name="bookmark" size={11} color={c.ghost} />
           <Text style={styles.saveText}>Salvar como minha fórmula</Text>
         </Pressable>
@@ -152,7 +128,9 @@ function EmptyChat({ onSuggest }: { onSuggest: (text: string) => void }) {
             onPress={() => onSuggest(s)}
             style={({ pressed }) => [styles.emptyChip, pressed && { opacity: 0.6 }]}
           >
-            <Text style={styles.emptyChipText} numberOfLines={2}>{s}</Text>
+            <Text style={styles.emptyChipText} numberOfLines={2}>
+              {s}
+            </Text>
           </Pressable>
         ))}
       </View>
@@ -163,12 +141,17 @@ function EmptyChat({ onSuggest }: { onSuggest: (text: string) => void }) {
 /* ─── MAIN ─── */
 export default function SigmaScreen() {
   const insets = useSafeAreaInsets();
+  const { session } = useAuth();
+  const queryClient = useQueryClient();
+
   const [query, setQuery] = useState("");
   const [screen, setScreen] = useState<"main" | "calc" | "history" | "formulas" | "menu">("main");
-  const [activeFormula, setActiveFormula] = useState<Formula | null>(null);
+  const [activeFormula, setActiveFormula] = useState<DbFormula | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [chat, setChat] = useState<ChatItem[]>(INITIAL_CHAT);
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [chat, setChat] = useState<ChatItem[]>([]);
+  const [savedResultIds, setSavedResultIds] = useState<Set<string>>(new Set());
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [viewingResult, setViewingResult] = useState<ResultData | null>(null);
   const inputRef = useRef<TextInput>(null);
 
   const lastResult = [...chat].reverse().find((x) => x.kind === "result");
@@ -185,42 +168,66 @@ export default function SigmaScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setChat([]);
     setQuery("");
-    setSavedIds(new Set());
+    setSavedResultIds(new Set());
     setActiveFormula(null);
+    setCurrentSessionId(null);
     setScreen("main");
   }, []);
 
-  const handleSend = useCallback(() => {
-    if (!query.trim() || isLoading) return;
+  const handleSend = useCallback(async () => {
+    if (!query.trim() || isLoading || !session) return;
     const text = query.trim();
     setQuery("");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const newId = Date.now().toString() + Math.random().toString(36).substr(2, 5);
-    const resultId = newId + "_r";
-    setChat((prev) => [...prev, { kind: "user", id: newId, text }]);
+
+    const msgId = Date.now().toString() + Math.random().toString(36).slice(2, 6);
+    setChat((prev) => [...prev, { kind: "user", id: msgId, text }]);
     setIsLoading(true);
-    setTimeout(() => {
-      setChat((prev) => [
-        ...prev,
-        {
-          kind: "result",
-          id: resultId,
-          result: {
-            formulaName: activeFormula?.name ?? "Juros Compostos",
-            resultFormatted: "1.480,24",
-            resultUnit: "R$",
-            resultLabel: "montante final",
-            formulaSymbolic: "M = C × (1 + i)ⁿ",
-            formulaSubstituted: "M = 1000 × (1 + 0,01)³⁶",
-          },
-        },
-      ]);
+
+    try {
+      const result = await calculate(
+        { query: text, formulaId: activeFormula?.id },
+        session.access_token
+      );
+
+      const resultId = msgId + "_r";
+      setChat((prev) => [...prev, { kind: "result", id: resultId, result }]);
+
+      // Persist to Supabase in background
+      let sessId = currentSessionId;
+      if (!sessId) {
+        sessId = await createSession(text);
+        if (sessId) {
+          setCurrentSessionId(sessId);
+          queryClient.invalidateQueries({ queryKey: ["sessions"] });
+        }
+      } else {
+        touchSession(sessId);
+      }
+
+      if (sessId) {
+        await saveMessages(sessId, text, result);
+      }
+    } catch (err: any) {
+      const errId = msgId + "_e";
+      const errorResult: ResultData = {
+        formulaName: "Erro",
+        resultFormatted: "—",
+        resultUnit: "",
+        resultLabel: err?.message ?? "não foi possível calcular",
+        formulaSymbolic: "",
+        formulaSubstituted: "",
+        variables: [],
+        steps: [],
+        note: null,
+      };
+      setChat((prev) => [...prev, { kind: "result", id: errId, result: errorResult }]);
+    } finally {
       setIsLoading(false);
-    }, 1400);
-  }, [query, isLoading, activeFormula]);
+    }
+  }, [query, isLoading, session, activeFormula, currentSessionId, queryClient]);
 
   const canSend = query.trim().length > 0 && !isLoading;
-
   const invertedData = [...chat].reverse();
 
   const renderItem = useCallback(
@@ -228,14 +235,17 @@ export default function SigmaScreen() {
       const originalIndex = chat.length - 1 - index;
       if (item.kind === "user") return <UserBubble text={item.text} />;
       if (item.kind === "result") {
-        const isSaved = savedIds.has(item.id) || originalIndex < chat.length - 2;
+        const isSaved = savedResultIds.has(item.id) || originalIndex < chat.length - 2;
         return (
           <ResultRow
             result={item.result}
-            onView={() => setScreen("calc")}
+            onView={() => {
+              setViewingResult(item.result);
+              setScreen("calc");
+            }}
             isSaved={isSaved}
             onSave={() => {
-              setSavedIds((prev) => new Set([...prev, item.id]));
+              setSavedResultIds((prev) => new Set([...prev, item.id]));
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             }}
           />
@@ -243,14 +253,13 @@ export default function SigmaScreen() {
       }
       return null;
     },
-    [chat, savedIds]
+    [chat, savedResultIds]
   );
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
       {/* ── DISPLAY PANEL ── */}
       <View style={[styles.displayPanel, { paddingTop: topPad + 10 }]}>
-        {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Pressable onPress={() => setScreen("menu")} style={styles.headerIconBtn} hitSlop={8}>
@@ -268,13 +277,17 @@ export default function SigmaScreen() {
           </View>
         </View>
 
-        {/* Big Number */}
         <View style={styles.numSection}>
           <View style={styles.numRow}>
             {hasResult && !!current.resultUnit && (
               <Text style={styles.numUnit}>{current.resultUnit}</Text>
             )}
-            <Text style={[styles.numDisplay, { fontSize: numFontSize, color: hasResult ? c.text : c.ghost }]}>
+            <Text
+              style={[
+                styles.numDisplay,
+                { fontSize: numFontSize, color: hasResult ? c.text : c.ghost },
+              ]}
+            >
               {displayNum}
             </Text>
           </View>
@@ -283,7 +296,12 @@ export default function SigmaScreen() {
               {hasResult ? current.resultLabel : "resultado"}
             </Text>
             <Pressable
-              onPress={() => { if (hasResult) setScreen("calc"); }}
+              onPress={() => {
+                if (hasResult) {
+                  setViewingResult(current);
+                  setScreen("calc");
+                }
+              }}
               disabled={!hasResult}
               style={({ pressed }) => [
                 styles.verCalcBtn,
@@ -292,7 +310,9 @@ export default function SigmaScreen() {
               ]}
             >
               <Text style={styles.sigmaSmall}>σ</Text>
-              <Text style={[styles.verCalcText, { color: hasResult ? c.mid : c.ghost }]}>ver cálculo</Text>
+              <Text style={[styles.verCalcText, { color: hasResult ? c.mid : c.ghost }]}>
+                ver cálculo
+              </Text>
               {hasResult && <Feather name="chevron-right" size={11} color={c.mid} />}
             </Pressable>
           </View>
@@ -301,7 +321,6 @@ export default function SigmaScreen() {
 
       {/* ── FORMULA ROW ── */}
       <View style={styles.formulaRow}>
-        {/* Linha 1: label + chevron → navega para fórmulas */}
         <Pressable
           onPress={() => setScreen("formulas")}
           style={({ pressed }) => [styles.formulaRowHeader, pressed && { opacity: 0.6 }]}
@@ -313,7 +332,6 @@ export default function SigmaScreen() {
           <Feather name="chevron-right" size={11} color={c.ghost} />
         </Pressable>
 
-        {/* Linha 2: estado da fórmula + ações */}
         <View style={styles.formulaRowState}>
           <Text
             style={[styles.formulaRowName, activeFormula ? styles.formulaRowNameActive : {}]}
@@ -336,25 +354,29 @@ export default function SigmaScreen() {
       </View>
 
       {/* ── CHAT + INPUT ── */}
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior="padding"
-        keyboardVerticalOffset={kbOffset}
-      >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={kbOffset}>
         <FlatList
           data={invertedData}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           inverted
-          contentContainerStyle={chat.length === 0 ? styles.chatContentEmpty : styles.chatContent}
+          contentContainerStyle={
+            chat.length === 0 ? styles.chatContentEmpty : styles.chatContent
+          }
           showsVerticalScrollIndicator={false}
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={isLoading ? <LoadingDots /> : null}
-          ListEmptyComponent={<EmptyChat onSuggest={(text) => { setQuery(text); inputRef.current?.focus(); }} />}
+          ListEmptyComponent={
+            <EmptyChat
+              onSuggest={(text) => {
+                setQuery(text);
+                inputRef.current?.focus();
+              }}
+            />
+          }
         />
 
-        {/* INPUT BAR */}
         <View style={[styles.inputWrap, { paddingBottom: botPad + 12 }]}>
           <View style={styles.inputBox}>
             <TextInput
@@ -372,12 +394,20 @@ export default function SigmaScreen() {
             <Pressable
               onPress={handleSend}
               disabled={!canSend}
-              style={[styles.sendBtn, canSend ? styles.sendBtnActive : styles.sendBtnInactive]}
+              style={[
+                styles.sendBtn,
+                canSend ? styles.sendBtnActive : styles.sendBtnInactive,
+              ]}
             >
               {isLoading ? (
                 <ActivityIndicator size="small" color={c.ghost} />
               ) : (
-                <Feather name="arrow-up" size={14} color={canSend ? c.background : c.ghost} strokeWidth={2.5} />
+                <Feather
+                  name="arrow-up"
+                  size={14}
+                  color={canSend ? c.background : c.ghost}
+                  strokeWidth={2.5}
+                />
               )}
             </Pressable>
           </View>
@@ -385,11 +415,21 @@ export default function SigmaScreen() {
       </KeyboardAvoidingView>
 
       {/* ── OVERLAYS ── */}
-      {screen === "calc" && <CalcOverlay onClose={() => setScreen("main")} />}
-      {screen === "history" && <HistoryOverlay onClose={() => setScreen("main")} onSelect={() => setScreen("main")} />}
+      {screen === "calc" && viewingResult && (
+        <CalcOverlay data={viewingResult} onClose={() => setScreen("main")} />
+      )}
+      {screen === "history" && (
+        <HistoryOverlay
+          onClose={() => setScreen("main")}
+          onSelect={() => setScreen("main")}
+        />
+      )}
       {screen === "formulas" && (
         <FormulasScreen
-          onSelect={(f) => { setActiveFormula(f); setScreen("main"); }}
+          onSelect={(f) => {
+            setActiveFormula(f);
+            setScreen("main");
+          }}
           onClose={() => setScreen("main")}
         />
       )}
@@ -399,9 +439,7 @@ export default function SigmaScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   displayPanel: {
     flexShrink: 0,
     paddingHorizontal: 28,
@@ -415,15 +453,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 36,
   },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-  },
-  headerRight: {
-    flexDirection: "row",
-    gap: 4,
-  },
+  headerLeft: { flexDirection: "row", alignItems: "center", gap: 7 },
+  headerRight: { flexDirection: "row", gap: 4 },
   headerIconBtn: {
     width: 30,
     height: 30,
@@ -474,22 +505,14 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
   },
-  verCalcBtnActive: {
-    backgroundColor: "#EFEFEC",
-  },
-  verCalcBtnInactive: {
-    backgroundColor: "transparent",
-    opacity: 0.4,
-  },
+  verCalcBtnActive: { backgroundColor: "#EFEFEC" },
+  verCalcBtnInactive: { backgroundColor: "transparent", opacity: 0.4 },
   sigmaSmall: {
     fontSize: 12,
     color: "#6B6B66",
     fontFamily: "Inter_400Regular",
   },
-  verCalcText: {
-    fontSize: 12,
-    fontFamily: "Inter_600SemiBold",
-  },
+  verCalcText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
   formulaRow: {
     flexShrink: 0,
     paddingHorizontal: 28,
@@ -519,43 +542,23 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     flex: 1,
   },
-  formulaRowNameActive: {
-    color: "#1A1A18",
-    fontFamily: "Inter_600SemiBold",
-  },
+  formulaRowNameActive: { color: "#1A1A18", fontFamily: "Inter_600SemiBold" },
   formulaRowActions: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
     flexShrink: 0,
   },
-  alterBtn: {
-    paddingVertical: 4,
-  },
-  alterBtnText: {
-    fontSize: 11,
-    color: "#AEADA8",
-    fontFamily: "Inter_400Regular",
-  },
-  removeBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-    paddingVertical: 4,
-  },
-  removeBtnText: {
-    fontSize: 11,
-    color: "#AEADA8",
-    fontFamily: "Inter_400Regular",
-  },
+  alterBtn: { paddingVertical: 4 },
+  alterBtnText: { fontSize: 11, color: "#AEADA8", fontFamily: "Inter_400Regular" },
+  removeBtn: { flexDirection: "row", alignItems: "center", gap: 3, paddingVertical: 4 },
+  removeBtnText: { fontSize: 11, color: "#AEADA8", fontFamily: "Inter_400Regular" },
   chatContent: {
     paddingHorizontal: 28,
     paddingVertical: 16,
     gap: 10,
   },
-  chatContentEmpty: {
-    flex: 1,
-  },
+  chatContentEmpty: { flex: 1 },
   emptyWrap: {
     flex: 1,
     alignItems: "center",
@@ -582,10 +585,7 @@ const styles = StyleSheet.create({
     color: "#C8C7C2",
     marginBottom: 16,
   },
-  emptyChips: {
-    width: "100%",
-    gap: 6,
-  },
+  emptyChips: { width: "100%", gap: 6 },
   emptyChip: {
     backgroundColor: "#EFEFEC",
     borderRadius: 12,
@@ -598,10 +598,7 @@ const styles = StyleSheet.create({
     color: "#6B6B66",
     lineHeight: 17,
   },
-  userBubbleWrap: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-  },
+  userBubbleWrap: { flexDirection: "row", justifyContent: "flex-end" },
   userBubble: {
     maxWidth: "72%",
     backgroundColor: "#EFEFEC",
@@ -616,11 +613,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontFamily: "Inter_400Regular",
   },
-  resultCard: {
-    backgroundColor: "#EFEFEC",
-    borderRadius: 12,
-    overflow: "hidden",
-  },
+  resultCard: { backgroundColor: "#EFEFEC", borderRadius: 12, overflow: "hidden" },
   resultCardTop: {
     padding: 14,
     flexDirection: "row",
@@ -665,11 +658,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
   },
-  viewBtnText: {
-    fontSize: 11,
-    fontFamily: "Inter_600SemiBold",
-    color: "#6B6B66",
-  },
+  viewBtnText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#6B6B66" },
   saveRow: {
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -679,16 +668,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  saveText: {
-    fontSize: 11,
-    color: "#C8C7C2",
-    fontFamily: "Inter_400Regular",
-  },
-  loadingWrap: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-  },
+  saveText: { fontSize: 11, color: "#C8C7C2", fontFamily: "Inter_400Regular" },
+  loadingWrap: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   loadingDot: {
     width: 5,
     height: 5,
@@ -706,11 +687,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  inputWrap: {
-    paddingHorizontal: 28,
-    paddingTop: 8,
-    flexShrink: 0,
-  },
+  inputWrap: { paddingHorizontal: 28, paddingTop: 8, flexShrink: 0 },
   inputBox: {
     backgroundColor: "#EFEFEC",
     borderRadius: 16,
@@ -740,10 +717,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexShrink: 0,
   },
-  sendBtnActive: {
-    backgroundColor: "#1A1A18",
-  },
-  sendBtnInactive: {
-    backgroundColor: "#E8E7E3",
-  },
+  sendBtnActive: { backgroundColor: "#1A1A18" },
+  sendBtnInactive: { backgroundColor: "#E8E7E3" },
 });

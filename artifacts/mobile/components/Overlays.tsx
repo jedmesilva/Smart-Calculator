@@ -7,108 +7,112 @@ import {
   TextInput,
   StyleSheet,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
+import type { ResultData } from "@/lib/apiClient";
+import {
+  useFormulas,
+  useSavedFormulaIds,
+  useSessions,
+  useToggleSaveFormula,
+  type DbFormula,
+  type DbSession,
+} from "@/lib/queries";
 
 const c = colors.light;
 
-const MOCK_OVERLAY = {
-  formulaName: "Juros Compostos",
-  formulaSymbolic: "M = C × (1 + i)ⁿ",
-  formulaSubstituted: "M = 1000 × (1 + 0,01)¹²",
-  resultFormatted: "1.126,83",
-  resultUnit: "R$",
-  resultLabel: "montante final",
-  variables: [
-    { symbol: "C", name: "Capital inicial", value: "R$ 1.000" },
-    { symbol: "i", name: "Taxa de juros", value: "1% ao mês" },
-    { symbol: "n", name: "Período", value: "12 meses" },
-  ],
-  steps: [
-    "Converter taxa: i = 1% = 0,01",
-    "Aplicar a fórmula: M = 1000 × (1 + 0,01)¹²",
-    "Calcular (1,01)¹² = 1,126825…",
-    "Multiplicar: M = 1000 × 1,126825 = 1.126,83",
-  ],
-  note: "O rendimento total foi de R$ 126,83 sobre o capital inicial.",
-};
-
-const MOCK_SESSIONS = [
-  { id: "1", title: "Juros compostos de R$ 1.000 por 12 meses", formulaName: "Juros Compostos", savedAt: Date.now() - 86400000 },
-  { id: "2", title: "IMC com 75kg e 1.75m de altura", formulaName: "IMC", savedAt: Date.now() - 172800000 },
-  { id: "3", title: "Área de um círculo com raio 5cm", formulaName: "Área do Círculo", savedAt: Date.now() - 259200000 },
-];
-
-export const MOCK_FORMULAS = [
-  { id: "juros-compostos", name: "Juros Compostos", category: "Financeiro", description: "Montante com juros sobre juros ao longo do tempo", symbolic: "M = C × (1 + i)ⁿ" },
-  { id: "imc", name: "IMC", category: "Saúde", description: "Índice de Massa Corporal", symbolic: "IMC = peso / altura²" },
-  { id: "regra-tres", name: "Regra de Três", category: "Básico", description: "Proporção simples ou composta entre grandezas", symbolic: "a/b = c/x" },
-  { id: "area-circulo", name: "Área do Círculo", category: "Geometria", description: "Área de um círculo a partir do raio", symbolic: "A = π × r²" },
-  { id: "desconto", name: "Desconto Percentual", category: "Financeiro", description: "Valor final após aplicar desconto", symbolic: "V = P × (1 - d/100)" },
-  { id: "velocidade", name: "Velocidade Média", category: "Física", description: "Relação entre distância, tempo e velocidade", symbolic: "v = Δs / Δt" },
-  { id: "user-1", name: "Minha Fórmula", category: "Minhas", description: "Fórmula personalizada salva", symbolic: "x = a + b", isUser: true },
-];
-
-export type Formula = typeof MOCK_FORMULAS[0] & { isUser?: boolean };
+export type Formula = DbFormula;
 
 /* ─── CALC OVERLAY ─── */
-export function CalcOverlay({ onClose }: { onClose: () => void }) {
+export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () => void }) {
   const insets = useSafeAreaInsets();
-  const d = MOCK_OVERLAY;
   const topPad = Platform.OS === "web" ? 0 : insets.top;
   const botPad = Platform.OS === "web" ? 0 : insets.bottom;
 
   return (
     <View style={[styles.overlay, { paddingTop: topPad }]}>
       <View style={styles.overlayHeader}>
-        <Text style={styles.overlayTitle}>{d.formulaName}</Text>
+        <Text style={styles.overlayTitle}>{data.formulaName}</Text>
         <Pressable onPress={onClose} style={styles.iconBtn} hitSlop={12}>
           <Feather name="x" size={18} color={c.faint} />
         </Pressable>
       </View>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.overlayBody} showsVerticalScrollIndicator={false}>
-        <View style={styles.formulaBox}>
-          <Text style={styles.formulaSymbolic}>{d.formulaSymbolic}</Text>
-          <Text style={styles.formulaSubstituted}>{d.formulaSubstituted}</Text>
-        </View>
-
-        <Text style={styles.sectionLabel}>Variáveis</Text>
-        <View style={{ marginBottom: 28 }}>
-          {d.variables.map((v, i) => (
-            <View key={i} style={[styles.varRow, i < d.variables.length - 1 && styles.rowBorder]}>
-              <Text style={styles.varSymbol}>{v.symbol}</Text>
-              <Text style={styles.varName}>{v.name}</Text>
-              <Text style={styles.varValue}>{v.value}</Text>
-            </View>
-          ))}
-        </View>
-
-        <Text style={styles.sectionLabel}>Passo a passo</Text>
-        {d.steps.map((step, i) => (
-          <View key={i} style={[styles.stepRow, i < d.steps.length - 1 && styles.rowBorder]}>
-            <Text style={styles.stepNum}>{String(i + 1).padStart(2, "0")}</Text>
-            <Text style={styles.stepText}>{step}</Text>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.overlayBody}
+        showsVerticalScrollIndicator={false}
+      >
+        {(data.formulaSymbolic || data.formulaSubstituted) && (
+          <View style={styles.formulaBox}>
+            {!!data.formulaSymbolic && (
+              <Text style={styles.formulaSymbolic}>{data.formulaSymbolic}</Text>
+            )}
+            {!!data.formulaSubstituted && (
+              <Text style={styles.formulaSubstituted}>{data.formulaSubstituted}</Text>
+            )}
           </View>
-        ))}
-        {d.note && <Text style={styles.note}>* {d.note}</Text>}
+        )}
+
+        {data.variables?.length > 0 && (
+          <>
+            <Text style={styles.sectionLabel}>Variáveis</Text>
+            <View style={{ marginBottom: 28 }}>
+              {data.variables.map((v, i) => (
+                <View
+                  key={i}
+                  style={[styles.varRow, i < data.variables.length - 1 && styles.rowBorder]}
+                >
+                  <Text style={styles.varSymbol}>{v.symbol}</Text>
+                  <Text style={styles.varName}>{v.name}</Text>
+                  <Text style={styles.varValue}>{v.value}</Text>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
+
+        {data.steps?.length > 0 && (
+          <>
+            <Text style={styles.sectionLabel}>Passo a passo</Text>
+            {data.steps.map((step, i) => (
+              <View
+                key={i}
+                style={[styles.stepRow, i < data.steps.length - 1 && styles.rowBorder]}
+              >
+                <Text style={styles.stepNum}>{String(i + 1).padStart(2, "0")}</Text>
+                <Text style={styles.stepText}>{step}</Text>
+              </View>
+            ))}
+          </>
+        )}
+
+        {data.note && <Text style={styles.note}>* {data.note}</Text>}
       </ScrollView>
 
       <View style={[styles.resultBar, { paddingBottom: botPad + 20 }]}>
-        <Text style={styles.resultLabel}>{d.resultLabel}</Text>
-        <Text style={styles.resultUnit}>{d.resultUnit}</Text>
-        <Text style={styles.resultNum}>{d.resultFormatted}</Text>
+        <Text style={styles.resultLabel}>{data.resultLabel}</Text>
+        {!!data.resultUnit && <Text style={styles.resultUnit}>{data.resultUnit}</Text>}
+        <Text style={styles.resultNum}>{data.resultFormatted}</Text>
       </View>
     </View>
   );
 }
 
 /* ─── HISTORY OVERLAY ─── */
-export function HistoryOverlay({ onClose, onSelect }: { onClose: () => void; onSelect: () => void }) {
+export function HistoryOverlay({
+  onClose,
+  onSelect,
+}: {
+  onClose: () => void;
+  onSelect: (s: DbSession) => void;
+}) {
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 0 : insets.top;
+  const { data: sessions, isLoading } = useSessions();
 
   return (
     <View style={[styles.overlay, { paddingTop: topPad }]}>
@@ -119,37 +123,76 @@ export function HistoryOverlay({ onClose, onSelect }: { onClose: () => void; onS
         </Pressable>
       </View>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.overlayBody, { paddingBottom: 28 + insets.bottom }]} showsVerticalScrollIndicator={false}>
-        {MOCK_SESSIONS.map((s) => (
-          <Pressable key={s.id} onPress={onSelect} style={({ pressed }) => [styles.sessionRow, pressed && styles.rowPressed]}>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={styles.sessionTitle} numberOfLines={1}>{s.title}</Text>
-              <Text style={styles.sessionMeta}>
-                {s.formulaName} · {new Date(s.savedAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-              </Text>
-            </View>
-            <Pressable onPress={(e) => e.stopPropagation()} style={styles.iconBtn} hitSlop={8}>
-              <Feather name="trash-2" size={13} color={c.ghost} />
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[
+          styles.overlayBody,
+          { paddingBottom: 28 + insets.bottom },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {isLoading ? (
+          <View style={styles.centerLoader}>
+            <ActivityIndicator color={c.ghost} />
+          </View>
+        ) : sessions?.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>Nenhum cálculo ainda</Text>
+          </View>
+        ) : (
+          sessions?.map((s) => (
+            <Pressable
+              key={s.id}
+              onPress={() => onSelect(s)}
+              style={({ pressed }) => [styles.sessionRow, pressed && styles.rowPressed]}
+            >
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={styles.sessionTitle} numberOfLines={1}>
+                  {s.title}
+                </Text>
+                <Text style={styles.sessionMeta}>
+                  {new Date(s.updated_at).toLocaleDateString("pt-BR", {
+                    day: "2-digit",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </Text>
+              </View>
+              <Feather name="chevron-right" size={13} color={c.ghost} />
             </Pressable>
-            <Feather name="chevron-right" size={13} color={c.ghost} />
-          </Pressable>
-        ))}
+          ))
+        )}
       </ScrollView>
     </View>
   );
 }
 
 /* ─── FORMULAS SCREEN ─── */
-export function FormulasScreen({ onSelect, onClose }: { onSelect: (f: Formula) => void; onClose: () => void }) {
+export function FormulasScreen({
+  onSelect,
+  onClose,
+}: {
+  onSelect: (f: DbFormula) => void;
+  onClose: () => void;
+}) {
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 0 : insets.top;
 
   const [showMine, setShowMine] = useState(false);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Todos");
-  const [saved, setSaved] = useState<Set<string>>(new Set());
 
-  const base = showMine ? MOCK_FORMULAS.filter((f) => f.isUser) : MOCK_FORMULAS.filter((f) => !f.isUser);
+  const { data: allFormulas = [], isLoading: loadingFormulas } = useFormulas();
+  const { data: savedIds = new Set<string>() } = useSavedFormulaIds();
+  const toggleSave = useToggleSaveFormula();
+
+  const systemFormulas = allFormulas.filter((f) => f.is_system);
+  const userFormulas = allFormulas.filter((f) => !f.is_system);
+  const base = showMine ? userFormulas : systemFormulas;
+
+  const cats = ["Todos", ...Array.from(new Set(systemFormulas.map((f) => f.category))).sort()];
+
   const list = base.filter((f) => {
     const q = search.toLowerCase();
     return (
@@ -158,16 +201,19 @@ export function FormulasScreen({ onSelect, onClose }: { onSelect: (f: Formula) =
     );
   });
 
-  const cats = ["Todos", "Financeiro", "Saúde", "Básico", "Geometria", "Física"];
-
   return (
     <View style={[styles.overlay, { paddingTop: topPad }]}>
       <View style={{ paddingHorizontal: 28, paddingTop: 10, paddingBottom: 12 }}>
         <View style={styles.overlayHeaderRow}>
-          <Text style={styles.overlayTitle}>{showMine ? "Minhas fórmulas" : "Fórmulas"}</Text>
+          <Text style={styles.overlayTitle}>
+            {showMine ? "Minhas fórmulas" : "Fórmulas"}
+          </Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
             <Pressable
-              onPress={() => { setShowMine((v) => !v); setSearch(""); }}
+              onPress={() => {
+                setShowMine((v) => !v);
+                setSearch("");
+              }}
               style={[styles.bookmarkBtn, showMine && styles.bookmarkBtnActive]}
               hitSlop={8}
             >
@@ -196,49 +242,85 @@ export function FormulasScreen({ onSelect, onClose }: { onSelect: (f: Formula) =
       </View>
 
       {!showMine && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.catScroll} contentContainerStyle={{ paddingHorizontal: 28, gap: 6, flexDirection: "row", alignItems: "flex-start" }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.catScroll}
+          contentContainerStyle={{
+            paddingHorizontal: 28,
+            gap: 6,
+            flexDirection: "row",
+            alignItems: "flex-start",
+          }}
+        >
           {cats.map((cat) => (
-            <Pressable key={cat} onPress={() => setCategory(cat)} style={[styles.catChip, category === cat && styles.catChipActive]}>
-              <Text style={[styles.catChipText, category === cat && styles.catChipTextActive]}>{cat}</Text>
+            <Pressable
+              key={cat}
+              onPress={() => setCategory(cat)}
+              style={[styles.catChip, category === cat && styles.catChipActive]}
+            >
+              <Text
+                style={[styles.catChipText, category === cat && styles.catChipTextActive]}
+              >
+                {cat}
+              </Text>
             </Pressable>
           ))}
         </ScrollView>
       )}
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.overlayBody, { paddingTop: 10, paddingBottom: 28 + insets.bottom }]} showsVerticalScrollIndicator={false}>
-        {list.length === 0 ? (
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[
+          styles.overlayBody,
+          { paddingTop: 10, paddingBottom: 28 + insets.bottom },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {loadingFormulas ? (
+          <View style={styles.centerLoader}>
+            <ActivityIndicator color={c.ghost} />
+          </View>
+        ) : list.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>{showMine ? "Nenhuma fórmula salva ainda" : "Nenhum resultado"}</Text>
+            <Text style={styles.emptyText}>
+              {showMine ? "Nenhuma fórmula salva ainda" : "Nenhum resultado"}
+            </Text>
           </View>
         ) : (
-          list.map((f) => (
-            <Pressable key={f.id} onPress={() => onSelect(f)} style={({ pressed }) => [styles.formulaCard, pressed && styles.rowPressed]}>
-              <View style={styles.formulaCardHeader}>
-                <View>
-                  <Text style={styles.formulaCat}>{f.category}</Text>
-                  <Text style={styles.formulaName}>{f.name}</Text>
-                </View>
-                {f.isUser ? (
-                  <Pressable hitSlop={8} style={styles.iconBtn}>
-                    <Feather name="trash-2" size={13} color={c.ghost} />
-                  </Pressable>
-                ) : (
+          list.map((f) => {
+            const isSaved = savedIds.has(f.id);
+            return (
+              <Pressable
+                key={f.id}
+                onPress={() => onSelect(f)}
+                style={({ pressed }) => [styles.formulaCard, pressed && styles.rowPressed]}
+              >
+                <View style={styles.formulaCardHeader}>
+                  <View>
+                    <Text style={styles.formulaCat}>{f.category}</Text>
+                    <Text style={styles.formulaName}>{f.name}</Text>
+                  </View>
                   <Pressable
                     hitSlop={8}
                     onPress={(e) => {
                       e.stopPropagation();
-                      setSaved((prev) => new Set([...prev, f.id]));
+                      toggleSave.mutate({ formulaId: f.id, isSaved });
                     }}
                     style={styles.iconBtn}
                   >
-                    <Feather name="bookmark" size={13} color={saved.has(f.id) ? c.mid : c.ghost} />
+                    <Feather
+                      name="bookmark"
+                      size={13}
+                      color={isSaved ? c.mid : c.ghost}
+                    />
                   </Pressable>
-                )}
-              </View>
-              <Text style={styles.formulaDesc}>{f.description}</Text>
-              <Text style={styles.formulaSymbolicSmall}>{f.symbolic}</Text>
-            </Pressable>
-          ))
+                </View>
+                <Text style={styles.formulaDesc}>{f.description}</Text>
+                <Text style={styles.formulaSymbolicSmall}>{f.symbolic}</Text>
+              </Pressable>
+            );
+          })
         )}
       </ScrollView>
     </View>
@@ -399,9 +481,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
   },
-  rowPressed: {
-    backgroundColor: c.surface,
-  },
+  rowPressed: { backgroundColor: c.surface },
   sessionTitle: {
     fontSize: 13,
     fontFamily: "Inter_600SemiBold",
@@ -446,17 +526,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: c.panel,
   },
-  catChipActive: {
-    backgroundColor: c.text,
-  },
+  catChipActive: { backgroundColor: c.text },
   catChipText: {
     fontSize: 12,
     color: c.mid,
     fontFamily: "Inter_500Medium",
   },
-  catChipTextActive: {
-    color: "#fff",
-  },
+  catChipTextActive: { color: "#fff" },
   formulaCard: {
     backgroundColor: c.panel,
     borderRadius: 12,
@@ -499,8 +575,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "transparent",
   },
-  bookmarkBtnActive: {
-    backgroundColor: c.text,
+  bookmarkBtnActive: { backgroundColor: c.text },
+  centerLoader: {
+    height: 160,
+    alignItems: "center",
+    justifyContent: "center",
   },
   emptyState: {
     height: 160,
