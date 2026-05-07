@@ -77,16 +77,20 @@ export function useToggleSaveFormula() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ formulaId, isSaved }: { formulaId: string; isSaved: boolean }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
       if (isSaved) {
         const { error } = await supabase
           .from("saved_formulas")
           .delete()
-          .eq("formula_id", formulaId);
+          .eq("formula_id", formulaId)
+          .eq("user_id", user.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from("saved_formulas")
-          .insert({ formula_id: formulaId });
+          .insert({ formula_id: formulaId, user_id: user.id });
         if (error) throw error;
       }
     },
@@ -95,9 +99,11 @@ export function useToggleSaveFormula() {
 }
 
 export async function createSession(title: string): Promise<string | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
   const { data, error } = await supabase
     .from("sessions")
-    .insert({ title: title.slice(0, 100) })
+    .insert({ title: title.slice(0, 100), user_id: user.id })
     .select("id")
     .single();
   if (error) return null;
