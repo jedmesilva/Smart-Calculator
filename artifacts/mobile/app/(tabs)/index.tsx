@@ -303,12 +303,7 @@ export default function SigmaScreen() {
       const assistantId = msgId + "_a";
 
       if (response.status === "success") {
-        const items: ChatItem[] = [];
-        if (response.result.conversationalResponse) {
-          items.push({ kind: "assistant", id: assistantId, text: response.result.conversationalResponse });
-        }
-        items.push({ kind: "result", id: resultId, result: response.result });
-        setChat((prev) => [...prev, ...items]);
+        setChat((prev) => [...prev, { kind: "result", id: resultId, result: response.result }]);
       } else if (response.status === "needs_input") {
         setChat((prev) => [
           ...prev,
