@@ -2,6 +2,19 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { ResultData } from "@/lib/apiClient";
 
+export type FormulaVariableDef = {
+  symbol: string;
+  name: string;
+  description: string;
+};
+
+export type FormulaExpressionMeta = {
+  solveFor: string;
+  resultUnit: string;
+  resultLabel: string;
+  variables: FormulaVariableDef[];
+};
+
 export type DbFormula = {
   id: string;
   name: string;
@@ -11,6 +24,8 @@ export type DbFormula = {
   is_system: boolean;
   user_id: string | null;
   created_at: string;
+  expression: string | null;
+  expression_meta: FormulaExpressionMeta | null;
 };
 
 export type DbSession = {

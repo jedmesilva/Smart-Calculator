@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireAuth } from "../middlewares/auth";
 import { supabase } from "../lib/supabase";
 import { logger } from "../lib/logger";
-import { extractVariables } from "../lib/varExtractor";
+import { extractVariables, extractVarValues } from "../lib/varExtractor";
 import { computeFormula } from "../lib/formulaCompute";
 import { buildResult } from "../lib/explainBuilder";
 import { runDynamicOrchestrator } from "../lib/dynamicOrchestrator";
@@ -35,7 +35,7 @@ router.post("/calculate", requireAuth, async (req, res) => {
     if (formulaId) {
       const { data: formula, error } = await supabase
         .from("formulas")
-        .select("name, description, symbolic, category")
+        .select("name, description, symbolic, category, expression, expression_meta")
         .eq("id", formulaId)
         .single();
 
@@ -49,8 +49,38 @@ router.post("/calculate", requireAuth, async (req, res) => {
         return;
       }
 
-      // Step 1: AI extracts variables (cheap gpt-4o-mini call)
-      const extracted = await extractVariables(formula, query, context);
+      let extracted;
+
+      if (formula.expression && formula.expression_meta) {
+        // Fast path: expression stored in DB → AI only extracts values (cheaper + more accurate)
+        const meta = formula.expression_meta as {
+          solveFor: string;
+          resultUnit: string;
+          resultLabel: string;
+          variables: { symbol: string; name: string; description: string }[];
+        };
+
+        extracted = await extractVarValues(
+          {
+            name: formula.name,
+            symbolic: formula.symbolic,
+            expression: formula.expression,
+            solveFor: meta.solveFor,
+            variables: meta.variables,
+            resultUnit: meta.resultUnit,
+            resultLabel: meta.resultLabel,
+          },
+          query,
+          context
+        );
+      } else {
+        // Slow path: AI derives expression + extracts values (for formulas without stored expression)
+        extracted = await extractVariables(
+          { name: formula.name, description: formula.description ?? "", symbolic: formula.symbolic },
+          query,
+          context
+        );
+      }
 
       if (!extracted.allPresent) {
         res.json({
@@ -61,10 +91,7 @@ router.post("/calculate", requireAuth, async (req, res) => {
         return;
       }
 
-      // Step 2: Compute locally with mathjs
       const computed = computeFormula(extracted.expression, extracted.extracted);
-
-      // Step 3: Build response (pure code, no AI)
       const result = buildResult(formula.name, formula.symbolic, extracted, computed);
       res.json({ status: "success", result });
       return;
@@ -92,10 +119,7 @@ router.post("/calculate", requireAuth, async (req, res) => {
       return;
     }
 
-    // Compute locally
     const computed = computeFormula(dynamic.expression, dynamic.extracted);
-
-    // Build response
     const result = buildResult(dynamic.name, dynamic.symbolic, dynamic, computed, {
       searchUsed: dynamic.searchUsed,
     });
@@ -103,7 +127,6 @@ router.post("/calculate", requireAuth, async (req, res) => {
   } catch (err: any) {
     logger.error({ err }, "calculate route error");
 
-    // Propagate user-friendly messages
     const isUserFacing =
       typeof err?.message === "string" &&
       (err.message.startsWith("Não foi") ||

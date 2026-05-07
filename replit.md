@@ -73,5 +73,7 @@ App mobile de calculadora inteligente com chat em português — o usuário desc
 ## Pointers
 
 - Supabase tables: profiles, sessions, messages, formulas (is_system=true), saved_formulas
+- Supabase project: `cgfccmlrnkvxhsrhyqkh.supabase.co`
+- Formulas com `expression` (mathjs) + `expression_meta` (solveFor, variables, resultUnit): 12/13 (Média Aritmética usa AI)
 - OpenAI skill: `.local/skills/ai-integrations-openai/SKILL.md`
 - Expo skill: `.local/skills/expo/SKILL.md`
