@@ -21,7 +21,6 @@ import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculate, type ResultData, type MissingVariable } from "@/lib/apiClient";
 import { buildContext } from "@/lib/contextBuilder";
-import { supabase } from "@/lib/supabase";
 import { createSession, saveMessages, touchSession } from "@/lib/queries";
 import type { DbFormula } from "@/lib/queries";
 
@@ -29,6 +28,7 @@ const c = colors.light;
 
 type ChatItem =
   | { kind: "user"; id: string; text: string }
+  | { kind: "assistant"; id: string; text: string }
   | { kind: "result"; id: string; result: ResultData }
   | { kind: "question"; id: string; message: string; missing: MissingVariable[] }
   | { kind: "error"; id: string; message: string };
@@ -39,6 +39,18 @@ function UserBubble({ text }: { text: string }) {
     <View style={styles.userBubbleWrap}>
       <View style={styles.userBubble}>
         <Text style={styles.userBubbleText}>{text}</Text>
+      </View>
+    </View>
+  );
+}
+
+/* ─── ASSISTANT BUBBLE (resposta conversacional) ─── */
+function AssistantBubble({ text }: { text: string }) {
+  return (
+    <View style={styles.loadingWrap}>
+      <View style={styles.loadingDot} />
+      <View style={styles.assistantBubble}>
+        <Text style={styles.assistantText}>{text}</Text>
       </View>
     </View>
   );
@@ -126,6 +138,12 @@ function ResultRow({
                 <View style={styles.searchUsedTag}>
                   <Feather name="globe" size={8} color={c.mid} />
                   <Text style={styles.searchUsedText}>verificado</Text>
+                </View>
+              )}
+              {result.proof && !result.proof.verified && (
+                <View style={styles.proofWarningTag}>
+                  <Feather name="alert-triangle" size={8} color="#B07D1A" />
+                  <Text style={styles.proofWarningText}>revisar</Text>
                 </View>
               )}
             </View>
@@ -267,12 +285,10 @@ export default function SigmaScreen() {
 
     const msgId = Date.now().toString() + Math.random().toString(36).slice(2, 6);
 
-    // Snapshot chat BEFORE adding the new user message (used as context)
     const contextSnapshot = chat;
     setChat((prev) => [...prev, { kind: "user", id: msgId, text }]);
     setIsLoading(true);
 
-    // Build conversation context with smart summarization for long sessions
     const context = buildContext(contextSnapshot);
 
     try {
@@ -282,16 +298,32 @@ export default function SigmaScreen() {
       );
 
       const resultId = msgId + "_r";
-      
+      const assistantId = msgId + "_a";
+
       if (response.status === "success") {
-        setChat((prev) => [...prev, { kind: "result", id: resultId, result: response.result }]);
+        const items: ChatItem[] = [];
+        if (response.result.conversationalResponse) {
+          items.push({ kind: "assistant", id: assistantId, text: response.result.conversationalResponse });
+        }
+        items.push({ kind: "result", id: resultId, result: response.result });
+        setChat((prev) => [...prev, ...items]);
       } else if (response.status === "needs_input") {
-        setChat((prev) => [...prev, { kind: "question", id: resultId, message: response.message, missing: response.missing }]);
+        setChat((prev) => [
+          ...prev,
+          { kind: "question", id: resultId, message: response.message, missing: response.missing },
+        ]);
+      } else if (response.status === "wrong_formula") {
+        const msg = response.suggestion
+          ? `${response.message}\n\nSugestão: ${response.suggestion}`
+          : response.message;
+        setChat((prev) => [...prev, { kind: "error", id: resultId, message: msg }]);
+        // Remove a fórmula incorreta para evitar loop
+        setActiveFormula(null);
       } else if (response.status === "formula_error") {
         setChat((prev) => [...prev, { kind: "error", id: resultId, message: response.message }]);
       }
 
-      // Persist to Supabase in background
+      // Persist to Supabase
       let sessId = currentSessionId;
       if (!sessId) {
         sessId = await createSession(text);
@@ -328,6 +360,7 @@ export default function SigmaScreen() {
     ({ item, index }: { item: ChatItem; index: number }) => {
       const originalIndex = chat.length - 1 - index;
       if (item.kind === "user") return <UserBubble text={item.text} />;
+      if (item.kind === "assistant") return <AssistantBubble text={item.text} />;
       if (item.kind === "question") return <QuestionBubble message={item.message} missing={item.missing} />;
       if (item.kind === "error") return <ErrorBubble message={item.message} />;
       if (item.kind === "result") {
@@ -676,201 +709,298 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   emptySubtitle: {
-    fontSize: 12,
+    fontSize: 13,
+    color: "#CECDC8",
     fontFamily: "Inter_400Regular",
-    color: "#C8C7C2",
-    marginBottom: 16,
+    textAlign: "center",
+    marginBottom: 20,
   },
-  emptyChips: { width: "100%", gap: 6 },
+  emptyChips: {
+    width: "100%",
+    gap: 8,
+  },
   emptyChip: {
-    backgroundColor: "#EFEFEC",
-    borderRadius: 12,
+    backgroundColor: "#F0EFEB",
+    borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
   emptyChipText: {
     fontSize: 12,
-    fontFamily: "Inter_400Regular",
     color: "#6B6B66",
-    lineHeight: 17,
-  },
-  userBubbleWrap: { flexDirection: "row", justifyContent: "flex-end" },
-  userBubble: {
-    maxWidth: "72%",
-    backgroundColor: "#EFEFEC",
-    borderRadius: 14,
-    borderBottomRightRadius: 4,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-  },
-  userBubbleText: {
-    fontSize: 13,
-    color: "#1A1A18",
-    lineHeight: 20,
     fontFamily: "Inter_400Regular",
+    lineHeight: 18,
   },
-  resultCard: { backgroundColor: "#EFEFEC", borderRadius: 12, overflow: "hidden" },
-  resultCardTop: {
-    padding: 14,
+  loadingWrap: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 10,
   },
-  resultFormula: {
+  loadingDot: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: "#EFEFEC",
+    marginTop: 2,
+    flexShrink: 0,
+  },
+  loadingBubble: {
+    backgroundColor: "#F0EFEB",
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    minWidth: 60,
+    alignItems: "center",
+  },
+  assistantBubble: {
+    backgroundColor: "#F0EFEB",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flex: 1,
+    maxWidth: "88%",
+  },
+  assistantText: {
+    fontSize: 14,
+    color: "#3A3A36",
+    fontFamily: "Inter_400Regular",
+    lineHeight: 21,
+  },
+  questionBubble: {
+    backgroundColor: "#FBF8F0",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#E8E2CC",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flex: 1,
+    maxWidth: "88%",
+    gap: 8,
+  },
+  questionMessage: {
+    fontSize: 13,
+    color: "#5A5240",
+    fontFamily: "Inter_500Medium",
+    lineHeight: 20,
+  },
+  missingList: { gap: 6 },
+  missingItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 6,
+  },
+  missingDot: {
     fontSize: 12,
+    color: "#B09A60",
+    fontFamily: "Inter_700Bold",
+    lineHeight: 18,
+  },
+  missingSymbol: {
+    fontSize: 12,
+    color: "#6B6040",
+    fontFamily: "Inter_700Bold",
+    lineHeight: 18,
+    minWidth: 22,
+  },
+  missingName: {
+    fontSize: 12,
+    color: "#5A5240",
+    fontFamily: "Inter_500Medium",
+    lineHeight: 18,
+    marginRight: 4,
+  },
+  missingDesc: {
+    fontSize: 11,
+    color: "#908060",
+    fontFamily: "Inter_400Regular",
+    lineHeight: 18,
+    flex: 1,
+    flexShrink: 1,
+  },
+  errorBubble: {
+    backgroundColor: "#FDF2F1",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#F0D0CE",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flex: 1,
+    maxWidth: "88%",
+  },
+  errorTitle: {
+    fontSize: 12,
+    color: "#D93025",
     fontFamily: "Inter_600SemiBold",
-    color: "#1A1A18",
-    marginBottom: 2,
+  },
+  errorText: {
+    fontSize: 13,
+    color: "#7A2020",
+    fontFamily: "Inter_400Regular",
+    lineHeight: 20,
+  },
+  resultCard: {
+    backgroundColor: "#F0EFEB",
+    borderRadius: 16,
+    overflow: "hidden",
+  },
+  resultCardTop: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    padding: 16,
+  },
+  resultFormula: {
+    fontSize: 11,
+    color: "#6B6B66",
+    fontFamily: "Inter_600SemiBold",
+    letterSpacing: 0.3,
+    textTransform: "uppercase",
   },
   resultSubstituted: {
+    fontSize: 12,
+    color: "#9A9991",
     fontFamily: "Inter_400Regular",
-    fontSize: 11,
-    color: "#AEADA8",
   },
   resultRight: {
-    flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-end",
     gap: 8,
     flexShrink: 0,
   },
   resultUnit: {
     fontSize: 11,
-    color: "#AEADA8",
-    fontFamily: "Inter_400Regular",
-    marginBottom: 1,
+    color: "#9A9991",
+    fontFamily: "Inter_500Medium",
   },
   resultNum: {
-    fontSize: 18,
+    fontSize: 26,
     fontFamily: "Inter_700Bold",
     color: "#1A1A18",
-    letterSpacing: -0.4,
+    letterSpacing: -1,
+    lineHeight: 30,
   },
   viewBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#E8E7E3",
-    borderRadius: 8,
-    paddingVertical: 6,
+    paddingVertical: 5,
     paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: "#E8E7E2",
   },
-  viewBtnText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#6B6B66" },
+  viewBtnText: {
+    fontSize: 11,
+    color: "#6B6B66",
+    fontFamily: "Inter_600SemiBold",
+  },
   saveRow: {
-    paddingVertical: 9,
-    paddingHorizontal: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#E8E7E3",
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-  },
-  saveRowPressed: {
-    backgroundColor: "#E8E7E3",
-  },
-  saveRowSaved: {
-    borderTopColor: "#E8E7E3",
-  },
-  saveText: { fontSize: 11, color: "#AEADA8", fontFamily: "Inter_500Medium" },
-  saveTextSaved: { color: "#6B6B66", fontFamily: "Inter_500Medium" },
-  loadingWrap: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
-  loadingDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: "#C8C7C2",
-    marginTop: 14,
-    flexShrink: 0,
-  },
-  loadingBubble: {
-    paddingVertical: 11,
-    paddingHorizontal: 15,
-    backgroundColor: "#EFEFEC",
-    borderRadius: 14,
-    borderTopLeftRadius: 4,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  questionBubble: {
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 16,
-    backgroundColor: "#F0F0EE",
-    borderRadius: 14,
-    borderTopLeftRadius: 4,
-    maxWidth: "85%",
+    borderTopWidth: 1,
+    borderTopColor: "#E8E7E2",
   },
-  questionMessage: {
-    fontSize: 13,
+  saveRowPressed: { backgroundColor: "#E8E7E2" },
+  saveRowSaved: { opacity: 0.5 },
+  saveText: {
+    fontSize: 11,
+    color: "#9A9991",
+    fontFamily: "Inter_400Regular",
+  },
+  saveTextSaved: {
     color: "#1A1A18",
-    lineHeight: 18,
+    fontFamily: "Inter_600SemiBold",
+  },
+  searchUsedTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    paddingVertical: 2,
+    paddingHorizontal: 5,
+    borderRadius: 5,
+    backgroundColor: "#E8E7E2",
+  },
+  searchUsedText: {
+    fontSize: 9,
+    color: "#6B6B66",
     fontFamily: "Inter_500Medium",
-    marginBottom: 8,
   },
-  missingList: { gap: 4 },
-  missingItem: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
-  missingDot: { fontSize: 12, color: "#AEADA8" },
-  missingSymbol: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#1A1A18", width: 16 },
-  missingName: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#6B6B66", width: 80 },
-  missingDesc: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#AEADA8", flex: 1 },
-  errorBubble: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: "#FFF2F0",
-    borderRadius: 14,
-    borderTopLeftRadius: 4,
-    maxWidth: "85%",
-    borderWidth: 1,
-    borderColor: "#FFE4E1",
+  proofWarningTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    paddingVertical: 2,
+    paddingHorizontal: 5,
+    borderRadius: 5,
+    backgroundColor: "#FBF3E0",
   },
-  errorTitle: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#D93025" },
-  errorText: { fontSize: 13, color: "#444", lineHeight: 18, fontFamily: "Inter_400Regular" },
+  proofWarningText: {
+    fontSize: 9,
+    color: "#B07D1A",
+    fontFamily: "Inter_500Medium",
+  },
   warningRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 6,
     paddingHorizontal: 4,
-    marginTop: -2,
   },
-  warningText: { fontSize: 11, color: "#B07D1A", fontFamily: "Inter_400Regular", flex: 1, lineHeight: 15 },
-  searchUsedTag: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-    backgroundColor: "#E8E7E3",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+  warningText: {
+    fontSize: 11,
+    color: "#B07D1A",
+    fontFamily: "Inter_400Regular",
+    flex: 1,
+    lineHeight: 16,
   },
-  searchUsedText: { fontSize: 8, fontFamily: "Inter_600SemiBold", color: "#6B6B66", textTransform: "uppercase" },
-  inputWrap: { paddingHorizontal: 28, paddingTop: 8, flexShrink: 0 },
+  userBubbleWrap: {
+    alignItems: "flex-end",
+  },
+  userBubble: {
+    backgroundColor: "#1A1A18",
+    borderRadius: 18,
+    borderBottomRightRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    maxWidth: "80%",
+  },
+  userBubbleText: {
+    fontSize: 14,
+    color: "#F7F6F3",
+    fontFamily: "Inter_400Regular",
+    lineHeight: 21,
+  },
+  inputWrap: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
   inputBox: {
-    backgroundColor: "#EFEFEC",
-    borderRadius: 16,
-    paddingVertical: 12,
-    paddingLeft: 18,
-    paddingRight: 12,
     flexDirection: "row",
     alignItems: "flex-end",
-    gap: 10,
+    backgroundColor: "#F0EFEB",
+    borderRadius: 20,
+    paddingLeft: 16,
+    paddingRight: 6,
+    paddingVertical: 6,
+    gap: 8,
   },
   textInput: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 14,
     color: "#1A1A18",
     fontFamily: "Inter_400Regular",
-    minHeight: 30,
-    maxHeight: 100,
-    lineHeight: 19,
-    padding: 0,
-    textAlignVertical: "center",
+    maxHeight: 120,
+    paddingTop: 4,
+    paddingBottom: 4,
   },
   sendBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
   sendBtnActive: { backgroundColor: "#1A1A18" },
-  sendBtnInactive: { backgroundColor: "#E8E7E3" },
+  sendBtnInactive: { backgroundColor: "#DEDED9" },
 });

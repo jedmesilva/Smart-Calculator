@@ -1,12 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
 import { requireAuth } from "../middlewares/auth";
-import { supabase } from "../lib/supabase";
 import { logger } from "../lib/logger";
-import { extractVariables, extractVarValues } from "../lib/varExtractor";
-import { computeFormula } from "../lib/formulaCompute";
-import { buildResult } from "../lib/explainBuilder";
-import { runDynamicOrchestrator } from "../lib/dynamicOrchestrator";
+import { runCalculationPipeline } from "../lib/orchestrator";
 
 const router = Router();
 
@@ -31,107 +27,17 @@ router.post("/calculate", requireAuth, async (req, res) => {
   const { query, formulaId, context = [] } = parsed.data;
 
   try {
-    /* ─── KNOWN FORMULA ─── */
-    if (formulaId) {
-      const { data: formula, error } = await supabase
-        .from("formulas")
-        .select("name, description, symbolic, category, expression, expression_meta")
-        .eq("id", formulaId)
-        .single();
-
-      if (error || !formula) {
-        logger.warn({ formulaId, error }, "Formula not found");
-        res.json({
-          status: "formula_error",
-          message:
-            "Fórmula não encontrada. Ela pode ter sido removida. Tente selecionar outra ou use o modo dinâmico.",
-        });
-        return;
-      }
-
-      let extracted;
-
-      if (formula.expression && formula.expression_meta) {
-        // Fast path: expression stored in DB → AI only extracts values (cheaper + more accurate)
-        const meta = formula.expression_meta as {
-          solveFor: string;
-          resultUnit: string;
-          resultLabel: string;
-          variables: { symbol: string; name: string; description: string }[];
-        };
-
-        extracted = await extractVarValues(
-          {
-            name: formula.name,
-            symbolic: formula.symbolic,
-            expression: formula.expression,
-            solveFor: meta.solveFor,
-            variables: meta.variables,
-            resultUnit: meta.resultUnit,
-            resultLabel: meta.resultLabel,
-          },
-          query,
-          context
-        );
-      } else {
-        // Slow path: AI derives expression + extracts values (for formulas without stored expression)
-        extracted = await extractVariables(
-          { name: formula.name, description: formula.description ?? "", symbolic: formula.symbolic },
-          query,
-          context
-        );
-      }
-
-      if (!extracted.allPresent) {
-        res.json({
-          status: "needs_input",
-          message: `Para calcular ${formula.name}, preciso de mais alguns dados:`,
-          missing: extracted.missing,
-        });
-        return;
-      }
-
-      const computed = computeFormula(extracted.expression, extracted.extracted);
-      const result = buildResult(formula.name, formula.symbolic, extracted, computed);
-      res.json({ status: "success", result });
-      return;
-    }
-
-    /* ─── DYNAMIC MODE ─── */
-    // Parallel: Expert agent (gpt-4o) + Researcher agent (gpt-5.1 + web_search_preview)
-    const dynamic = await runDynamicOrchestrator(query, context);
-
-    if (!dynamic.allPresent) {
-      res.json({
-        status: "needs_input",
-        message: `Para calcular ${dynamic.name || "este valor"}, preciso de mais alguns dados:`,
-        missing: dynamic.missing,
-      });
-      return;
-    }
-
-    if (!dynamic.expression || !dynamic.solveFor) {
-      res.json({
-        status: "formula_error",
-        message:
-          "Não foi possível identificar a fórmula correta. Tente descrever com mais detalhes ou selecione uma fórmula específica.",
-      });
-      return;
-    }
-
-    const computed = computeFormula(dynamic.expression, dynamic.extracted);
-    const result = buildResult(dynamic.name, dynamic.symbolic, dynamic, computed, {
-      searchUsed: dynamic.searchUsed,
-    });
-    res.json({ status: "success", result });
+    const result = await runCalculationPipeline({ query, formulaId, context });
+    res.json(result);
   } catch (err: any) {
-    logger.error({ err }, "calculate route error");
+    logger.error({ err }, "calculate route: unhandled error");
 
     const isUserFacing =
       typeof err?.message === "string" &&
       (err.message.startsWith("Não foi") ||
         err.message.startsWith("Erro ao") ||
-        err.message.startsWith("O resultado"));
+        err.message.startsWith("O resultado") ||
+        err.message.startsWith("Para calcular"));
 
     res.status(500).json({
       error: isUserFacing

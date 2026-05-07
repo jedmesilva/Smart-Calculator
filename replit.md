@@ -23,16 +23,23 @@ App mobile de calculadora inteligente com chat em português — o usuário desc
 ## Where things live
 
 - `artifacts/mobile/app/(tabs)/index.tsx` — tela principal (display + chat + input)
-- `artifacts/mobile/components/Overlays.tsx` — CalcOverlay, HistoryOverlay, FormulasScreen (dados reais)
-- `artifacts/mobile/lib/apiClient.ts` — cliente tipado para o API server
+- `artifacts/mobile/components/Overlays.tsx` — CalcOverlay (com seção Verificação), HistoryOverlay, FormulasScreen
+- `artifacts/mobile/lib/apiClient.ts` — tipos CalcResponse, ResultData (com proof + conversationalResponse)
 - `artifacts/mobile/lib/queries.ts` — hooks React Query + helpers Supabase
+- `artifacts/mobile/lib/contextBuilder.ts` — constrói contexto multi-turn para API
 - `artifacts/mobile/lib/supabase.ts` — cliente Supabase (mobile, AsyncStorage)
 - `artifacts/mobile/contexts/AuthContext.tsx` — Supabase session management
-- `artifacts/api-server/src/routes/calculate.ts` — POST /api/calculate (orquestrador)
-- `artifacts/api-server/src/lib/varExtractor.ts` — extrai variáveis da linguagem natural (gpt-4o-mini)
+- `artifacts/api-server/src/routes/calculate.ts` — POST /api/calculate (delega para orchestrator)
+- `artifacts/api-server/src/lib/orchestrator.ts` — coordenador central (5 fases)
 - `artifacts/api-server/src/lib/formulaCompute.ts` — avalia expressão com mathjs
-- `artifacts/api-server/src/lib/explainBuilder.ts` — monta CalcResponse (código puro)
-- `artifacts/api-server/src/lib/dynamicOrchestrator.ts` — agentes Expert + Researcher em paralelo
+- `artifacts/api-server/src/lib/explainBuilder.ts` — monta ResultData (código puro)
+- `artifacts/api-server/src/agents/types.ts` — tipos compartilhados entre agentes
+- `artifacts/api-server/src/agents/formulaAgent.ts` — Fase 1b: busca/identifica/valida fórmula
+- `artifacts/api-server/src/agents/contextAgent.ts` — Fase 1a: extrai valores genéricos da conversa
+- `artifacts/api-server/src/agents/expressionAgent.ts` — Fase 2: monta expressão MathJS (retry + web search)
+- `artifacts/api-server/src/agents/validationAgent.ts` — Fase 4: prova reversa + checagem de razoabilidade
+- `artifacts/api-server/src/agents/conversationalAgent.ts` — Fase 5b: resposta em linguagem natural
+- `artifacts/api-server/src/agents/formulaValidationAgent.ts` — validação de fórmula ao criar (fluxo separado)
 - `artifacts/api-server/src/middlewares/auth.ts` — verificação JWT Supabase
 - `lib/integrations-openai-ai-server/` — cliente OpenAI via Replit proxy
 
@@ -40,9 +47,19 @@ App mobile de calculadora inteligente com chat em português — o usuário desc
 
 - **Híbrido**: mobile fala com Supabase diretamente para CRUD; fala com API server apenas para IA
 - **Auth**: Supabase JWT enviado como Bearer token para o servidor; servidor verifica via `supabase.auth.getUser(token)`
-- **Pipeline de cálculo** (fórmula conhecida): varExtractor (gpt-4o-mini) → mathjs local → explainBuilder (código puro)
-- **Orquestrador dinâmico** (sem fórmula): Expert (gpt-4o) + Researcher (gpt-5.1 + web_search_preview) em paralelo → reconcilia → mathjs
-- **Contexto multi-turn**: mobile envia últimas 10 mensagens como `context[]` para suportar clarificações progressivas
+- **Pipeline de cálculo (5 fases)**:
+  - Fase 1 (paralelo): `formulaAgent` (DB lookup ou LLM identifica fórmula, valida adequação) + `contextAgent` (extrai valores genéricos da conversa)
+  - Fase 2: `expressionAgent` monta/valida expressão MathJS com loop de retry (máx 3 tentativas; web search via gpt-5.1 + web_search_preview como fallback)
+  - Fase 3: `computeFormula` via mathjs local
+  - Fase 4: `validationAgent` — prova reversa matemática + checagem de razoabilidade via LLM
+  - Fase 5 (paralelo): `buildResult` (código puro) + `conversationalAgent` (resposta pt-BR em linguagem natural)
+- **Orquestrador central**: `lib/orchestrator.ts` coordena todas as fases, loops de retry e propagação de erro
+- **formulaAgent modo fixo**: valida se a fórmula selecionada é adequada para a query (retorna `wrong_formula` se não)
+- **formulaValidationAgent**: fluxo separado para validar fórmulas ao criá-las (testa expressão MathJS com valores de exemplo)
+- **ResultData estendido**: inclui `proof: { verified, method, detail }` + `conversationalResponse: string`
+- **Chat UX**: resposta bem-sucedida → bubble de texto conversacional + card de resultado (dois itens no chat)
+- **CalcOverlay**: mostra seção "Verificação" com prova reversa (verde/aprovado ou amarelo/revisar)
+- **Contexto multi-turn**: mobile envia últimas 10 mensagens como `context[]`; contextBuilder usa `conversationalResponse` nas mensagens de contexto
 - **Overlays absolutos** (não Modals) para transições suaves; FlatList invertida para auto-scroll do chat
 - **RLS no Supabase**: políticas de acesso por `auth.uid()` em todas as tabelas; fórmulas de sistema têm `is_system=true`
 

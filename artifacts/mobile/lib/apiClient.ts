@@ -9,6 +9,12 @@ export type CalcRequest = {
   context?: ConversationMessage[];
 };
 
+export type ProofResult = {
+  verified: boolean;
+  method: string;
+  detail: string;
+};
+
 export type ResultData = {
   formulaName: string;
   resultFormatted: string;
@@ -21,6 +27,8 @@ export type ResultData = {
   note: string | null;
   warning?: string | null;
   searchUsed?: boolean;
+  proof: ProofResult;
+  conversationalResponse: string;
 };
 
 export type MissingVariable = {
@@ -30,16 +38,18 @@ export type MissingVariable = {
 };
 
 /**
- * Unified response discriminant from POST /api/calculate
+ * Resposta discriminante do POST /api/calculate
  *
  * status "success"       → cálculo concluído; result sempre presente
  * status "needs_input"   → faltam variáveis; message explica, missing lista o que falta
- * status "formula_error" → fórmula inválida ou não encontrada; message explica
+ * status "formula_error" → fórmula inválida ou não encontrada
+ * status "wrong_formula" → fórmula selecionada não é adequada; suggestion sugere outra
  */
 export type CalcResponse =
   | { status: "success"; result: ResultData }
   | { status: "needs_input"; message: string; missing: MissingVariable[] }
-  | { status: "formula_error"; message: string };
+  | { status: "formula_error"; message: string }
+  | { status: "wrong_formula"; message: string; suggestion: string | null };
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL
   ? process.env.EXPO_PUBLIC_API_URL

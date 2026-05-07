@@ -140,6 +140,30 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
           </>
         )}
 
+        {data.proof && (
+          <>
+            <Text style={[styles.sectionLabel, { marginTop: 20 }]}>Verificação</Text>
+            <View style={[styles.proofBox, data.proof.verified ? styles.proofBoxOk : styles.proofBoxWarn]}>
+              <View style={styles.proofHeader}>
+                <Feather
+                  name={data.proof.verified ? "check-circle" : "alert-triangle"}
+                  size={13}
+                  color={data.proof.verified ? "#2A7A4B" : "#B07D1A"}
+                />
+                <Text style={[styles.proofMethod, data.proof.verified ? styles.proofMethodOk : styles.proofMethodWarn]}>
+                  {data.proof.method}
+                </Text>
+                <View style={[styles.proofBadge, data.proof.verified ? styles.proofBadgeOk : styles.proofBadgeWarn]}>
+                  <Text style={[styles.proofBadgeText, data.proof.verified ? styles.proofBadgeTextOk : styles.proofBadgeTextWarn]}>
+                    {data.proof.verified ? "aprovado" : "revisar"}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.proofDetail}>{data.proof.detail}</Text>
+            </View>
+          </>
+        )}
+
         {data.note && <Text style={styles.note}>* {data.note}</Text>}
       </ScrollView>
 
@@ -537,6 +561,53 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     marginTop: 14,
     fontFamily: "Inter_400Regular",
+  },
+  proofBox: {
+    borderRadius: 12,
+    padding: 14,
+    gap: 8,
+    marginBottom: 8,
+  },
+  proofBoxOk: {
+    backgroundColor: "#F0FAF4",
+    borderWidth: 1,
+    borderColor: "#C0E8CE",
+  },
+  proofBoxWarn: {
+    backgroundColor: "#FBF8ED",
+    borderWidth: 1,
+    borderColor: "#E8DCA8",
+  },
+  proofHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+  },
+  proofMethod: {
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+    flex: 1,
+  },
+  proofMethodOk: { color: "#2A7A4B" },
+  proofMethodWarn: { color: "#B07D1A" },
+  proofBadge: {
+    paddingVertical: 2,
+    paddingHorizontal: 7,
+    borderRadius: 6,
+  },
+  proofBadgeOk: { backgroundColor: "#C0E8CE" },
+  proofBadgeWarn: { backgroundColor: "#E8DCA8" },
+  proofBadgeText: {
+    fontSize: 10,
+    fontFamily: "Inter_600SemiBold",
+  },
+  proofBadgeTextOk: { color: "#1A5C38" },
+  proofBadgeTextWarn: { color: "#7A5010" },
+  proofDetail: {
+    fontSize: 12,
+    color: c.mid,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 18,
   },
   resultBar: {
     paddingHorizontal: 28,

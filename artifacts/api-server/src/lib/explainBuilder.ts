@@ -1,5 +1,11 @@
-import type { ExtractedVars } from "./varExtractor";
-import type { DynamicFormulaResult } from "./dynamicOrchestrator";
+import type { ExpressionResult } from "../agents/types";
+import type { ValidationResult } from "../agents/types";
+
+export type ProofResult = {
+  verified: boolean;
+  method: string;
+  detail: string;
+};
 
 export type ResultData = {
   formulaName: string;
@@ -13,10 +19,12 @@ export type ResultData = {
   note: string | null;
   warning?: string | null;
   searchUsed?: boolean;
+  proof: ProofResult;
+  conversationalResponse: string;
 };
 
 type VarsLike = Pick<
-  ExtractedVars,
+  ExpressionResult,
   | "expression"
   | "solveFor"
   | "extracted"
@@ -32,8 +40,12 @@ export function buildResult(
   symbolic: string,
   vars: VarsLike,
   computedValue: number,
-  options: { warning?: string; searchUsed?: boolean } = {}
-): ResultData {
+  options: {
+    warning?: string;
+    searchUsed?: boolean;
+    proof?: ValidationResult;
+  } = {}
+): Omit<ResultData, "conversationalResponse"> {
   const formatted = formatPtBR(computedValue, vars.resultUnit);
 
   const variables = Object.entries(vars.variableValues)
@@ -45,6 +57,18 @@ export function buildResult(
     }));
 
   const steps = buildSteps(vars, formatted);
+
+  const proof: ProofResult = options.proof
+    ? {
+        verified: options.proof.valid,
+        method: options.proof.method,
+        detail: options.proof.detail,
+      }
+    : {
+        verified: true,
+        method: "Não verificado",
+        detail: "Verificação não realizada.",
+      };
 
   return {
     formulaName,
@@ -58,17 +82,16 @@ export function buildResult(
     note: null,
     warning: options.warning ?? null,
     searchUsed: options.searchUsed ?? false,
+    proof,
   };
 }
 
 function formatPtBR(value: number, unit: string): string {
-  // For percentage results, display as percentage
   if (unit === "%") {
     return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 4 }).format(
       value * 100
     );
   }
-  // Detect number of meaningful decimal places
   const decimals = Number.isInteger(value) ? 0 : 2;
   return new Intl.NumberFormat("pt-BR", {
     minimumFractionDigits: decimals,
