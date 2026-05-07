@@ -188,8 +188,8 @@ export function FormulasScreen({
   const toggleSave = useToggleSaveFormula();
 
   const systemFormulas = allFormulas.filter((f) => f.is_system);
-  const userFormulas = allFormulas.filter((f) => !f.is_system);
-  const base = showMine ? userFormulas : systemFormulas;
+  const savedFormulas = allFormulas.filter((f) => savedIds.has(f.id));
+  const base = showMine ? savedFormulas : systemFormulas;
 
   const cats = ["Todos", ...Array.from(new Set(systemFormulas.map((f) => f.category))).sort()];
 
@@ -307,13 +307,16 @@ export function FormulasScreen({
                       e.stopPropagation();
                       toggleSave.mutate({ formulaId: f.id, isSaved });
                     }}
-                    style={styles.iconBtn}
+                    style={[styles.bookmarkPill, isSaved && styles.bookmarkPillSaved]}
                   >
                     <Feather
                       name="bookmark"
-                      size={13}
-                      color={isSaved ? c.mid : c.ghost}
+                      size={12}
+                      color={isSaved ? "#fff" : c.ghost}
                     />
+                    <Text style={[styles.bookmarkPillText, isSaved && styles.bookmarkPillTextSaved]}>
+                      {isSaved ? "salva" : "salvar"}
+                    </Text>
                   </Pressable>
                 </View>
                 <Text style={styles.formulaDesc}>{f.description}</Text>
@@ -576,6 +579,26 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   bookmarkBtnActive: { backgroundColor: c.text },
+  bookmarkPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    backgroundColor: c.surface,
+  },
+  bookmarkPillSaved: {
+    backgroundColor: c.text,
+  },
+  bookmarkPillText: {
+    fontSize: 11,
+    fontFamily: "Inter_500Medium",
+    color: c.ghost,
+  },
+  bookmarkPillTextSaved: {
+    color: "#fff",
+  },
   centerLoader: {
     height: 160,
     alignItems: "center",
