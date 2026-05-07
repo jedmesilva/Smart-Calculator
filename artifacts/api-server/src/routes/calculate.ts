@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { requireAuth } from "../middlewares/auth";
+import { supabase } from "../lib/supabase";
 import { logger } from "../lib/logger";
 
 const router = Router();
@@ -11,10 +12,14 @@ const CalcBody = z.object({
   formulaId: z.string().uuid().optional(),
 });
 
-const SYSTEM_PROMPT = `Você é Sigma, uma calculadora inteligente em português brasileiro.
-O usuário descreve um cálculo em linguagem natural e você resolve com precisão matemática.
+const BASE_RULES = `Regras:
+- Use vírgula como separador decimal e ponto como separador de milhar (padrão pt-BR)
+- Inclua pelo menos 2 passos no passo-a-passo
+- Se o cálculo envolver dinheiro use R$ na unidade
+- Seja preciso nos cálculos — verifique a matemática antes de responder
+- Se o usuário não fornecer dados suficientes, faça uma estimativa razoável e explique na note`;
 
-Responda APENAS com JSON válido, sem markdown, sem blocos de código, sem texto adicional.
+const RESPONSE_FORMAT = `Responda APENAS com JSON válido, sem markdown, sem blocos de código, sem texto adicional.
 
 Formato obrigatório:
 {
@@ -31,14 +36,42 @@ Formato obrigatório:
     "Passo com descrição clara do que foi feito"
   ],
   "note": "Observação ou contexto útil em português (ou null)"
-}
+}`;
 
-Regras:
-- Use vírgula como separador decimal e ponto como separador de milhar (padrão pt-BR)
-- Inclua pelo menos 2 passos no passo-a-passo
-- Se o cálculo envolver dinheiro use R$ na unidade
-- Seja preciso nos cálculos — verifique a matemática antes de responder
-- Se o usuário não fornecer dados suficientes, faça uma estimativa razoável e explique na note`;
+const DYNAMIC_SYSTEM_PROMPT = `Você é Sigma, uma calculadora inteligente em português brasileiro.
+O usuário descreve um cálculo em linguagem natural e você resolve com precisão matemática.
+Escolha a fórmula mais adequada para o problema descrito.
+
+${RESPONSE_FORMAT}
+
+${BASE_RULES}`;
+
+function buildFormulaSystemPrompt(formula: {
+  name: string;
+  description: string;
+  symbolic: string;
+  category: string;
+}): string {
+  return `Você é Sigma, uma calculadora inteligente em português brasileiro.
+O usuário selecionou uma fórmula específica e você DEVE usá-la obrigatoriamente para resolver o cálculo.
+
+Fórmula selecionada:
+- Nome: ${formula.name}
+- Categoria: ${formula.category}
+- Descrição: ${formula.description}
+- Expressão simbólica: ${formula.symbolic}
+
+Instruções:
+- Use EXCLUSIVAMENTE a fórmula acima para resolver o problema do usuário
+- Identifique os valores fornecidos pelo usuário e mapeie para as variáveis da fórmula
+- Se o usuário não fornecer alguma variável necessária, peça uma estimativa razoável e explique na note
+- O campo "formulaName" deve ser exatamente "${formula.name}"
+- O campo "formulaSymbolic" deve ser exatamente "${formula.symbolic}"
+
+${RESPONSE_FORMAT}
+
+${BASE_RULES}`;
+}
 
 router.post("/calculate", requireAuth, async (req, res) => {
   const parsed = CalcBody.safeParse(req.body);
@@ -47,14 +80,30 @@ router.post("/calculate", requireAuth, async (req, res) => {
     return;
   }
 
-  const { query } = parsed.data;
+  const { query, formulaId } = parsed.data;
+
+  let systemPrompt = DYNAMIC_SYSTEM_PROMPT;
+
+  if (formulaId) {
+    const { data: formula, error } = await supabase
+      .from("formulas")
+      .select("name, description, symbolic, category")
+      .eq("id", formulaId)
+      .single();
+
+    if (error || !formula) {
+      logger.warn({ formulaId, error }, "Formula not found, falling back to dynamic mode");
+    } else {
+      systemPrompt = buildFormulaSystemPrompt(formula);
+    }
+  }
 
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-5.1",
       max_completion_tokens: 2048,
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: query },
       ],
     });
