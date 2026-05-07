@@ -19,7 +19,8 @@ import colors from "@/constants/colors";
 import { CalcOverlay, HistoryOverlay, FormulasScreen } from "@/components/Overlays";
 import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
-import { calculate, type ResultData, type MissingVariable, type ConversationMessage } from "@/lib/apiClient";
+import { calculate, type ResultData, type MissingVariable } from "@/lib/apiClient";
+import { buildContext } from "@/lib/contextBuilder";
 import { supabase } from "@/lib/supabase";
 import { createSession, saveMessages, touchSession } from "@/lib/queries";
 import type { DbFormula } from "@/lib/queries";
@@ -271,26 +272,8 @@ export default function SigmaScreen() {
     setChat((prev) => [...prev, { kind: "user", id: msgId, text }]);
     setIsLoading(true);
 
-    // Build conversation context for multi-turn understanding (last 10 items)
-    const context: ConversationMessage[] = contextSnapshot
-      .slice(-10)
-      .flatMap((item): ConversationMessage[] => {
-        if (item.kind === "user") {
-          return [{ role: "user", content: item.text }];
-        }
-        if (item.kind === "question") {
-          return [{ role: "assistant", content: item.message }];
-        }
-        if (item.kind === "result") {
-          return [
-            {
-              role: "assistant",
-              content: `Resultado calculado: ${item.result.formulaName} = ${item.result.resultUnit} ${item.result.resultFormatted}`,
-            },
-          ];
-        }
-        return [];
-      });
+    // Build conversation context with smart summarization for long sessions
+    const context = buildContext(contextSnapshot);
 
     try {
       const response = await calculate(
@@ -336,7 +319,7 @@ export default function SigmaScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [query, isLoading, session, activeFormula, currentSessionId, queryClient, chat]);
+  }, [query, isLoading, session, activeFormula, currentSessionId, queryClient, chat]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const canSend = query.trim().length > 0 && !isLoading;
   const invertedData = [...chat].reverse();
