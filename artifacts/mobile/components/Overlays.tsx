@@ -21,10 +21,10 @@ import {
   useSavedFormulaIds,
   useSessions,
   useToggleSaveFormula,
-  useCurrentUser,
   type DbFormula,
   type DbSession,
 } from "@/lib/queries";
+import { useAuth } from "@/contexts/AuthContext";
 import { FormulaDetailOverlay } from "@/components/FormulaDetailOverlay";
 
 const c = colors.light;
@@ -349,10 +349,8 @@ export function FormulasScreen({
 
   const { data: allFormulas = [], isLoading: loadingFormulas } = useFormulas();
   const { data: savedIds = new Set<string>() } = useSavedFormulaIds();
-  const { data: currentUser } = useCurrentUser();
+  const { userId: currentUserId } = useAuth();
   const toggleSave = useToggleSaveFormula();
-
-  const currentUserId = currentUser?.id ?? null;
 
   const officialFormulas = allFormulas.filter((f) => f.is_system);
   const communityFormulas = allFormulas.filter((f) => !f.is_system && f.is_public);

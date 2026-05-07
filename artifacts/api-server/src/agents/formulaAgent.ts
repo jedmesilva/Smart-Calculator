@@ -5,7 +5,9 @@
    ═══════════════════════════════════════════════════════ */
 
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { supabase } from "../lib/supabase";
+import { db } from "@workspace/db";
+import { formulas } from "@workspace/db/schema";
+import { eq } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import type {
   ConversationMessage,
@@ -122,17 +124,22 @@ async function fetchAndValidateFormula(
   query: string,
   context: ConversationMessage[]
 ): Promise<FormulaAgentResult> {
-  // Busca fórmula no Supabase
-  const { data: formula, error } = await supabase
-    .from("formulas")
-    .select(
-      "id, name, description, symbolic, category, expression, expression_meta"
-    )
-    .eq("id", formulaId)
-    .single();
+  const [formula] = await db
+    .select({
+      id: formulas.id,
+      name: formulas.name,
+      description: formulas.description,
+      symbolic: formulas.symbolic,
+      category: formulas.category,
+      expression: formulas.expression,
+      expression_meta: formulas.expression_meta,
+    })
+    .from(formulas)
+    .where(eq(formulas.id, formulaId))
+    .limit(1);
 
-  if (error || !formula) {
-    logger.warn({ formulaId, error }, "formulaAgent: formula not found in DB");
+  if (!formula) {
+    logger.warn({ formulaId }, "formulaAgent: formula not found in DB");
     return {
       status: "not_found",
       message:

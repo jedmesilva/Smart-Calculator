@@ -113,7 +113,65 @@ function validateExpressionSyntax(expression: string, extracted: Record<string, 
   }
 }
 
-/* ── Extração de contexto de busca via web ── */
+/* ── Detecta se variáveis faltando são dados em tempo real (câmbio, preços, índices) ── */
+function needsRealTimeData(missing: MissingVar[]): boolean {
+  const realTimeKeywords = [
+    "câmbio", "cotação", "cotacao", "taxa de câmbio", "taxa de cambio",
+    "dólar", "dollar", "euro", "libra", "iene", "yen", "bitcoin", "btc",
+    "cripto", "crypto", "ação", "bolsa", "selic", "inflação", "inflacao",
+    "ipca", "igpm", "igp-m", "cdi", "moeda", "exchange rate", "conversão",
+    "conversion", "preço atual", "valor atual", "price", "rate",
+    "usd", "eur", "gbp", "jpy", "brl",
+  ];
+  return missing.some((v) => {
+    const text = `${v.symbol ?? ""} ${v.name ?? ""} ${v.description ?? ""}`.toLowerCase();
+    return realTimeKeywords.some((kw) => text.includes(kw));
+  });
+}
+
+/* ── Busca dados em tempo real (câmbio, preços) via web search ── */
+async function searchRealTimeValues(query: string, missing: MissingVar[]): Promise<string> {
+  const missingDesc = missing
+    .map((v) => `${v.name || v.symbol}${v.description ? `: ${v.description}` : ""}`)
+    .join("; ");
+
+  logger.info({ missingDesc }, "expressionAgent: searching real-time values via web");
+
+  try {
+    const response = await (openai as any).responses.create({
+      model: "gpt-4o-mini",
+      tools: [{ type: "web_search_preview" }],
+      input: [
+        {
+          role: "system",
+          content: `Você é um assistente financeiro. O usuário precisa calcular: "${query}".
+Encontre os valores numéricos ATUAIS para: ${missingDesc}.
+Forneça os valores exatos de forma clara, por exemplo: "1 dólar = R$ 5,85" ou "taxa de câmbio USD/BRL: 5.85".
+Inclua a fonte e a data/hora da cotação quando disponível.`,
+        },
+        {
+          role: "user",
+          content: `Preciso dos valores atuais para calcular: ${query}. Dados necessários: ${missingDesc}`,
+        },
+      ],
+    });
+
+    const text = response.output
+      .filter((item: any) => item.type === "message")
+      .flatMap((item: any) => item.content ?? [])
+      .filter((c: any) => c.type === "output_text")
+      .map((c: any) => c.text ?? "")
+      .join("\n");
+
+    logger.info({ textPreview: text.slice(0, 200) }, "expressionAgent: real-time search result");
+    return text || "Busca não retornou resultados úteis.";
+  } catch (err) {
+    logger.warn({ err }, "expressionAgent: real-time web search failed");
+    return "Busca na web indisponível.";
+  }
+}
+
+/* ── Extração de contexto de busca via web (fallback de erro) ── */
 async function runWebSearchForFormula(
   query: string,
   formulaName: string,
@@ -125,7 +183,7 @@ async function runWebSearchForFormula(
 
   try {
     const response = await (openai as any).responses.create({
-      model: "gpt-5.1",
+      model: "gpt-4o-mini",
       tools: [{ type: "web_search_preview" }],
       input: [
         {
@@ -199,7 +257,6 @@ async function buildFromStoredExpression(
 
   const parsed = parseJson(response.choices[0]?.message?.content ?? "", `stored-attempt-${attempt}`);
 
-  // Merge com metadados armazenados (a expressão deve ser a do DB)
   const variableNames: Record<string, string> = {};
   for (const v of meta.variables) variableNames[v.symbol] = v.name;
   variableNames[meta.solveFor] = formula.name;
@@ -276,7 +333,7 @@ async function buildDynamicExpression(
   };
 }
 
-/* ── Exportação principal — com loop de retry ── */
+/* ── Exportação principal — com loop de retry e busca em tempo real ── */
 export async function runExpressionAgent(opts: {
   formula: FormulaInfo;
   contextResult: ContextAgentResult;
@@ -289,6 +346,7 @@ export async function runExpressionAgent(opts: {
 
   let lastError: string | null = null;
   let searchContext: string | null = null;
+  let realTimeSearchDone = false;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     logger.info({ attempt, formulaName: formula.name, hasStoredExpression }, "expressionAgent: attempt");
@@ -306,12 +364,26 @@ export async function runExpressionAgent(opts: {
         );
       }
 
-      // Não valida sintaxe se variáveis estão faltando
+      /* ── Variáveis faltando: verificar se são dados em tempo real ── */
       if (!result.allPresent) {
+        const hasMissingVars = result.missing.length > 0;
+
+        /* Se as variáveis faltando são dados de tempo real (câmbio, cotações, etc.)
+           e ainda não buscamos, fazer busca web e tentar novamente */
+        if (hasMissingVars && !realTimeSearchDone && needsRealTimeData(result.missing) && attempt < maxAttempts) {
+          logger.info(
+            { missing: result.missing.map((m) => m.name || m.symbol) },
+            "expressionAgent: missing real-time data — triggering web search"
+          );
+          realTimeSearchDone = true;
+          searchContext = await searchRealTimeValues(query, result.missing);
+          continue;
+        }
+
         return result;
       }
 
-      // Valida sintaxe da expressão com os valores extraídos
+      /* ── Valida sintaxe da expressão com os valores extraídos ── */
       if (result.expression && Object.keys(result.extracted).length > 0) {
         validateExpressionSyntax(result.expression, result.extracted);
       }
@@ -323,7 +395,6 @@ export async function runExpressionAgent(opts: {
       logger.warn({ attempt, lastError }, "expressionAgent: attempt failed");
 
       if (attempt < maxAttempts) {
-        // Busca web para contexto adicional
         searchContext = await runWebSearchForFormula(query, formula.name, lastError);
         logger.info({ searchContext: searchContext.slice(0, 100) }, "expressionAgent: got search context");
       }

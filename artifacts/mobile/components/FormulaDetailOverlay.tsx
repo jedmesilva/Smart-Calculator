@@ -118,7 +118,7 @@ export function FormulaDetailOverlay({
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 0 : insets.top;
   const botPad = Platform.OS === "web" ? 0 : insets.bottom;
-  const { session } = useAuth();
+  const { userId } = useAuth();
 
   const isOwner = !!currentUserId && formula.user_id === currentUserId;
 
@@ -181,10 +181,10 @@ export function FormulaDetailOverlay({
   };
 
   const handleRequestLlmVerify = async () => {
-    if (!session || llmLoading) return;
+    if (llmLoading) return;
     setLlmLoading(true);
     try {
-      await requestLlmVerify(formula.id, session.access_token);
+      await requestLlmVerify(formula.id);
       invalidateFormula(formula.id);
       Alert.alert("Verificação concluída", "A IA verificou sua fórmula. Recarregue para ver o resultado.");
     } catch (err: any) {
@@ -195,10 +195,10 @@ export function FormulaDetailOverlay({
   };
 
   const handlePublish = async (force = false) => {
-    if (!session || publishLoading) return;
+    if (publishLoading) return;
     setPublishLoading(true);
     try {
-      const result = await publishFormula(formula.id, session.access_token, force);
+      const result = await publishFormula(formula.id, force);
       invalidateFormula(formula.id);
 
       if (result.published) {
@@ -221,7 +221,6 @@ export function FormulaDetailOverlay({
   };
 
   const handleUnpublish = async () => {
-    if (!session) return;
     Alert.alert("Despublicar", "A fórmula ficará visível apenas para você. Confirmar?", [
       { text: "Cancelar", style: "cancel" },
       {
@@ -229,7 +228,7 @@ export function FormulaDetailOverlay({
         style: "destructive",
         onPress: async () => {
           try {
-            await unpublishFormula(formula.id, session.access_token);
+            await unpublishFormula(formula.id);
             invalidateFormula(formula.id);
           } catch (err: any) {
             Alert.alert("Erro", err?.message ?? "Falha ao despublicar.");

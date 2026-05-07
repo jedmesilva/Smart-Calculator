@@ -55,18 +55,29 @@ function AssistantBubble({ text }: { text: string }) {
 
 /* ─── QUESTION BUBBLE ─── */
 function QuestionBubble({ message, missing }: { message: string; missing: MissingVariable[] }) {
+  const validMissing = missing.filter((m) => m.name || m.symbol || m.description);
   return (
     <View style={styles.questionBubble}>
       <Text style={styles.questionMessage}>{message}</Text>
       <View style={styles.missingList}>
-        {missing.map((m, i) => (
-          <View key={i} style={styles.missingItem}>
-            <Text style={styles.missingDot}>•</Text>
-            <Text style={styles.missingSymbol}>{m.symbol}</Text>
-            <Text style={styles.missingName}>{m.name}</Text>
-            <Text style={styles.missingDesc}>{m.description}</Text>
-          </View>
-        ))}
+        {validMissing.length === 0 ? (
+          <Text style={styles.missingDesc}>Informe os dados necessários para continuar.</Text>
+        ) : (
+          validMissing.map((m, i) => (
+            <View key={i} style={styles.missingItem}>
+              <Text style={styles.missingDot}>•</Text>
+              <View style={styles.missingContent}>
+                <Text style={styles.missingName}>
+                  {m.name || m.symbol}
+                  {m.symbol && m.name ? <Text style={styles.missingSymbol}> ({m.symbol})</Text> : null}
+                </Text>
+                {!!m.description && (
+                  <Text style={styles.missingDesc}>{m.description}</Text>
+                )}
+              </View>
+            </View>
+          ))
+        )}
       </View>
     </View>
   );
@@ -232,7 +243,7 @@ function EmptyChat({ onSuggest }: { onSuggest: (text: string) => void }) {
 /* ─── MAIN ─── */
 export default function SigmaScreen() {
   const insets = useSafeAreaInsets();
-  const { session, userName, setUserName } = useAuth();
+  const { userId, userName, setUserName } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: savedFormulaIds = new Set<string>() } = useSavedFormulaIds();
@@ -273,7 +284,7 @@ export default function SigmaScreen() {
   }, []);
 
   const handleSend = useCallback(async () => {
-    if (!query.trim() || isLoading || !session) return;
+    if (!query.trim() || isLoading) return;
     const text = query.trim();
     setQuery("");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -287,18 +298,15 @@ export default function SigmaScreen() {
     const context = buildContext(contextSnapshot);
 
     try {
-      const response = await calculate(
-        {
-          query: text,
-          formulaId: activeFormula?.id,
-          context,
-          sessionId: currentSessionId ?? undefined,
-          sessionSummary: sessionSummary ?? undefined,
-          messageCount,
-          userName: userName ?? undefined,
-        },
-        session.access_token
-      );
+      const response = await calculate({
+        query: text,
+        formulaId: activeFormula?.id,
+        context,
+        sessionId: currentSessionId ?? undefined,
+        sessionSummary: sessionSummary ?? undefined,
+        messageCount,
+        userName: userName ?? undefined,
+      });
 
       const resultId = msgId + "_r";
       const assistantId = msgId + "_a";
@@ -817,32 +825,35 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: 6,
   },
+  missingContent: {
+    flex: 1,
+    flexShrink: 1,
+    gap: 2,
+  },
   missingDot: {
     fontSize: 12,
     color: "#B09A60",
     fontFamily: "Inter_700Bold",
-    lineHeight: 18,
+    lineHeight: 20,
+    marginTop: 1,
   },
   missingSymbol: {
-    fontSize: 12,
-    color: "#6B6040",
-    fontFamily: "Inter_700Bold",
-    lineHeight: 18,
-    minWidth: 22,
-  },
-  missingName: {
-    fontSize: 12,
-    color: "#5A5240",
-    fontFamily: "Inter_500Medium",
-    lineHeight: 18,
-    marginRight: 4,
-  },
-  missingDesc: {
     fontSize: 11,
     color: "#908060",
     fontFamily: "Inter_400Regular",
-    lineHeight: 18,
-    flex: 1,
+  },
+  missingName: {
+    fontSize: 13,
+    color: "#4A4030",
+    fontFamily: "Inter_600SemiBold",
+    lineHeight: 20,
+    flexShrink: 1,
+  },
+  missingDesc: {
+    fontSize: 12,
+    color: "#7A6A50",
+    fontFamily: "Inter_400Regular",
+    lineHeight: 17,
     flexShrink: 1,
   },
   errorBubble: {

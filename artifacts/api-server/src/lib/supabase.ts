@@ -1,43 +1,32 @@
-import { createClient } from "@supabase/supabase-js";
+import { db } from "@workspace/db";
+import { messages, sessions } from "@workspace/db/schema";
+import { eq, desc } from "drizzle-orm";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("SUPABASE_URL and SUPABASE_ANON_KEY environment variables are required.");
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
-
-/* ── Busca mensagens de uma sessão (mais antigas primeiro) ── */
 export async function fetchSessionMessages(
   sessionId: string,
   limit = 30
 ): Promise<Array<{ kind: string; text: string | null; result_data: any | null }>> {
-  const { data, error } = await supabase
-    .from("messages")
-    .select("kind, text, result_data")
-    .eq("session_id", sessionId)
-    .order("created_at", { ascending: false })
-    .limit(limit);
+  try {
+    const rows = await db
+      .select({ kind: messages.kind, text: messages.text, result_data: messages.result_data })
+      .from(messages)
+      .where(eq(messages.session_id, sessionId))
+      .orderBy(desc(messages.created_at))
+      .limit(limit);
 
-  if (error) return [];
-  return (data ?? []).reverse();
+    return rows.reverse();
+  } catch {
+    return [];
+  }
 }
 
-/* ── Salva resumo LLM da sessão ── */
 export async function updateSessionSummary(
   sessionId: string,
   summary: string,
   messageCount: number
 ): Promise<void> {
-  await supabase
-    .from("sessions")
-    .update({ summary, summary_message_count: messageCount })
-    .eq("id", sessionId);
+  await db
+    .update(sessions)
+    .set({ summary, summary_message_count: messageCount, updated_at: new Date() })
+    .where(eq(sessions.id, sessionId));
 }

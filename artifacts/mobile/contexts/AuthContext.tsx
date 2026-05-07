@@ -1,79 +1,58 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { type Session, type User } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase";
+import { fetchUserProfile, getUserId, updateUserProfile } from "@/lib/apiClient";
 
 type AuthContextType = {
-  session: Session | null;
-  user: User | null;
+  userId: string | null;
   loading: boolean;
   userName: string | null;
   setUserName: (name: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  signOut: () => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
-  session: null,
-  user: null,
+  userId: null,
   loading: true,
   userName: null,
   setUserName: async () => {},
-  signOut: async () => {},
+  signOut: () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [userName, setUserNameState] = useState<string | null>(null);
 
-  async function fetchUserName(userId: string) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", userId)
-      .single();
-    if (data?.full_name) {
-      setUserNameState(data.full_name as string);
-    }
-  }
-
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setLoading(false);
-      if (session?.user) {
-        fetchUserName(session.user.id);
-      } else {
-        setUserNameState(null);
+    async function init() {
+      try {
+        const id = await getUserId();
+        setUserId(id);
+        const profile = await fetchUserProfile();
+        if (profile.full_name) {
+          setUserNameState(profile.full_name);
+        }
+      } catch {
+      } finally {
+        setLoading(false);
       }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-      if (session?.user) {
-        fetchUserName(session.user.id);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    }
+    init();
   }, []);
 
   const setUserName = async (name: string) => {
     const trimmed = name.trim();
-    if (!trimmed || !session?.user) return;
+    if (!trimmed) return;
     setUserNameState(trimmed);
-    await supabase
-      .from("profiles")
-      .upsert({ id: session.user.id, full_name: trimmed }, { onConflict: "id" });
+    try {
+      await updateUserProfile(trimmed);
+    } catch {}
   };
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setUserNameState(null);
+  const signOut = () => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, userName, setUserName, signOut }}>
+    <AuthContext.Provider value={{ userId, loading, userName, setUserName, signOut }}>
       {children}
     </AuthContext.Provider>
   );

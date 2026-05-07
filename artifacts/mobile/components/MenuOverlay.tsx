@@ -28,7 +28,7 @@ type Props = {
 
 export function MenuOverlay({ onClose }: Props) {
   const insets = useSafeAreaInsets();
-  const { user, signOut } = useAuth();
+  const { userId, userName, signOut } = useAuth();
   const opacity = useSharedValue(0);
   const translateX = useSharedValue(-280);
 
@@ -50,11 +50,10 @@ export function MenuOverlay({ onClose }: Props) {
   const backdropStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
   const drawerStyle = useAnimatedStyle(() => ({ transform: [{ translateX: translateX.value }] }));
 
-  const displayName = user?.user_metadata?.full_name as string | undefined;
-  const email = user?.email ?? "";
+  const displayName = userName ?? undefined;
   const initials = displayName
     ? displayName.split(" ").map((w: string) => w[0]).slice(0, 2).join("").toUpperCase()
-    : email.slice(0, 2).toUpperCase();
+    : (userId ?? "").slice(0, 2).toUpperCase();
 
   const handleSignOut = () => {
     Alert.alert(

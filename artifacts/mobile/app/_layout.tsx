@@ -20,40 +20,16 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
-function AuthGate() {
-  const { session, loading } = useAuth();
-  const router = useRouter();
-  const segments = useSegments();
-
-  useEffect(() => {
-    if (loading) return;
-
-    const inAuthScreen = segments[0] === "auth";
-
-    if (!session && !inAuthScreen) {
-      router.replace("/auth");
-    } else if (session && inAuthScreen) {
-      router.replace("/(tabs)");
-    }
-  }, [session, loading, segments]);
-
-  return null;
-}
-
 function RootLayoutNav() {
   const { loading } = useAuth();
 
   if (loading) return null;
 
   return (
-    <>
-      <AuthGate />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="auth" />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-    </>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="+not-found" />
+    </Stack>
   );
 }
 
