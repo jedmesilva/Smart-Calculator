@@ -126,7 +126,7 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
               <Feather name="share" size={13} color="#fff" />
             )}
             <Text style={[styles.exportBtnText, styles.exportBtnTextActive]}>
-              {exporting ? "gerando…" : "PDF"}
+              {exporting ? "gerando…" : "salvar"}
             </Text>
           </Pressable>
           <Pressable onPress={onClose} style={styles.iconBtn} hitSlop={12}>
