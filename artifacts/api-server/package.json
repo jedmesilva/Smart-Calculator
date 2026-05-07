@@ -12,15 +12,16 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",
     "@workspace/api-zod": "workspace:*",
-    "@workspace/integrations-openai-ai-server": "workspace:*",
     "@workspace/db": "workspace:*",
+    "@workspace/integrations-openai-ai-server": "workspace:*",
     "cookie-parser": "^1.4.7",
-    "zod": "catalog:",
     "cors": "^2",
     "drizzle-orm": "catalog:",
     "express": "^5",
+    "mathjs": "^15.2.0",
     "pino": "^9",
-    "pino-http": "^10"
+    "pino-http": "^10",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",

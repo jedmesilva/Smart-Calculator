@@ -1,6 +1,12 @@
+export type ConversationMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
 export type CalcRequest = {
   query: string;
   formulaId?: string;
+  context?: ConversationMessage[];
 };
 
 export type ResultData = {
@@ -13,7 +19,7 @@ export type ResultData = {
   variables: { symbol: string; name: string; value: string }[];
   steps: string[];
   note: string | null;
-  warning?: string;
+  warning?: string | null;
   searchUsed?: boolean;
 };
 
@@ -28,7 +34,7 @@ export type MissingVariable = {
  *
  * status "success"       → cálculo concluído; result sempre presente
  * status "needs_input"   → faltam variáveis; message explica, missing lista o que falta
- * status "formula_error" → fórmula não encontrada ou com falhas impeditivas; message explica
+ * status "formula_error" → fórmula inválida ou não encontrada; message explica
  */
 export type CalcResponse =
   | { status: "success"; result: ResultData }

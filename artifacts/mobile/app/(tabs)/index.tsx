@@ -19,7 +19,7 @@ import colors from "@/constants/colors";
 import { CalcOverlay, HistoryOverlay, FormulasScreen } from "@/components/Overlays";
 import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
-import { calculate, type ResultData, type MissingVariable } from "@/lib/apiClient";
+import { calculate, type ResultData, type MissingVariable, type ConversationMessage } from "@/lib/apiClient";
 import { supabase } from "@/lib/supabase";
 import { createSession, saveMessages, touchSession } from "@/lib/queries";
 import type { DbFormula } from "@/lib/queries";
@@ -265,12 +265,36 @@ export default function SigmaScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     const msgId = Date.now().toString() + Math.random().toString(36).slice(2, 6);
+
+    // Snapshot chat BEFORE adding the new user message (used as context)
+    const contextSnapshot = chat;
     setChat((prev) => [...prev, { kind: "user", id: msgId, text }]);
     setIsLoading(true);
 
+    // Build conversation context for multi-turn understanding (last 10 items)
+    const context: ConversationMessage[] = contextSnapshot
+      .slice(-10)
+      .flatMap((item): ConversationMessage[] => {
+        if (item.kind === "user") {
+          return [{ role: "user", content: item.text }];
+        }
+        if (item.kind === "question") {
+          return [{ role: "assistant", content: item.message }];
+        }
+        if (item.kind === "result") {
+          return [
+            {
+              role: "assistant",
+              content: `Resultado calculado: ${item.result.formulaName} = ${item.result.resultUnit} ${item.result.resultFormatted}`,
+            },
+          ];
+        }
+        return [];
+      });
+
     try {
       const response = await calculate(
-        { query: text, formulaId: activeFormula?.id },
+        { query: text, formulaId: activeFormula?.id, context },
         session.access_token
       );
 
@@ -312,7 +336,7 @@ export default function SigmaScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [query, isLoading, session, activeFormula, currentSessionId, queryClient]);
+  }, [query, isLoading, session, activeFormula, currentSessionId, queryClient, chat]);
 
   const canSend = query.trim().length > 0 && !isLoading;
   const invertedData = [...chat].reverse();

@@ -28,7 +28,11 @@ App mobile de calculadora inteligente com chat em português — o usuário desc
 - `artifacts/mobile/lib/queries.ts` — hooks React Query + helpers Supabase
 - `artifacts/mobile/lib/supabase.ts` — cliente Supabase (mobile, AsyncStorage)
 - `artifacts/mobile/contexts/AuthContext.tsx` — Supabase session management
-- `artifacts/api-server/src/routes/calculate.ts` — POST /api/calculate (AI)
+- `artifacts/api-server/src/routes/calculate.ts` — POST /api/calculate (orquestrador)
+- `artifacts/api-server/src/lib/varExtractor.ts` — extrai variáveis da linguagem natural (gpt-4o-mini)
+- `artifacts/api-server/src/lib/formulaCompute.ts` — avalia expressão com mathjs
+- `artifacts/api-server/src/lib/explainBuilder.ts` — monta CalcResponse (código puro)
+- `artifacts/api-server/src/lib/dynamicOrchestrator.ts` — agentes Expert + Researcher em paralelo
 - `artifacts/api-server/src/middlewares/auth.ts` — verificação JWT Supabase
 - `lib/integrations-openai-ai-server/` — cliente OpenAI via Replit proxy
 
@@ -36,7 +40,9 @@ App mobile de calculadora inteligente com chat em português — o usuário desc
 
 - **Híbrido**: mobile fala com Supabase diretamente para CRUD; fala com API server apenas para IA
 - **Auth**: Supabase JWT enviado como Bearer token para o servidor; servidor verifica via `supabase.auth.getUser(token)`
-- **AI**: servidor chama OpenAI (gpt-5.1) com prompt estruturado em PT-BR, retorna JSON com fórmula+passos+variáveis
+- **Pipeline de cálculo** (fórmula conhecida): varExtractor (gpt-4o-mini) → mathjs local → explainBuilder (código puro)
+- **Orquestrador dinâmico** (sem fórmula): Expert (gpt-4o) + Researcher (gpt-5.1 + web_search_preview) em paralelo → reconcilia → mathjs
+- **Contexto multi-turn**: mobile envia últimas 10 mensagens como `context[]` para suportar clarificações progressivas
 - **Overlays absolutos** (não Modals) para transições suaves; FlatList invertida para auto-scroll do chat
 - **RLS no Supabase**: políticas de acesso por `auth.uid()` em todas as tabelas; fórmulas de sistema têm `is_system=true`
 
