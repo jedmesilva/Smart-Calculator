@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -53,21 +53,10 @@ function ResultRow({
   isSaved: boolean;
   onSave: () => void;
 }) {
-  const [justSaved, setJustSaved] = useState(false);
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const savedAnim = useRef(new Animated.Value(isSaved ? 1 : 0)).current;
-
-  useEffect(() => {
-    Animated.timing(savedAnim, {
-      toValue: isSaved ? 1 : 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
-  }, [isSaved]);
 
   const handleSave = () => {
     if (isSaved) return;
-    setJustSaved(true);
     Animated.sequence([
       Animated.spring(scaleAnim, {
         toValue: 1.04,
@@ -83,13 +72,7 @@ function ResultRow({
       }),
     ]).start();
     onSave();
-    setTimeout(() => setJustSaved(false), 2000);
   };
-
-  const saveBg = savedAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["#F7F6F3", "#EFEFEC"],
-  });
 
   return (
     <Animated.View style={[styles.resultCard, { transform: [{ scale: scaleAnim }] }]}>
@@ -128,12 +111,12 @@ function ResultRow({
           <Text style={styles.saveText}>Salvar como minha fórmula</Text>
         </Pressable>
       ) : (
-        <Animated.View style={[styles.saveRow, styles.saveRowSaved, { backgroundColor: saveBg }]}>
-          <Feather name="check" size={11} color={justSaved ? "#5A7A5A" : c.faint} />
-          <Text style={[styles.saveText, justSaved ? styles.saveTextJustSaved : styles.saveTextSaved]}>
-            {justSaved ? "Salvo em Minhas fórmulas!" : "Salvo em Minhas fórmulas"}
+        <View style={[styles.saveRow, styles.saveRowSaved]}>
+          <Feather name="bookmark" size={11} color={c.text} />
+          <Text style={[styles.saveText, styles.saveTextSaved]}>
+            Salvo em Minhas fórmulas
           </Text>
-        </Animated.View>
+        </View>
       )}
     </Animated.View>
   );
@@ -719,8 +702,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#E8E7E3",
   },
   saveText: { fontSize: 11, color: "#AEADA8", fontFamily: "Inter_500Medium" },
-  saveTextSaved: { color: "#AEADA8", fontFamily: "Inter_400Regular" },
-  saveTextJustSaved: { color: "#5A7A5A", fontFamily: "Inter_600SemiBold" },
+  saveTextSaved: { color: "#6B6B66", fontFamily: "Inter_500Medium" },
   loadingWrap: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   loadingDot: {
     width: 5,
