@@ -80,10 +80,15 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const today = new Date().toLocaleDateString("pt-BR", {
+  const now = new Date();
+  const today = now.toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "short",
     year: "numeric",
+  });
+  const time = now.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   const proofVerified = data.proof?.verified ?? true;
@@ -295,10 +300,8 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
 
         {/* ── Footer ── */}
         <View style={styles.docFooter}>
-          <Text style={styles.docFooterText}>σ sigma · {today}</Text>
-          <Text style={styles.docFooterText}>
-            {data.resultUnit ? `${data.resultUnit} ` : ""}{data.resultFormatted}
-          </Text>
+          <Text style={styles.docFooterText}>σ sigma</Text>
+          <Text style={styles.docFooterText}>{today} · {time}</Text>
         </View>
       </ScrollView>
     </View>
