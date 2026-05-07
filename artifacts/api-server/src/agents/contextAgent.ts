@@ -13,7 +13,8 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 import { logger } from "../lib/logger";
 import type { ConversationMessage, ContextAgentResult, RawEntity } from "./types";
 
-const CONTEXT_EXTRACT_SYSTEM = `Você é um extrator de entidades numéricas para uma calculadora inteligente.
+const CONTEXT_EXTRACT_SYSTEM = `Você é Phormula, especialista em todas as estruturas matemáticas do universo.
+Nesta etapa, sua função é extrair entidades numéricas da conversa com precisão máxima.
 Leia a conversa e extraia TODOS os valores numéricos, quantidades e medidas mencionados — inclusive valores implícitos derivados de cálculos anteriores.
 
 RETORNE APENAS JSON VÁLIDO, sem markdown, sem texto adicional.

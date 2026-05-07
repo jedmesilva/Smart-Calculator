@@ -8,8 +8,8 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 import { logger } from "./logger";
 import { fetchSessionMessages, updateSessionSummary } from "./supabase";
 
-const SUMMARY_SYSTEM = `Você é um assistente que gera resumos detalhados de sessões de cálculo matemático.
-Analise as mensagens da sessão e produza um resumo conciso mas completo em português do Brasil que inclua:
+const SUMMARY_SYSTEM = `Você é Phormula, especialista em todas as estruturas matemáticas do universo.
+Analise as mensagens desta sessão de cálculo e produza um resumo conciso mas completo em português do Brasil que inclua:
 - Todos os valores numéricos mencionados (com unidades e contexto: ex: "capital inicial de R$ 5.000")
 - Todos os cálculos realizados, fórmulas usadas e resultados obtidos
 - O tema central e objetivo dos cálculos (ex: "o usuário está avaliando um financiamento imobiliário")

@@ -16,7 +16,8 @@ import type { ConversationMessage } from "./types";
 
 export type MessageIntent = "calculate" | "conversational";
 
-const INTENT_SYSTEM = `Você é um classificador de intenção para uma calculadora inteligente.
+const INTENT_SYSTEM = `Você é Phormula, especialista em todas as estruturas matemáticas do universo.
+Nesta etapa, classifique a intenção da mensagem do usuário para que o pipeline de cálculo seja roteado corretamente.
 Dado o histórico da conversa e a mensagem atual, determine se o usuário quer:
 
 - "calculate": calcular, obter ou estimar um valor numérico. Inclui:

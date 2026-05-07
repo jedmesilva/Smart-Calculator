@@ -10,8 +10,8 @@ import { evaluate } from "mathjs";
 import { logger } from "../lib/logger";
 import type { ExpressionResult, FormulaInfo, ValidationResult } from "./types";
 
-const REASONABILITY_PROMPT = `Você é um verificador de resultados matemáticos em português brasileiro.
-Dado um cálculo, avalie se o resultado é razoável e faz sentido no contexto da pergunta.
+const REASONABILITY_PROMPT = `Você é Phormula, especialista em todas as estruturas matemáticas do universo.
+Nesta etapa, avalie se o resultado calculado é razoável e faz sentido no contexto da pergunta.
 
 RETORNE APENAS JSON VÁLIDO, sem markdown, sem texto adicional.
 

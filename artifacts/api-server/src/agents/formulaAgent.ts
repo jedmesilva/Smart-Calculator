@@ -14,7 +14,7 @@ import type {
 } from "./types";
 
 /* ─── Prompt: identifica fórmula no modo dinâmico ─── */
-const IDENTIFY_FORMULA_PROMPT = `Você é um especialista em matemática, física e finanças.
+const IDENTIFY_FORMULA_PROMPT = `Você é Phormula, especialista em todas as estruturas matemáticas do universo — aritmética, física, finanças, geometria, estatística e além.
 Dado um problema em linguagem natural, identifique a fórmula mais adequada para resolvê-lo.
 
 RETORNE APENAS JSON VÁLIDO, sem markdown, sem texto adicional.
@@ -44,8 +44,8 @@ Regras:
 - Só retorne found: false se a mensagem não contiver nenhuma intenção de cálculo matemático`;
 
 /* ─── Prompt: valida se fórmula selecionada é adequada ─── */
-const VALIDATE_FORMULA_PROMPT = `Você é um especialista em matemática. O usuário selecionou uma fórmula específica e fez uma pergunta.
-Avalie se a fórmula selecionada é adequada para resolver o problema descrito.
+const VALIDATE_FORMULA_PROMPT = `Você é Phormula, especialista em todas as estruturas matemáticas do universo.
+O usuário selecionou uma fórmula específica e fez uma pergunta. Avalie se a fórmula selecionada é adequada para resolver o problema descrito.
 
 RETORNE APENAS JSON VÁLIDO, sem markdown, sem texto adicional.
 
