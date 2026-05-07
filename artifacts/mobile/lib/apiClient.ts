@@ -45,14 +45,16 @@ export type MissingVariable = {
 /**
  * Resposta discriminante do POST /api/calculate
  *
- * status "success"       → cálculo concluído; result sempre presente
- * status "needs_input"   → faltam variáveis; message explica, missing lista o que falta
- * status "formula_error" → fórmula inválida ou não encontrada
- * status "wrong_formula" → fórmula selecionada não é adequada; suggestion sugere outra
+ * status "success"         → cálculo concluído; result sempre presente
+ * status "needs_input"     → faltam variáveis; message explica, missing lista o que falta
+ * status "conversational"  → resposta em linguagem natural (pergunta meta, contexto insuficiente)
+ * status "formula_error"   → fórmula inválida ou não encontrada (erro técnico)
+ * status "wrong_formula"   → fórmula selecionada não é adequada; suggestion sugere outra
  */
 export type CalcResponse =
   | { status: "success"; result: ResultData }
   | { status: "needs_input"; message: string; missing: MissingVariable[] }
+  | { status: "conversational"; message: string }
   | { status: "formula_error"; message: string }
   | { status: "wrong_formula"; message: string; suggestion: string | null };
 

@@ -2,11 +2,14 @@
    Agente Conversacional — Fase 5b
    Gera uma resposta em linguagem natural (pt-BR) para o chat,
    explicando o resultado de forma amigável e contextualizada.
+
+   runGuidanceAgent — fallback conversacional para erros e
+   perguntas meta ("não entendi", "quais valores faltam?").
    ═══════════════════════════════════════════════════════ */
 
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { logger } from "../lib/logger";
-import type { ExpressionResult, FormulaInfo, ValidationResult } from "./types";
+import type { ConversationMessage, ExpressionResult, FormulaInfo, ValidationResult } from "./types";
 
 const CONVERSATIONAL_PROMPT = `Você é o Sigma, uma calculadora inteligente com personalidade amigável.
 Gere uma resposta conversacional CURTA (1-3 frases) em português brasileiro que:
@@ -81,5 +84,85 @@ export async function runConversationalAgent(opts: {
       ? expressionResult.resultLabel.charAt(0).toUpperCase() + expressionResult.resultLabel.slice(1)
       : "Resultado";
     return `${label}: ${resultWithUnit}. Confira os detalhes do cálculo abaixo.`;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   runGuidanceAgent — resposta conversacional para casos
+   onde a pipeline não conseguiu computar um resultado:
+   - perguntas meta ("não entendi", "quais valores faltam?")
+   - contexto ambíguo (valores derivados não disponíveis)
+   - falhas de expressão
+   ═══════════════════════════════════════════════════════ */
+
+const GUIDANCE_PROMPT = `Você é o Sigma, uma calculadora inteligente e assistente amigável em português brasileiro.
+O usuário enviou uma mensagem que não resultou em um cálculo (pode ser uma pergunta, comentário, pedido de esclarecimento, ou um cálculo com contexto insuficiente).
+
+Sua tarefa: responder de forma natural, útil e conversacional. Siga estas diretrizes:
+
+1. Se o usuário está pedindo esclarecimento ("não entendi", "como assim?", "explica melhor"):
+   - Esclareça o que o Sigma consegue calcular com base no contexto da conversa
+   - Seja direto e amigável
+
+2. Se o usuário pergunta quais valores faltam ou o que precisa fornecer:
+   - Liste claramente o que ainda precisa saber para fazer o cálculo
+   - Use linguagem natural, não técnica
+
+3. Se o usuário fez um cálculo mas o contexto está incompleto (ex: "e se comprar mais 3?"):
+   - Tente deduzir o que falta do contexto da conversa
+   - Se ainda assim faltar algo, pergunte de forma específica e direta (1 pergunta por vez)
+
+4. Se a mensagem não tem nenhuma intenção de cálculo:
+   - Responda brevemente e convide o usuário a descrever um cálculo
+
+NUNCA retorne erros técnicos ou mensagens de sistema.
+Seja breve: máximo 3 frases. Sem markdown, sem emojis, sem asteriscos.`;
+
+export async function runGuidanceAgent(opts: {
+  query: string;
+  context: ConversationMessage[];
+  sessionSummary?: string;
+  failReason?: string;
+}): Promise<string> {
+  const { query, context, sessionSummary, failReason } = opts;
+
+  const messages: any[] = [{ role: "system", content: GUIDANCE_PROMPT }];
+
+  if (sessionSummary) {
+    messages.push({
+      role: "user",
+      content: `[Resumo da sessão]\n${sessionSummary}`,
+    });
+    messages.push({
+      role: "assistant",
+      content: "Entendido, tenho esse contexto.",
+    });
+  }
+
+  for (const m of context) {
+    messages.push({ role: m.role, content: m.content });
+  }
+
+  const userContent = failReason
+    ? `[Motivo pelo qual o cálculo não foi possível: ${failReason}]\n\nMensagem do usuário: ${query}`
+    : `Mensagem do usuário: ${query}`;
+
+  messages.push({ role: "user", content: userContent });
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      max_completion_tokens: 200,
+      messages,
+    } as any);
+
+    const text = response.choices[0]?.message?.content?.trim() ?? "";
+    if (!text) throw new Error("empty response");
+
+    logger.debug({ query: query.slice(0, 60) }, "guidanceAgent: response generated");
+    return text;
+  } catch (err) {
+    logger.warn({ err }, "guidanceAgent: failed, using fallback");
+    return "Não consegui entender o cálculo. Pode descrever com mais detalhes o que quer calcular?";
   }
 }

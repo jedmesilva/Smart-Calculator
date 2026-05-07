@@ -19,7 +19,7 @@ import { runFormulaAgent } from "../agents/formulaAgent";
 import { runContextAgent } from "../agents/contextAgent";
 import { runExpressionAgent } from "../agents/expressionAgent";
 import { runValidationAgent } from "../agents/validationAgent";
-import { runConversationalAgent } from "../agents/conversationalAgent";
+import { runConversationalAgent, runGuidanceAgent } from "../agents/conversationalAgent";
 import { fetchSessionMessages } from "./supabase";
 import { generateSessionSummary } from "./summaryBuilder";
 import type { ConversationMessage } from "../agents/types";
@@ -40,6 +40,11 @@ export type OrchestratorNeedsInput = {
   missing: { symbol: string; name: string; description: string }[];
 };
 
+export type OrchestratorConversational = {
+  status: "conversational";
+  message: string;
+};
+
 export type OrchestratorFormulaError = {
   status: "formula_error";
   message: string;
@@ -55,6 +60,7 @@ export type OrchestratorWrongFormula = {
 export type OrchestratorResult =
   | OrchestratorSuccess
   | OrchestratorNeedsInput
+  | OrchestratorConversational
   | OrchestratorFormulaError
   | OrchestratorWrongFormula;
 
@@ -70,9 +76,17 @@ function dbMessagesToContext(
       const r = row.result_data as any;
       const unit = r.resultUnit ? ` ${r.resultUnit}` : "";
       const base = `Resultado: ${r.formulaName} = ${r.resultFormatted}${unit}`;
+
+      // Inclui variáveis e expressão substituída para que o contextAgent
+      // possa derivar valores intermediários (ex: preço por item) de cálculos anteriores
+      const vars = Array.isArray(r.variables) && r.variables.length > 0
+        ? ` | Valores usados: ${(r.variables as any[]).map((v: any) => `${v.name}=${v.value}`).join(", ")}`
+        : "";
+      const expr = r.formulaSubstituted ? ` | Expressão: ${r.formulaSubstituted}` : "";
+
       out.push({
         role: "assistant",
-        content: r.conversationalResponse ? `${r.conversationalResponse} (${base})` : base,
+        content: `${base}${vars}${expr}`,
       });
     }
   }
@@ -110,7 +124,13 @@ export async function runCalculationPipeline(opts: {
 
   /* ── Trata resultados do formulaAgent ── */
   if (formulaResult.status === "not_found") {
-    return { status: "formula_error", message: formulaResult.message };
+    const message = await runGuidanceAgent({
+      query,
+      context,
+      sessionSummary,
+      failReason: formulaResult.message,
+    });
+    return { status: "conversational", message };
   }
   if (formulaResult.status === "wrong_formula") {
     return {
@@ -165,12 +185,13 @@ export async function runCalculationPipeline(opts: {
     });
   } catch (err: any) {
     logger.error({ err, formulaName: formula.name }, "orchestrator: expressionAgent failed all attempts");
-    return {
-      status: "formula_error",
-      message:
-        err?.message ??
-        "Não foi possível montar a expressão matemática. Tente descrever o cálculo com mais detalhes.",
-    };
+    const message = await runGuidanceAgent({
+      query,
+      context,
+      sessionSummary,
+      failReason: err?.message ?? "Não foi possível montar a expressão matemática.",
+    });
+    return { status: "conversational", message };
   }
   logger.info(
     { ms: Date.now() - phase2Start, searchUsed: expressionResult.searchUsed },
@@ -218,10 +239,13 @@ export async function runCalculationPipeline(opts: {
       computedValue = computeFormula(retryResult.expression, retryResult.extracted);
       expressionResult = retryResult;
     } catch (retryErr: any) {
-      return {
-        status: "formula_error",
-        message: retryErr?.message ?? "Erro ao calcular a fórmula. Verifique os valores informados.",
-      };
+      const message = await runGuidanceAgent({
+        query,
+        context,
+        sessionSummary,
+        failReason: retryErr?.message ?? "Erro ao calcular a fórmula.",
+      });
+      return { status: "conversational", message };
     }
   }
   logger.info({ ms: Date.now() - phase3Start, computedValue }, "orchestrator: phase 3 complete");

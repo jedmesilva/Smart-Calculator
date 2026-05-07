@@ -304,6 +304,8 @@ export default function SigmaScreen() {
 
       if (response.status === "success") {
         setChat((prev) => [...prev, { kind: "result", id: resultId, result: response.result }]);
+      } else if (response.status === "conversational") {
+        setChat((prev) => [...prev, { kind: "assistant", id: resultId, text: response.message }]);
       } else if (response.status === "needs_input") {
         setChat((prev) => [
           ...prev,
