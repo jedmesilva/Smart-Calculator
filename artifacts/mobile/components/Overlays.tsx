@@ -32,6 +32,28 @@ const c = colors.light;
 
 export type Formula = DbFormula;
 
+/* ─── SECTION HEADER ─── */
+function DocSection({
+  numero,
+  titulo,
+  children,
+}: {
+  numero: string;
+  titulo: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <View style={styles.docSection}>
+      <View style={styles.docSecHeader}>
+        <Text style={styles.docSecNum}>{numero}</Text>
+        <Text style={styles.docSecTitle}>{titulo}</Text>
+      </View>
+      <View style={styles.docSecDivider} />
+      {children}
+    </View>
+  );
+}
+
 /* ─── CALC OVERLAY ─── */
 export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () => void }) {
   const insets = useSafeAreaInsets();
@@ -58,10 +80,24 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const today = new Date().toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+  const proofVerified = data.proof?.verified ?? true;
+  const hasFormula =
+    data.svgSymbolic || data.svgSubstituted || data.formulaSymbolic || data.formulaSubstituted;
+
+  let sectionNum = 0;
+  const nextSec = () => String(++sectionNum).padStart(2, "0");
+
   return (
     <View style={[styles.overlay, { paddingTop: topPad }]}>
+      {/* ── Header ── */}
       <View style={styles.overlayHeader}>
-        <Text style={styles.overlayTitle}>{data.formulaName}</Text>
+        <Text style={styles.overlayTitle}>Cálculo</Text>
         <View style={styles.headerActions}>
           <Pressable
             onPress={handleCopy}
@@ -96,69 +132,175 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
 
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={styles.overlayBody}
+        contentContainerStyle={[styles.overlayBody, { paddingBottom: botPad + 32 }]}
         showsVerticalScrollIndicator={false}
       >
-        {(data.svgSymbolic || data.svgSubstituted || data.formulaSymbolic || data.formulaSubstituted) && (
-          <View style={styles.formulaBox}>
-            {data.svgSymbolic ? (
-              <MathView svg={data.svgSymbolic} color="#3A3A38" />
-            ) : !!data.formulaSymbolic ? (
-              <Text style={styles.formulaSymbolic}>{data.formulaSymbolic}</Text>
-            ) : null}
-            {data.svgSubstituted ? (
-              <>
-                <View style={styles.formulaDivider} />
-                <MathView svg={data.svgSubstituted} color="#7A7A72" />
-              </>
-            ) : !!data.formulaSubstituted ? (
-              <Text style={styles.formulaSubstituted}>{data.formulaSubstituted}</Text>
-            ) : null}
+        {/* ── ID Card ── */}
+        <View style={styles.idCard}>
+          <View style={styles.idCardTop}>
+            <Text style={styles.idTitle}>{data.formulaName}</Text>
+            {data.searchUsed && (
+              <View style={styles.idBadge}>
+                <Feather name="globe" size={9} color={c.mid} />
+                <Text style={styles.idBadgeText}>pesquisa web</Text>
+              </View>
+            )}
           </View>
-        )}
-
-        {data.variables?.length > 0 && (
-          <>
-            <Text style={styles.sectionLabel}>Variáveis</Text>
-            <View style={{ marginBottom: 28 }}>
-              {data.variables.map((v, i) => (
-                <View
-                  key={i}
-                  style={[styles.varRow, i < data.variables.length - 1 && styles.rowBorder]}
-                >
-                  <Text style={styles.varSymbol}>{v.symbol}</Text>
-                  <Text style={styles.varName}>{v.name}</Text>
-                  <Text style={styles.varValue}>{v.value}</Text>
-                </View>
-              ))}
+          <View style={styles.idMeta}>
+            {!!data.formulaCategory && (
+              <View style={styles.idMetaItem}>
+                <Text style={styles.idMetaLabel}>Categoria</Text>
+                <Text style={styles.idMetaValue}>{data.formulaCategory}</Text>
+              </View>
+            )}
+            <View style={styles.idMetaItem}>
+              <Text style={styles.idMetaLabel}>Data</Text>
+              <Text style={styles.idMetaValueMono}>{today}</Text>
             </View>
-          </>
+            <View style={styles.idMetaItem}>
+              <Text style={styles.idMetaLabel}>Resultado</Text>
+              <Text style={styles.idMetaValue}>
+                {data.resultUnit ? `${data.resultUnit} ` : ""}{data.resultFormatted}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* ── 01 Contexto (conversational response) ── */}
+        {!!data.conversationalResponse && (
+          <DocSection numero={nextSec()} titulo="Contexto">
+            <Text style={styles.contextText}>{data.conversationalResponse}</Text>
+          </DocSection>
         )}
 
+        {/* ── 02 Fórmula ── */}
+        {hasFormula && (
+          <DocSection numero={nextSec()} titulo="Fórmula">
+            <View style={styles.formulaDocBox}>
+              {data.svgSymbolic ? (
+                <MathView svg={data.svgSymbolic} color={c.text} />
+              ) : !!data.formulaSymbolic ? (
+                <Text style={styles.formulaDocSymbolic}>{data.formulaSymbolic}</Text>
+              ) : null}
+              {(data.svgSubstituted || data.formulaSubstituted) && (
+                <>
+                  <View style={styles.formulaDocDivider} />
+                  <Text style={styles.formulaDocSubLabel}>com valores substituídos</Text>
+                  {data.svgSubstituted ? (
+                    <MathView svg={data.svgSubstituted} color={c.mid} />
+                  ) : (
+                    <Text style={styles.formulaDocSubstituted}>{data.formulaSubstituted}</Text>
+                  )}
+                </>
+              )}
+            </View>
+          </DocSection>
+        )}
+
+        {/* ── 03 Variáveis ── */}
+        {data.variables?.length > 0 && (
+          <DocSection numero={nextSec()} titulo="Variáveis">
+            {data.variables.map((v, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.docVarRow,
+                  i < data.variables.length - 1 && styles.rowBorder,
+                ]}
+              >
+                <View style={styles.docVarLeft}>
+                  <Text style={styles.docVarSymbol}>{v.symbol}</Text>
+                  <Text style={styles.docVarName}>{v.name}</Text>
+                </View>
+                <Text style={styles.docVarValue}>{v.value}</Text>
+              </View>
+            ))}
+          </DocSection>
+        )}
+
+        {/* ── 04 Desenvolvimento ── */}
         {data.steps?.length > 0 && (
-          <>
-            <Text style={styles.sectionLabel}>Passo a passo</Text>
+          <DocSection numero={nextSec()} titulo="Desenvolvimento">
             {data.steps.map((step, i) => (
               <View
                 key={i}
-                style={[styles.stepRow, i < data.steps.length - 1 && styles.rowBorder]}
+                style={[
+                  styles.docStepRow,
+                  i < data.steps.length - 1 && styles.rowBorder,
+                ]}
               >
-                <Text style={styles.stepNum}>{String(i + 1).padStart(2, "0")}</Text>
-                <Text style={styles.stepText}>{step}</Text>
+                <Text style={styles.docStepNum}>{String(i + 1).padStart(2, "0")}</Text>
+                <Text style={styles.docStepText}>{step}</Text>
               </View>
             ))}
-          </>
+          </DocSection>
         )}
 
+        {/* ── 05 Resultado ── */}
+        <DocSection numero={nextSec()} titulo="Resultado">
+          <View style={styles.resultDocCard}>
+            <View>
+              <Text style={styles.resultDocLabel}>{data.resultLabel}</Text>
+              {!!data.resultUnit && (
+                <Text style={styles.resultDocUnit}>{data.resultUnit}</Text>
+              )}
+            </View>
+            <Text style={styles.resultDocNum}>{data.resultFormatted}</Text>
+          </View>
+        </DocSection>
 
-        {data.note && <Text style={styles.note}>* {data.note}</Text>}
+        {/* ── 06 Verificação ── */}
+        {data.proof && (
+          <DocSection numero={nextSec()} titulo="Verificação">
+            <View style={[styles.proofBox, proofVerified ? styles.proofBoxOk : styles.proofBoxWarn]}>
+              <View style={styles.proofHeader}>
+                <Feather
+                  name={proofVerified ? "check-circle" : "alert-circle"}
+                  size={14}
+                  color={proofVerified ? "#2A7A4B" : "#B07D1A"}
+                />
+                <Text
+                  style={[
+                    styles.proofMethod,
+                    proofVerified ? styles.proofMethodOk : styles.proofMethodWarn,
+                  ]}
+                >
+                  {data.proof.method}
+                </Text>
+                <View style={[styles.proofBadge, proofVerified ? styles.proofBadgeOk : styles.proofBadgeWarn]}>
+                  <Text style={[styles.proofBadgeText, proofVerified ? styles.proofBadgeTextOk : styles.proofBadgeTextWarn]}>
+                    {proofVerified ? "aprovado" : "revisar"}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.proofDetail}>{data.proof.detail}</Text>
+            </View>
+          </DocSection>
+        )}
+
+        {/* ── Nota & Warning ── */}
+        {(data.note || data.warning) && (
+          <View style={styles.notesWrap}>
+            {data.note && (
+              <Text style={styles.note}>* {data.note}</Text>
+            )}
+            {data.warning && (
+              <View style={styles.warningRow}>
+                <Feather name="alert-triangle" size={11} color="#B07D1A" />
+                <Text style={styles.warningText}>{data.warning}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* ── Footer ── */}
+        <View style={styles.docFooter}>
+          <Text style={styles.docFooterText}>σ sigma · {today}</Text>
+          <Text style={styles.docFooterText}>
+            {data.resultUnit ? `${data.resultUnit} ` : ""}{data.resultFormatted}
+          </Text>
+        </View>
       </ScrollView>
-
-      <View style={[styles.resultBar, { paddingBottom: botPad + 20 }]}>
-        <Text style={styles.resultLabel}>{data.resultLabel}</Text>
-        {!!data.resultUnit && <Text style={styles.resultUnit}>{data.resultUnit}</Text>}
-        <Text style={styles.resultNum}>{data.resultFormatted}</Text>
-      </View>
     </View>
   );
 }
@@ -704,6 +846,249 @@ const styles = StyleSheet.create({
     color: c.text,
     letterSpacing: -1.5,
     lineHeight: 52,
+  },
+  /* ── Doc sections ── */
+  docSection: {
+    marginBottom: 28,
+  },
+  docSecHeader: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 10,
+    marginBottom: 10,
+  },
+  docSecNum: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 10,
+    color: c.ghost,
+    letterSpacing: 0.5,
+  },
+  docSecTitle: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 10,
+    color: c.faint,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  docSecDivider: {
+    height: 1,
+    backgroundColor: c.surface,
+    marginBottom: 14,
+  },
+  /* ── ID card ── */
+  idCard: {
+    backgroundColor: c.panel,
+    borderRadius: 14,
+    padding: 18,
+    marginBottom: 28,
+  },
+  idCardTop: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: 14,
+    gap: 10,
+  },
+  idTitle: {
+    fontFamily: "Inter_700Bold",
+    fontSize: 17,
+    color: c.text,
+    letterSpacing: -0.3,
+    flex: 1,
+  },
+  idBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: c.surface,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 7,
+    flexShrink: 0,
+    marginTop: 3,
+  },
+  idBadgeText: {
+    fontFamily: "Inter_500Medium",
+    fontSize: 10,
+    color: c.mid,
+  },
+  idMeta: {
+    flexDirection: "row",
+    gap: 20,
+    flexWrap: "wrap",
+  },
+  idMetaItem: {
+    gap: 2,
+  },
+  idMetaLabel: {
+    fontFamily: "Inter_500Medium",
+    fontSize: 9,
+    color: c.ghost,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
+  idMetaValue: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 12,
+    color: c.mid,
+  },
+  idMetaValueMono: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 12,
+    color: c.mid,
+  },
+  /* ── Context ── */
+  contextText: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 13,
+    color: c.mid,
+    lineHeight: 21,
+  },
+  /* ── Formula doc ── */
+  formulaDocBox: {
+    backgroundColor: c.panel,
+    borderRadius: 12,
+    padding: 16,
+    gap: 10,
+    alignItems: "center",
+  },
+  formulaDocDivider: {
+    height: 1,
+    backgroundColor: c.surface,
+    width: "100%",
+  },
+  formulaDocSubLabel: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 10,
+    color: c.ghost,
+    letterSpacing: 0.3,
+    alignSelf: "flex-start",
+  },
+  formulaDocSymbolic: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 14,
+    color: c.text,
+    textAlign: "center",
+  },
+  formulaDocSubstituted: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 14,
+    color: c.mid,
+    textAlign: "center",
+  },
+  /* ── Variáveis doc ── */
+  docVarRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 11,
+    gap: 12,
+  },
+  docVarLeft: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 10,
+    flex: 1,
+    minWidth: 0,
+  },
+  docVarSymbol: {
+    fontFamily: "Inter_700Bold",
+    fontSize: 13,
+    color: c.text,
+    minWidth: 22,
+  },
+  docVarName: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 13,
+    color: c.faint,
+    flex: 1,
+  },
+  docVarValue: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 13,
+    color: c.text,
+    flexShrink: 0,
+  },
+  /* ── Steps doc ── */
+  docStepRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    paddingVertical: 11,
+    gap: 16,
+  },
+  docStepNum: {
+    fontFamily: "Inter_700Bold",
+    fontSize: 10,
+    color: c.ghost,
+    minWidth: 18,
+    paddingTop: 3,
+  },
+  docStepText: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 13,
+    color: c.mid,
+    lineHeight: 21,
+    flex: 1,
+  },
+  /* ── Resultado doc ── */
+  resultDocCard: {
+    backgroundColor: c.text,
+    borderRadius: 12,
+    padding: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  resultDocLabel: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 11,
+    color: "#6B6B66",
+    marginBottom: 2,
+  },
+  resultDocUnit: {
+    fontFamily: "Inter_500Medium",
+    fontSize: 12,
+    color: "#AEADA8",
+    marginTop: 2,
+  },
+  resultDocNum: {
+    fontFamily: "Inter_700Bold",
+    fontSize: 36,
+    color: c.background,
+    letterSpacing: -1.5,
+    lineHeight: 42,
+  },
+  /* ── Notes & warnings ── */
+  notesWrap: {
+    gap: 8,
+    marginBottom: 28,
+  },
+  warningRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 7,
+  },
+  warningText: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 11,
+    color: "#B07D1A",
+    lineHeight: 17,
+    flex: 1,
+  },
+  /* ── Footer ── */
+  docFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: c.surface,
+    marginTop: 4,
+  },
+  docFooterText: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 10,
+    color: c.ghost,
   },
   sessionRow: {
     backgroundColor: c.panel,
