@@ -171,3 +171,60 @@ export async function fetchSessionSummary(sessionId: string): Promise<string | n
   if (error || !data) return null;
   return (data as any).summary as string | null;
 }
+
+/* ── Salva fórmula a partir de um resultado do chat ── */
+export async function saveFormulaFromChat(result: ResultData): Promise<string> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Usuário não autenticado");
+
+  let formulaId = result.formulaId ?? null;
+
+  if (!formulaId) {
+    // Fórmula dinâmica: cria entrada real na tabela formulas
+    const { data, error } = await supabase
+      .from("formulas")
+      .insert({
+        name: result.formulaName,
+        category: result.formulaCategory ?? "Outro",
+        description: `${result.formulaName} — salva do chat`,
+        symbolic: result.formulaSymbolic || result.formulaName,
+        is_system: false,
+        user_id: user.id,
+        expression: null,
+        expression_meta: null,
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+    formulaId = data.id as string;
+  }
+
+  // Verifica duplicata antes de inserir
+  const { data: existing } = await supabase
+    .from("saved_formulas")
+    .select("formula_id")
+    .eq("formula_id", formulaId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!existing) {
+    const { error } = await supabase
+      .from("saved_formulas")
+      .insert({ formula_id: formulaId, user_id: user.id });
+    if (error) throw error;
+  }
+
+  return formulaId;
+}
+
+/* ── Hook para salvar fórmula do chat com invalidação automática ── */
+export function useSaveFormulaFromChat() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (result: ResultData) => saveFormulaFromChat(result),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["saved_formulas"] });
+      qc.invalidateQueries({ queryKey: ["formulas"] });
+    },
+  });
+}

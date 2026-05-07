@@ -8,6 +8,8 @@ export type ProofResult = {
 };
 
 export type ResultData = {
+  formulaId?: string | null;
+  formulaCategory?: string | null;
   formulaName: string;
   resultFormatted: string;
   resultUnit: string;
@@ -41,6 +43,8 @@ export function buildResult(
   vars: VarsLike,
   computedValue: number,
   options: {
+    formulaId?: string | null;
+    formulaCategory?: string | null;
     warning?: string;
     searchUsed?: boolean;
     proof?: ValidationResult;
@@ -71,6 +75,8 @@ export function buildResult(
       };
 
   return {
+    formulaId: options.formulaId ?? null,
+    formulaCategory: options.formulaCategory ?? null,
     formulaName,
     resultFormatted: formatted,
     resultUnit: vars.resultUnit,

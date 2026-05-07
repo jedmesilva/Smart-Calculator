@@ -242,6 +242,8 @@ export async function runCalculationPipeline(opts: {
   const [result, conversationalResponse] = await Promise.all([
     Promise.resolve(
       buildResult(formula.name, formula.symbolic, expressionResult, computedValue, {
+        formulaId: formula.id,
+        formulaCategory: formula.category,
         searchUsed: expressionResult.searchUsed,
         warning: validation.valid ? undefined : validation.detail,
         proof: validation,

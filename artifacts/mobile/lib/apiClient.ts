@@ -19,6 +19,8 @@ export type ProofResult = {
 };
 
 export type ResultData = {
+  formulaId?: string | null;
+  formulaCategory?: string | null;
   formulaName: string;
   resultFormatted: string;
   resultUnit: string;

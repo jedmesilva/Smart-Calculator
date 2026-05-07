@@ -21,7 +21,7 @@ import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculate, type ResultData, type MissingVariable } from "@/lib/apiClient";
 import { buildContext } from "@/lib/contextBuilder";
-import { createSession, saveMessages, touchSession, fetchSessionSummary } from "@/lib/queries";
+import { createSession, saveMessages, touchSession, fetchSessionSummary, useSavedFormulaIds, useSaveFormulaFromChat } from "@/lib/queries";
 import type { DbFormula } from "@/lib/queries";
 
 const c = colors.light;
@@ -247,6 +247,9 @@ export default function SigmaScreen() {
   const { session } = useAuth();
   const queryClient = useQueryClient();
 
+  const { data: savedFormulaIds = new Set<string>() } = useSavedFormulaIds();
+  const saveMutation = useSaveFormulaFromChat();
+
   const [query, setQuery] = useState("");
   const [screen, setScreen] = useState<"main" | "calc" | "history" | "formulas" | "menu">("main");
   const [activeFormula, setActiveFormula] = useState<DbFormula | null>(null);
@@ -382,7 +385,9 @@ export default function SigmaScreen() {
       if (item.kind === "question") return <QuestionBubble message={item.message} missing={item.missing} />;
       if (item.kind === "error") return <ErrorBubble message={item.message} />;
       if (item.kind === "result") {
-        const isSaved = savedResultIds.has(item.id) || originalIndex < chat.length - 2;
+        const isSavedByFormulaId = !!item.result.formulaId && savedFormulaIds.has(item.result.formulaId);
+        const isSavedLocally = savedResultIds.has(item.id);
+        const isSaved = isSavedByFormulaId || isSavedLocally;
         return (
           <ResultRow
             result={item.result}
@@ -392,15 +397,17 @@ export default function SigmaScreen() {
             }}
             isSaved={isSaved}
             onSave={() => {
-              setSavedResultIds((prev) => new Set([...prev, item.id]));
+              if (isSaved) return;
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              setSavedResultIds((prev) => new Set([...prev, item.id]));
+              saveMutation.mutate(item.result);
             }}
           />
         );
       }
       return null;
     },
-    [chat, savedResultIds]
+    [chat, savedResultIds, savedFormulaIds, saveMutation]
   );
 
   return (
