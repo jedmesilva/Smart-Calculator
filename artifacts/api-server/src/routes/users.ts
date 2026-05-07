@@ -10,11 +10,11 @@ const router = Router();
 router.get("/me", requireAuth, async (req, res) => {
   const user = (req as any).user;
   const [profile] = await db
-    .select()
+    .select({ id: profiles.id, full_name: profiles.full_name, avatar_url: profiles.avatar_url })
     .from(profiles)
     .where(eq(profiles.id, user.id))
     .limit(1);
-  res.json({ id: user.id, full_name: profile?.full_name ?? null });
+  res.json({ id: user.id, full_name: profile?.full_name ?? null, avatar_url: profile?.avatar_url ?? null });
 });
 
 /* ── PATCH /api/users/me ── */
@@ -28,7 +28,7 @@ router.patch("/me", requireAuth, async (req, res) => {
   await db
     .insert(profiles)
     .values({ id: user.id, full_name: full_name.trim() })
-    .onConflictDoUpdate({ target: profiles.id, set: { full_name: full_name.trim(), updated_at: new Date() } });
+    .onConflictDoUpdate({ target: profiles.id, set: { full_name: full_name.trim() } });
   res.json({ ok: true, full_name: full_name.trim() });
 });
 

@@ -5,8 +5,8 @@ import { z } from "zod/v4";
 export const profiles = pgTable("profiles", {
   id: text("id").primaryKey(),
   full_name: text("full_name"),
+  avatar_url: text("avatar_url"),
   created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const formulas = pgTable("formulas", {

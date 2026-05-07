@@ -97,8 +97,22 @@ App mobile de calculadora inteligente com chat em português — o usuário desc
 
 ## Pointers
 
-- Supabase tables: profiles, sessions, messages, formulas (is_system=true), saved_formulas
 - Supabase project: `cgfccmlrnkvxhsrhyqkh.supabase.co`
+- `SUPABASE_SERVICE_ROLE_KEY` disponível como secret — use para inspecionar schema real via DATABASE_URL + pg
 - Formulas com `expression` (mathjs) + `expression_meta` (solveFor, variables, resultUnit): 12/13 (Média Aritmética usa AI)
 - OpenAI skill: `.local/skills/ai-integrations-openai/SKILL.md`
 - Expo skill: `.local/skills/expo/SKILL.md`
+
+## Schema real do Supabase (verificado via information_schema)
+
+| Tabela | Colunas |
+|---|---|
+| `profiles` | id, full_name, avatar_url, created_at |
+| `formulas` | id, user_id, name, category, description, symbolic, is_system, created_at, expression, expression_meta, is_public, llm_verdict, llm_verified_at, llm_verdict_detail |
+| `saved_formulas` | id, user_id, formula_id, created_at |
+| `sessions` | id, user_id, title, created_at, updated_at, summary, summary_message_count |
+| `messages` | id, session_id, kind, text, result_data, created_at |
+| `formula_verifications` | id, formula_id, user_id, verdict, detail, created_at |
+| `formula_notes` | id, formula_id, user_id, content, created_at, updated_at |
+
+**Atenção**: `profiles` NÃO tem `updated_at`. `formulas` NÃO tem `updated_at`. Qualquer nova coluna Drizzle deve ter correspondência real no Supabase.
