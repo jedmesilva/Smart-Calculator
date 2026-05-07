@@ -36,7 +36,12 @@ Regras:
 - "confidence": "high" se clara, "medium" se razoável, "low" se incerta
 - "name": nome em português, curto e preciso
 - "category": uma de: Básico, Financeiro, Física, Geometria, Estatística, Saúde, Outro
-- Analise TODO o contexto da conversa, não só a última mensagem`;
+- Analise TODO o contexto da conversa, não só a última mensagem
+- IMPORTANTE: expressões aritméticas diretas (ex: "1 + 1", "5 × 3", "raiz de 16", "2 elevado a 10",
+  "quanto é 15% de 200", conversões simples, etc.) são SEMPRE válidas — retorne found: true com:
+  name: "Cálculo Direto", category: "Básico", symbolic: a expressão em notação matemática,
+  description: "Avaliação direta da expressão matemática"
+- Só retorne found: false se a mensagem não contiver nenhuma intenção de cálculo matemático`;
 
 /* ─── Prompt: valida se fórmula selecionada é adequada ─── */
 const VALIDATE_FORMULA_PROMPT = `Você é um especialista em matemática. O usuário selecionou uma fórmula específica e fez uma pergunta.
