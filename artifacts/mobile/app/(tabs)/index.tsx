@@ -19,7 +19,7 @@ import colors from "@/constants/colors";
 import { CalcOverlay, HistoryOverlay, FormulasScreen } from "@/components/Overlays";
 import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
-import { calculate, type ResultData } from "@/lib/apiClient";
+import { calculate, type ResultData, type MissingVariable } from "@/lib/apiClient";
 import { supabase } from "@/lib/supabase";
 import { createSession, saveMessages, touchSession } from "@/lib/queries";
 import type { DbFormula } from "@/lib/queries";
@@ -28,7 +28,9 @@ const c = colors.light;
 
 type ChatItem =
   | { kind: "user"; id: string; text: string }
-  | { kind: "result"; id: string; result: ResultData };
+  | { kind: "result"; id: string; result: ResultData }
+  | { kind: "question"; id: string; message: string; missing: MissingVariable[] }
+  | { kind: "error"; id: string; message: string };
 
 /* ─── USER BUBBLE ─── */
 function UserBubble({ text }: { text: string }) {
@@ -36,6 +38,44 @@ function UserBubble({ text }: { text: string }) {
     <View style={styles.userBubbleWrap}>
       <View style={styles.userBubble}>
         <Text style={styles.userBubbleText}>{text}</Text>
+      </View>
+    </View>
+  );
+}
+
+/* ─── QUESTION BUBBLE ─── */
+function QuestionBubble({ message, missing }: { message: string; missing: MissingVariable[] }) {
+  return (
+    <View style={styles.loadingWrap}>
+      <View style={styles.loadingDot} />
+      <View style={styles.questionBubble}>
+        <Text style={styles.questionMessage}>{message}</Text>
+        <View style={styles.missingList}>
+          {missing.map((m, i) => (
+            <View key={i} style={styles.missingItem}>
+              <Text style={styles.missingDot}>•</Text>
+              <Text style={styles.missingSymbol}>{m.symbol}</Text>
+              <Text style={styles.missingName}>{m.name}</Text>
+              <Text style={styles.missingDesc}>{m.description}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+/* ─── ERROR BUBBLE ─── */
+function ErrorBubble({ message }: { message: string }) {
+  return (
+    <View style={styles.loadingWrap}>
+      <View style={styles.loadingDot} />
+      <View style={styles.errorBubble}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 }}>
+          <Feather name="alert-circle" size={14} color="#D93025" />
+          <Text style={styles.errorTitle}>Atenção</Text>
+        </View>
+        <Text style={styles.errorText}>{message}</Text>
       </View>
     </View>
   );
@@ -75,50 +115,67 @@ function ResultRow({
   };
 
   return (
-    <Animated.View style={[styles.resultCard, { transform: [{ scale: scaleAnim }] }]}>
-      <View style={styles.resultCardTop}>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={styles.resultFormula}>{result.formulaName}</Text>
-          <Text style={styles.resultSubstituted} numberOfLines={1}>
-            {result.formulaSubstituted}
-          </Text>
-        </View>
-        <View style={styles.resultRight}>
-          <View style={{ alignItems: "flex-end" }}>
-            {!!result.resultUnit && (
-              <Text style={styles.resultUnit}>{result.resultUnit}</Text>
-            )}
-            <Text style={styles.resultNum}>{result.resultFormatted}</Text>
+    <View style={{ gap: 8 }}>
+      <Animated.View style={[styles.resultCard, { transform: [{ scale: scaleAnim }] }]}>
+        <View style={styles.resultCardTop}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>
+              <Text style={styles.resultFormula}>{result.formulaName}</Text>
+              {result.searchUsed && (
+                <View style={styles.searchUsedTag}>
+                  <Feather name="globe" size={8} color={c.mid} />
+                  <Text style={styles.searchUsedText}>verificado</Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.resultSubstituted} numberOfLines={1}>
+              {result.formulaSubstituted}
+            </Text>
           </View>
-          <Pressable
-            onPress={onView}
-            style={({ pressed }) => [styles.viewBtn, pressed && { backgroundColor: c.ghost }]}
-          >
-            <Text style={styles.sigmaSmall}>σ</Text>
-            <Text style={styles.viewBtnText}>ver</Text>
-          </Pressable>
+          <View style={styles.resultRight}>
+            <View style={{ alignItems: "flex-end" }}>
+              {!!result.resultUnit && (
+                <Text style={styles.resultUnit}>{result.resultUnit}</Text>
+              )}
+              <Text style={styles.resultNum}>{result.resultFormatted}</Text>
+            </View>
+            <Pressable
+              onPress={onView}
+              style={({ pressed }) => [styles.viewBtn, pressed && { backgroundColor: c.ghost }]}
+            >
+              <Text style={styles.sigmaSmall}>σ</Text>
+              <Text style={styles.viewBtnText}>ver</Text>
+            </Pressable>
+          </View>
         </View>
-      </View>
-      {!isSaved ? (
-        <Pressable
-          onPress={handleSave}
-          style={({ pressed }) => [
-            styles.saveRow,
-            pressed && styles.saveRowPressed,
-          ]}
-        >
-          <Feather name="bookmark" size={11} color={c.mid} />
-          <Text style={styles.saveText}>Salvar como minha fórmula</Text>
-        </Pressable>
-      ) : (
-        <View style={[styles.saveRow, styles.saveRowSaved]}>
-          <Feather name="bookmark" size={11} color={c.text} />
-          <Text style={[styles.saveText, styles.saveTextSaved]}>
-            Salvo em Minhas fórmulas
-          </Text>
+        {!isSaved ? (
+          <Pressable
+            onPress={handleSave}
+            style={({ pressed }) => [
+              styles.saveRow,
+              pressed && styles.saveRowPressed,
+            ]}
+          >
+            <Feather name="bookmark" size={11} color={c.mid} />
+            <Text style={styles.saveText}>Salvar como minha fórmula</Text>
+          </Pressable>
+        ) : (
+          <View style={[styles.saveRow, styles.saveRowSaved]}>
+            <Feather name="bookmark" size={11} color={c.text} />
+            <Text style={[styles.saveText, styles.saveTextSaved]}>
+              Salvo em Minhas fórmulas
+            </Text>
+          </View>
+        )}
+      </Animated.View>
+
+      {result.warning && (
+        <View style={styles.warningRow}>
+          <Feather name="alert-triangle" size={12} color="#B07D1A" />
+          <Text style={styles.warningText}>{result.warning}</Text>
         </View>
       )}
-    </Animated.View>
+    </View>
   );
 }
 
@@ -212,13 +269,20 @@ export default function SigmaScreen() {
     setIsLoading(true);
 
     try {
-      const result = await calculate(
+      const response = await calculate(
         { query: text, formulaId: activeFormula?.id },
         session.access_token
       );
 
       const resultId = msgId + "_r";
-      setChat((prev) => [...prev, { kind: "result", id: resultId, result }]);
+      
+      if (response.status === "success") {
+        setChat((prev) => [...prev, { kind: "result", id: resultId, result: response.result }]);
+      } else if (response.status === "needs_input") {
+        setChat((prev) => [...prev, { kind: "question", id: resultId, message: response.message, missing: response.missing }]);
+      } else if (response.status === "formula_error") {
+        setChat((prev) => [...prev, { kind: "error", id: resultId, message: response.message }]);
+      }
 
       // Persist to Supabase in background
       let sessId = currentSessionId;
@@ -232,23 +296,19 @@ export default function SigmaScreen() {
         touchSession(sessId);
       }
 
-      if (sessId) {
-        await saveMessages(sessId, text, result);
+      if (sessId && response.status === "success") {
+        await saveMessages(sessId, text, response.result);
       }
     } catch (err: any) {
       const errId = msgId + "_e";
-      const errorResult: ResultData = {
-        formulaName: "Erro",
-        resultFormatted: "—",
-        resultUnit: "",
-        resultLabel: err?.message ?? "não foi possível calcular",
-        formulaSymbolic: "",
-        formulaSubstituted: "",
-        variables: [],
-        steps: [],
-        note: null,
-      };
-      setChat((prev) => [...prev, { kind: "result", id: errId, result: errorResult }]);
+      setChat((prev) => [
+        ...prev,
+        {
+          kind: "error",
+          id: errId,
+          message: err?.message ?? "Não foi possível processar o cálculo. Tente novamente.",
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -261,6 +321,8 @@ export default function SigmaScreen() {
     ({ item, index }: { item: ChatItem; index: number }) => {
       const originalIndex = chat.length - 1 - index;
       if (item.kind === "user") return <UserBubble text={item.text} />;
+      if (item.kind === "question") return <QuestionBubble message={item.message} missing={item.missing} />;
+      if (item.kind === "error") return <ErrorBubble message={item.message} />;
       if (item.kind === "result") {
         const isSaved = savedResultIds.has(item.id) || originalIndex < chat.length - 2;
         return (
@@ -721,6 +783,57 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  questionBubble: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: "#F0F0EE",
+    borderRadius: 14,
+    borderTopLeftRadius: 4,
+    maxWidth: "85%",
+  },
+  questionMessage: {
+    fontSize: 13,
+    color: "#1A1A18",
+    lineHeight: 18,
+    fontFamily: "Inter_500Medium",
+    marginBottom: 8,
+  },
+  missingList: { gap: 4 },
+  missingItem: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
+  missingDot: { fontSize: 12, color: "#AEADA8" },
+  missingSymbol: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#1A1A18", width: 16 },
+  missingName: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#6B6B66", width: 80 },
+  missingDesc: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#AEADA8", flex: 1 },
+  errorBubble: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: "#FFF2F0",
+    borderRadius: 14,
+    borderTopLeftRadius: 4,
+    maxWidth: "85%",
+    borderWidth: 1,
+    borderColor: "#FFE4E1",
+  },
+  errorTitle: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#D93025" },
+  errorText: { fontSize: 13, color: "#444", lineHeight: 18, fontFamily: "Inter_400Regular" },
+  warningRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 6,
+    paddingHorizontal: 4,
+    marginTop: -2,
+  },
+  warningText: { fontSize: 11, color: "#B07D1A", fontFamily: "Inter_400Regular", flex: 1, lineHeight: 15 },
+  searchUsedTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    backgroundColor: "#E8E7E3",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  searchUsedText: { fontSize: 8, fontFamily: "Inter_600SemiBold", color: "#6B6B66", textTransform: "uppercase" },
   inputWrap: { paddingHorizontal: 28, paddingTop: 8, flexShrink: 0 },
   inputBox: {
     backgroundColor: "#EFEFEC",
