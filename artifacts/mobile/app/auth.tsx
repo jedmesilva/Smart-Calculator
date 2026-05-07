@@ -9,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -53,15 +52,7 @@ export default function AuthScreen() {
         password,
         options: { data: { full_name: name.trim() } },
       });
-      if (error) {
-        setError(error.message);
-      } else {
-        Alert.alert(
-          "Verifique seu e-mail",
-          "Enviamos um link de confirmação. Após confirmar, faça login.",
-          [{ text: "OK", onPress: () => setMode("login") }]
-        );
-      }
+      if (error) setError(error.message);
     }
     setLoading(false);
   };
