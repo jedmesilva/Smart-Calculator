@@ -60,6 +60,68 @@ const API_BASE = process.env.EXPO_PUBLIC_API_URL
   ? process.env.EXPO_PUBLIC_API_URL
   : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api`;
 
+/* ── Formula LLM verify / publish ── */
+
+export type LlmVerifyResponse = {
+  verdict: "approved" | "flagged";
+  detail: string;
+};
+
+export type PublishResponse = {
+  published: boolean;
+  verdict: "approved" | "flagged";
+  detail: string;
+};
+
+export async function requestLlmVerify(
+  formulaId: string,
+  accessToken: string
+): Promise<LlmVerifyResponse> {
+  const res = await fetch(`${API_BASE}/formulas/${formulaId}/llm-verify`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as any).error ?? `Erro ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function publishFormula(
+  formulaId: string,
+  accessToken: string,
+  forcePublish = false
+): Promise<PublishResponse> {
+  const res = await fetch(`${API_BASE}/formulas/${formulaId}/publish`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ forcePublish }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as any).error ?? `Erro ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function unpublishFormula(
+  formulaId: string,
+  accessToken: string
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/formulas/${formulaId}/unpublish`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as any).error ?? `Erro ${res.status}`);
+  }
+}
+
 export async function calculate(req: CalcRequest, accessToken: string): Promise<CalcResponse> {
   const res = await fetch(`${API_BASE}/calculate`, {
     method: "POST",

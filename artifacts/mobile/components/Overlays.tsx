@@ -21,9 +21,11 @@ import {
   useSavedFormulaIds,
   useSessions,
   useToggleSaveFormula,
+  useCurrentUser,
   type DbFormula,
   type DbSession,
 } from "@/lib/queries";
+import { FormulaDetailOverlay } from "@/components/FormulaDetailOverlay";
 
 const c = colors.light;
 
@@ -242,6 +244,92 @@ export function HistoryOverlay({
   );
 }
 
+/* ─── FORMULA CARD ─── */
+function FormulaCard({
+  f,
+  savedIds,
+  onSelect,
+  onDetail,
+  onToggleSave,
+}: {
+  f: DbFormula;
+  savedIds: Set<string>;
+  onSelect: (f: DbFormula) => void;
+  onDetail: (f: DbFormula) => void;
+  onToggleSave: (f: DbFormula, isSaved: boolean) => void;
+}) {
+  const isSaved = savedIds.has(f.id);
+  return (
+    <Pressable
+      onPress={() => onSelect(f)}
+      style={({ pressed }) => [styles.formulaCard, pressed && styles.rowPressed]}
+    >
+      <View style={styles.formulaCardHeader}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={styles.formulaCat}>{f.category}</Text>
+          <Text style={styles.formulaName}>{f.name}</Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          {/* Info / detalhe */}
+          <Pressable
+            hitSlop={10}
+            onPress={(e) => { e.stopPropagation(); onDetail(f); }}
+            style={styles.infoBtn}
+          >
+            <Feather name="info" size={13} color={c.ghost} />
+          </Pressable>
+          {/* Salvar (só para não-sistema) */}
+          {!f.is_system && (
+            <Pressable
+              hitSlop={8}
+              onPress={(e) => {
+                e.stopPropagation();
+                Haptics.impactAsync(isSaved ? Haptics.ImpactFeedbackStyle.Light : Haptics.ImpactFeedbackStyle.Medium);
+                onToggleSave(f, isSaved);
+              }}
+              style={({ pressed }) => [
+                styles.bookmarkPill,
+                isSaved && styles.bookmarkPillSaved,
+                pressed && styles.bookmarkPillPressed,
+              ]}
+            >
+              <Feather name="bookmark" size={12} color={isSaved ? "#fff" : c.ghost} />
+              <Text style={[styles.bookmarkPillText, isSaved && styles.bookmarkPillTextSaved]}>
+                {isSaved ? "salva ✓" : "salvar"}
+              </Text>
+            </Pressable>
+          )}
+        </View>
+      </View>
+
+      <Text style={styles.formulaDesc} numberOfLines={2}>{f.description}</Text>
+      <Text style={styles.formulaSymbolicSmall}>{f.symbolic}</Text>
+
+      {/* Badges */}
+      <View style={{ flexDirection: "row", gap: 5, marginTop: 6, flexWrap: "wrap" }}>
+        {f.llm_verdict === "approved" && (
+          <View style={styles.cardBadgeOk}>
+            <Feather name="cpu" size={9} color="#2A7A4B" />
+            <Text style={styles.cardBadgeTextOk}>IA verificou</Text>
+          </View>
+        )}
+        {f.llm_verdict === "flagged" && (
+          <View style={styles.cardBadgeWarn}>
+            <Feather name="cpu" size={9} color="#B07D1A" />
+            <Text style={styles.cardBadgeTextWarn}>IA sinalizou</Text>
+          </View>
+        )}
+        {f.is_public && !f.is_system && (
+          <View style={styles.cardBadgeCommunity}>
+            <Feather name="globe" size={9} color="#3A6B9A" />
+            <Text style={styles.cardBadgeTextCommunity}>comunidade</Text>
+          </View>
+        )}
+      </View>
+    </Pressable>
+  );
+}
+
 /* ─── FORMULAS SCREEN ─── */
 export function FormulasScreen({
   onSelect,
@@ -253,51 +341,72 @@ export function FormulasScreen({
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 0 : insets.top;
 
-  const [showMine, setShowMine] = useState(false);
+  type Tab = "oficiais" | "comunidade" | "minhas";
+  const [tab, setTab] = useState<Tab>("oficiais");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Todos");
+  const [detailFormula, setDetailFormula] = useState<DbFormula | null>(null);
 
   const { data: allFormulas = [], isLoading: loadingFormulas } = useFormulas();
   const { data: savedIds = new Set<string>() } = useSavedFormulaIds();
+  const { data: currentUser } = useCurrentUser();
   const toggleSave = useToggleSaveFormula();
 
-  const systemFormulas = allFormulas.filter((f) => f.is_system);
-  const savedFormulas = allFormulas.filter((f) => savedIds.has(f.id));
-  const base = showMine ? savedFormulas : systemFormulas;
+  const currentUserId = currentUser?.id ?? null;
 
-  const cats = ["Todos", ...Array.from(new Set(systemFormulas.map((f) => f.category))).sort()];
+  const officialFormulas = allFormulas.filter((f) => f.is_system);
+  const communityFormulas = allFormulas.filter((f) => !f.is_system && f.is_public);
+  const myFormulas = allFormulas.filter(
+    (f) => !f.is_system && (f.user_id === currentUserId || savedIds.has(f.id))
+  );
 
-  const list = base.filter((f) => {
+  const baseList =
+    tab === "oficiais" ? officialFormulas :
+    tab === "comunidade" ? communityFormulas :
+    myFormulas;
+
+  const cats = ["Todos", ...Array.from(new Set(officialFormulas.map((f) => f.category))).sort()];
+
+  const list = baseList.filter((f) => {
     const q = search.toLowerCase();
-    return (
-      (f.name.toLowerCase().includes(q) || f.description.toLowerCase().includes(q)) &&
-      (showMine || category === "Todos" || f.category === category)
-    );
+    const matchSearch = f.name.toLowerCase().includes(q) || f.description.toLowerCase().includes(q);
+    const matchCat = tab !== "oficiais" || category === "Todos" || f.category === category;
+    return matchSearch && matchCat;
   });
+
+  const emptyLabels: Record<Tab, string> = {
+    oficiais: "Nenhum resultado",
+    comunidade: "Nenhuma fórmula publicada ainda",
+    minhas: "Você ainda não tem fórmulas salvas",
+  };
 
   return (
     <View style={[styles.overlay, { paddingTop: topPad }]}>
+      {/* Header */}
       <View style={{ paddingHorizontal: 28, paddingTop: 10, paddingBottom: 12 }}>
         <View style={styles.overlayHeaderRow}>
-          <Text style={styles.overlayTitle}>
-            {showMine ? "Minhas fórmulas" : "Fórmulas"}
-          </Text>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Pressable
-              onPress={() => {
-                setShowMine((v) => !v);
-                setSearch("");
-              }}
-              style={[styles.bookmarkBtn, showMine && styles.bookmarkBtnActive]}
-              hitSlop={8}
-            >
-              <Feather name="bookmark" size={15} color={showMine ? "#fff" : c.ghost} />
-            </Pressable>
-            <Pressable onPress={onClose} style={styles.iconBtn} hitSlop={12}>
-              <Feather name="x" size={18} color={c.faint} />
-            </Pressable>
-          </View>
+          <Text style={styles.overlayTitle}>Fórmulas</Text>
+          <Pressable onPress={onClose} style={styles.iconBtn} hitSlop={12}>
+            <Feather name="x" size={18} color={c.faint} />
+          </Pressable>
         </View>
+
+        {/* Tabs */}
+        <View style={styles.tabRow}>
+          {(["oficiais", "comunidade", "minhas"] as Tab[]).map((t) => (
+            <Pressable
+              key={t}
+              onPress={() => { setTab(t); setSearch(""); setCategory("Todos"); }}
+              style={[styles.tabBtn, tab === t && styles.tabBtnActive]}
+            >
+              <Text style={[styles.tabBtnText, tab === t && styles.tabBtnTextActive]}>
+                {t === "oficiais" ? "Oficiais" : t === "comunidade" ? "Comunidade" : "Minhas"}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* Search */}
         <View style={styles.searchBox}>
           <Text style={styles.sigmaText}>σ</Text>
           <TextInput
@@ -315,17 +424,13 @@ export function FormulasScreen({
         </View>
       </View>
 
-      {!showMine && (
+      {/* Category chips (apenas aba Oficiais) */}
+      {tab === "oficiais" && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.catScroll}
-          contentContainerStyle={{
-            paddingHorizontal: 28,
-            gap: 6,
-            flexDirection: "row",
-            alignItems: "flex-start",
-          }}
+          contentContainerStyle={{ paddingHorizontal: 28, gap: 6, flexDirection: "row", alignItems: "flex-start" }}
         >
           {cats.map((cat) => (
             <Pressable
@@ -333,9 +438,7 @@ export function FormulasScreen({
               onPress={() => setCategory(cat)}
               style={[styles.catChip, category === cat && styles.catChipActive]}
             >
-              <Text
-                style={[styles.catChipText, category === cat && styles.catChipTextActive]}
-              >
+              <Text style={[styles.catChipText, category === cat && styles.catChipTextActive]}>
                 {cat}
               </Text>
             </Pressable>
@@ -343,12 +446,10 @@ export function FormulasScreen({
         </ScrollView>
       )}
 
+      {/* Lista */}
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={[
-          styles.overlayBody,
-          { paddingTop: 10, paddingBottom: 28 + insets.bottom },
-        ]}
+        contentContainerStyle={[styles.overlayBody, { paddingTop: 10, paddingBottom: 28 + insets.bottom }]}
         showsVerticalScrollIndicator={false}
       >
         {loadingFormulas ? (
@@ -357,58 +458,36 @@ export function FormulasScreen({
           </View>
         ) : list.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>
-              {showMine ? "Nenhuma fórmula salva ainda" : "Nenhum resultado"}
-            </Text>
+            <Text style={styles.emptyText}>{emptyLabels[tab]}</Text>
           </View>
         ) : (
-          list.map((f) => {
-            const isSaved = savedIds.has(f.id);
-            return (
-              <Pressable
-                key={f.id}
-                onPress={() => onSelect(f)}
-                style={({ pressed }) => [styles.formulaCard, pressed && styles.rowPressed]}
-              >
-                <View style={styles.formulaCardHeader}>
-                  <View>
-                    <Text style={styles.formulaCat}>{f.category}</Text>
-                    <Text style={styles.formulaName}>{f.name}</Text>
-                  </View>
-                  <Pressable
-                    hitSlop={8}
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      Haptics.impactAsync(
-                        isSaved
-                          ? Haptics.ImpactFeedbackStyle.Light
-                          : Haptics.ImpactFeedbackStyle.Medium
-                      );
-                      toggleSave.mutate({ formulaId: f.id, isSaved });
-                    }}
-                    style={({ pressed }) => [
-                      styles.bookmarkPill,
-                      isSaved && styles.bookmarkPillSaved,
-                      pressed && styles.bookmarkPillPressed,
-                    ]}
-                  >
-                    <Feather
-                      name={isSaved ? "bookmark" : "bookmark"}
-                      size={12}
-                      color={isSaved ? "#fff" : c.ghost}
-                    />
-                    <Text style={[styles.bookmarkPillText, isSaved && styles.bookmarkPillTextSaved]}>
-                      {isSaved ? "salva ✓" : "salvar"}
-                    </Text>
-                  </Pressable>
-                </View>
-                <Text style={styles.formulaDesc}>{f.description}</Text>
-                <Text style={styles.formulaSymbolicSmall}>{f.symbolic}</Text>
-              </Pressable>
-            );
-          })
+          list.map((f) => (
+            <FormulaCard
+              key={f.id}
+              f={f}
+              savedIds={savedIds}
+              onSelect={onSelect}
+              onDetail={setDetailFormula}
+              onToggleSave={(formula, isSaved) =>
+                toggleSave.mutate({ formulaId: formula.id, isSaved })
+              }
+            />
+          ))
         )}
       </ScrollView>
+
+      {/* Detalhe da fórmula */}
+      {detailFormula && (
+        <FormulaDetailOverlay
+          formula={detailFormula}
+          currentUserId={currentUserId}
+          onClose={() => setDetailFormula(null)}
+          onUse={(f) => {
+            setDetailFormula(null);
+            onSelect(f);
+          }}
+        />
+      )}
     </View>
   );
 }
@@ -777,5 +856,77 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: c.ghost,
     fontFamily: "Inter_400Regular",
+  },
+  tabRow: {
+    flexDirection: "row",
+    gap: 4,
+    marginBottom: 10,
+  },
+  tabBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 9,
+    backgroundColor: c.panel,
+  },
+  tabBtnActive: {
+    backgroundColor: c.text,
+  },
+  tabBtnText: {
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
+    color: c.mid,
+  },
+  tabBtnTextActive: {
+    color: "#fff",
+    fontFamily: "Inter_600SemiBold",
+  },
+  infoBtn: {
+    padding: 5,
+    borderRadius: 8,
+    backgroundColor: c.surface,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardBadgeOk: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 5,
+    backgroundColor: "#F0FAF4",
+  },
+  cardBadgeTextOk: {
+    fontSize: 9,
+    fontFamily: "Inter_600SemiBold",
+    color: "#2A7A4B",
+  },
+  cardBadgeWarn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 5,
+    backgroundColor: "#FBF8ED",
+  },
+  cardBadgeTextWarn: {
+    fontSize: 9,
+    fontFamily: "Inter_600SemiBold",
+    color: "#B07D1A",
+  },
+  cardBadgeCommunity: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 5,
+    backgroundColor: "#EBF3FB",
+  },
+  cardBadgeTextCommunity: {
+    fontSize: 9,
+    fontFamily: "Inter_600SemiBold",
+    color: "#3A6B9A",
   },
 });

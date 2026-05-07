@@ -22,10 +22,34 @@ export type DbFormula = {
   description: string;
   symbolic: string;
   is_system: boolean;
+  is_public: boolean;
   user_id: string | null;
   created_at: string;
   expression: string | null;
   expression_meta: FormulaExpressionMeta | null;
+  llm_verdict: "approved" | "flagged" | null;
+  llm_verified_at: string | null;
+  llm_verdict_detail: string | null;
+};
+
+export type FormulaVerification = {
+  id: string;
+  formula_id: string;
+  user_id: string;
+  verdict: "approved" | "flagged";
+  detail: string | null;
+  created_at: string;
+  profiles?: { full_name: string | null } | null;
+};
+
+export type FormulaNote = {
+  id: string;
+  formula_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  profiles?: { full_name: string | null } | null;
 };
 
 export type DbSession = {
@@ -227,4 +251,150 @@ export function useSaveFormulaFromChat() {
       qc.invalidateQueries({ queryKey: ["formulas"] });
     },
   });
+}
+
+/* ── Usuário atual ── */
+export function useCurrentUser() {
+  return useQuery({
+    queryKey: ["current_user"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      return user;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/* ── Verificações de uma fórmula ── */
+export function useFormulaVerifications(formulaId: string | null) {
+  return useQuery({
+    queryKey: ["formula_verifications", formulaId],
+    enabled: !!formulaId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("formula_verifications")
+        .select("*, profiles(full_name)")
+        .eq("formula_id", formulaId!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as FormulaVerification[];
+    },
+  });
+}
+
+/* ── Notas de uma fórmula ── */
+export function useFormulaNotes(formulaId: string | null) {
+  return useQuery({
+    queryKey: ["formula_notes", formulaId],
+    enabled: !!formulaId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("formula_notes")
+        .select("*, profiles(full_name)")
+        .eq("formula_id", formulaId!)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as FormulaNote[];
+    },
+  });
+}
+
+/* ── Adicionar ou atualizar verificação (upsert por user+formula) ── */
+export function useUpsertVerification() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      formulaId,
+      verdict,
+      detail,
+    }: {
+      formulaId: string;
+      verdict: "approved" | "flagged";
+      detail?: string;
+    }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Não autenticado");
+
+      // Remove voto anterior se existir
+      await supabase
+        .from("formula_verifications")
+        .delete()
+        .eq("formula_id", formulaId)
+        .eq("user_id", user.id);
+
+      const { error } = await supabase
+        .from("formula_verifications")
+        .insert({ formula_id: formulaId, user_id: user.id, verdict, detail: detail ?? null });
+      if (error) throw error;
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["formula_verifications", vars.formulaId] });
+    },
+  });
+}
+
+/* ── Remover verificação própria ── */
+export function useRemoveVerification() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (formulaId: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Não autenticado");
+      const { error } = await supabase
+        .from("formula_verifications")
+        .delete()
+        .eq("formula_id", formulaId)
+        .eq("user_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, formulaId) => {
+      qc.invalidateQueries({ queryKey: ["formula_verifications", formulaId] });
+    },
+  });
+}
+
+/* ── Adicionar nota ── */
+export function useAddNote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ formulaId, content }: { formulaId: string; content: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Não autenticado");
+      const { error } = await supabase
+        .from("formula_notes")
+        .insert({ formula_id: formulaId, user_id: user.id, content });
+      if (error) throw error;
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["formula_notes", vars.formulaId] });
+    },
+  });
+}
+
+/* ── Deletar nota própria ── */
+export function useDeleteNote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ noteId, formulaId }: { noteId: string; formulaId: string }) => {
+      const { error } = await supabase
+        .from("formula_notes")
+        .delete()
+        .eq("id", noteId);
+      if (error) throw error;
+      return formulaId;
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["formula_notes", vars.formulaId] });
+    },
+  });
+}
+
+/* ── Invalidar cache de uma fórmula específica ── */
+export function useInvalidateFormula() {
+  const qc = useQueryClient();
+  return (formulaId: string) => {
+    qc.invalidateQueries({ queryKey: ["formulas"] });
+    qc.invalidateQueries({ queryKey: ["formula_verifications", formulaId] });
+    qc.invalidateQueries({ queryKey: ["formula_notes", formulaId] });
+  };
 }
