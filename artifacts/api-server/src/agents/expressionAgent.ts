@@ -59,7 +59,14 @@ Regras críticas:
 - Mapeie valores da lista pelo SIGNIFICADO (label), não pela posição
 - Percentuais já devem estar em decimal (0.01 para 1%) — não converta novamente
 - "formulaSubstituted": notação pt-BR com valores reais, × para multiplicação, expoentes sobrescritos
-- "missing": somente variáveis realmente ausentes da conversa inteira`;
+- "missing": somente variáveis realmente ausentes da conversa inteira
+- REGRA ABSOLUTA DE CONSISTÊNCIA: todo símbolo que aparece em "expression" DEVE estar em "extracted"
+  com um valor numérico. Se precisar de um valor derivado (ex: preço por item = total/qtd),
+  calcule-o INLINE na expressão (ex: use "(50/10) * 3" e não "preco_por_item * 3").
+  Jamais use um nome de variável em "expression" que não esteja em "extracted".
+- Para problemas multi-etapa, componha uma única expressão inline com todos os valores numéricos
+  literais necessários. Exemplo: troco = total - (total/qtd_total) * qtd_comprada
+  → expression: "50 - (50/10) * 3", extracted: {}, allPresent: true`;
 
 const BUILD_DYNAMIC_PROMPT = `Você é um especialista em matemática. Dado uma fórmula identificada e os valores extraídos, 
 derive a expressão MathJS completa e mapeie os valores às variáveis.
