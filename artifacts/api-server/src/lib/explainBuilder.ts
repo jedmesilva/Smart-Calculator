@@ -95,13 +95,20 @@ export function buildResult(
 ): Omit<ResultData, "conversationalResponse"> {
   const formatted = formatPtBR(computedValue, vars.resultUnit);
 
-  const variables = Object.entries(vars.extracted)
-    .filter(([sym]) => sym !== vars.solveFor)
-    .map(([symbol, numVal]) => ({
-      symbol,
-      name: vars.variableNames[symbol] ?? symbol,
-      value: vars.variableValues[symbol] ?? String(numVal),
-    }));
+  // Use variableValues as primary source so that inline-expression results
+  // (where extracted is {}) still display variables. Fall back to extracted.
+  const allSymbols = new Set([
+    ...Object.keys(vars.variableValues),
+    ...Object.keys(vars.extracted),
+  ]);
+  const variables = [...allSymbols]
+    .filter((sym) => sym !== vars.solveFor)
+    .map((sym) => ({
+      symbol: sym,
+      name: vars.variableNames[sym] ?? sym,
+      value: vars.variableValues[sym] ?? String(vars.extracted[sym] ?? ""),
+    }))
+    .filter((v) => v.value !== "");
 
   const steps = buildSteps(vars, formatted);
 

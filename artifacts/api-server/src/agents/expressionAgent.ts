@@ -66,7 +66,13 @@ Regras críticas:
   Jamais use um nome de variável em "expression" que não esteja em "extracted".
 - Para problemas multi-etapa, componha uma única expressão inline com todos os valores numéricos
   literais necessários. Exemplo: troco = total - (total/qtd_total) * qtd_comprada
-  → expression: "50 - (50/10) * 3", extracted: {}, allPresent: true`;
+  → expression: "50 - (50/10) * 3", extracted: {}, allPresent: true
+- REGRA CRÍTICA PARA VARIÁVEIS: "variableValues" DEVE sempre conter os valores fornecidos pelo usuário
+  em formato legível (pt-BR), MESMO quando "extracted" estiver vazio por causa de expressão inline.
+  Exemplo inline: se o usuário disse "total R$50, 10 itens, comprou 3":
+  variableValues: { "total": "R$ 50", "itens": "10", "comprados": "3" }
+  variableNames: { "total": "Valor total", "itens": "Quantidade total", "comprados": "Itens comprados" }
+  Isso garante que o usuário veja as variáveis na visualização do cálculo.`;
 
 const BUILD_DYNAMIC_PROMPT = `Você é um especialista em matemática. Dado uma fórmula identificada e os valores extraídos, 
 derive a expressão MathJS completa e mapeie os valores às variáveis.
