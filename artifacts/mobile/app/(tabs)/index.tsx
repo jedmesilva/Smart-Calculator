@@ -304,8 +304,12 @@ export default function SigmaScreen() {
 
       if (response.status === "success") {
         const items: ChatItem[] = [];
-        if (response.result.conversationalResponse) {
-          items.push({ kind: "assistant", id: assistantId, text: response.result.conversationalResponse });
+        // Remove literal "" or '' that the LLM sometimes returns as "empty" signal
+        const conv = (response.result.conversationalResponse ?? "")
+          .replace(/^["'\s]+$/, "")
+          .trim();
+        if (conv) {
+          items.push({ kind: "assistant", id: assistantId, text: conv });
         }
         items.push({ kind: "result", id: resultId, result: response.result });
         setChat((prev) => [...prev, ...items]);

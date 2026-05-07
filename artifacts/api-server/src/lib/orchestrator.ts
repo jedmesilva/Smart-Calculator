@@ -289,7 +289,7 @@ export async function runCalculationPipeline(opts: {
         proof: validation,
       })
     ),
-    runConversationalAgent({ query, formula, expressionResult, computedValue, validation }),
+    runConversationalAgent({ query, formula, expressionResult, computedValue, validation, context, sessionSummary }),
   ]);
   logger.info({ ms: Date.now() - phase5Start }, "orchestrator: phase 5 complete");
 

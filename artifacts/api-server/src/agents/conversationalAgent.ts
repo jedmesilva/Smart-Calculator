@@ -12,26 +12,32 @@ import { logger } from "../lib/logger";
 import type { ConversationMessage, ExpressionResult, FormulaInfo, ValidationResult } from "./types";
 
 const CONVERSATIONAL_PROMPT = `Você é o Sigma, uma calculadora inteligente com personalidade amigável em português brasileiro.
-Gere uma resposta conversacional em português que acompanha o card de resultado numérico no chat.
+Gere uma resposta conversacional curta em português que acompanha o card de resultado numérico no chat.
+
+PERSPECTIVA — quem fez o cálculo:
+- O Sigma (app) calculou o resultado. Você apresenta o que o app encontrou.
+- NUNCA diga "você calculou", "a sua conta", "verifique se os valores estão certos", "cuidado com os dados".
+- NUNCA alerte sobre possíveis erros do usuário — a verificação matemática já foi feita automaticamente pelo app.
+- NUNCA repita os dados que o usuário já informou como se estivesse confirmando o que ele disse.
+- Fale na perspectiva do app: "O resultado é...", "Com esses dados, o valor ficou em...", "Isso equivale a..."
 
 REGRAS DE COMPRIMENTO — adapte ao tipo de pergunta:
-- Aritmética simples ("10 × 5", "raiz de 16", "500 + 200"): 1 frase curta ou nenhuma (retorne string vazia "")
-- Cálculo com contexto ou unidade ("quanto rende R$1000 a 1%?"): 1-2 frases explicando o resultado
-- Pergunta multi-parte ou comparativa ("quem é mais rápido?", "qual a diferença?"): 2-4 frases respondendo TODAS as partes da pergunta com os valores calculados
+- Aritmética simples ("10 × 5", "raiz de 16", "500 + 200"): retorne exatamente uma string vazia (sem aspas, sem texto)
+- Cálculo com contexto ou unidade ("quanto rende R$1000 a 1%?"): 1-2 frases explicando o que o resultado significa
+- Pergunta multi-parte ou comparativa ("quem é mais rápido?", "qual a diferença?"): 2-4 frases respondendo TODAS as partes com os valores
 
-IMPORTANTE para perguntas multi-parte:
-- Se o usuário fez várias perguntas (ex: "qual a diferença? quem é mais rápido? e quanto mais rápido?"),
-  responda cada uma explicitamente com os valores calculados
-- O card já mostra o número — use a resposta para DAR SENTIDO ao número no contexto da pergunta
-- Ex: se resultado é 0,67 km/h de diferença de velocidade, diga quem é mais rápido e por quanto
+CONTEXTO MULTI-TURNO:
+- Se a conversa tem histórico, use-o para dar sentido ao resultado atual
+- Conecte o resultado com o que foi discutido antes quando relevante (ex: "Isso é R$ 5 a menos do que a compra anterior")
+- Não peça informações que já aparecem no histórico da conversa
 
 NÃO use markdown, NÃO use emojis, NÃO use asteriscos.
-Escreva de forma natural e direta. O resultado numérico já está no card — não precisa repeti-lo isoladamente.
+Escreva de forma natural e direta. O card já mostra o número — não o repita isolado.
 
 Exemplos:
-- Simples "10 × 5": "" (vazio — o card já diz tudo)
-- "Seu montante final será R$ 1.127,16. Com juros de 1% ao mês por 12 meses, o crescimento composto supera levemente os juros simples."
-- "Você corre a 6,67 km/h e seu amigo a 6 km/h — então você é o mais rápido. A diferença é 0,67 km/h, ou seja, para cada hora você percorre quase 700 metros a mais que ele."`;
+- "10 × 5": (retorne vazio — o card já diz tudo)
+- "Quanto rende R$ 1.000 a 1% ao mês por 12 meses?": "Com juros compostos de 1% ao mês, o montante cresce para R$ 1.127,16 ao final de 12 meses."
+- "Quem corre mais rápido, eu a 6 km/h ou meu amigo a 6,67?": "Seu amigo é o mais rápido. A diferença é 0,67 km/h — para cada hora, ele percorre cerca de 670 metros além de você."`;
 
 export async function runConversationalAgent(opts: {
   query: string;
@@ -39,8 +45,10 @@ export async function runConversationalAgent(opts: {
   expressionResult: ExpressionResult;
   computedValue: number;
   validation: ValidationResult;
+  context?: ConversationMessage[];
+  sessionSummary?: string;
 }): Promise<string> {
-  const { query, formula, expressionResult, computedValue, validation } = opts;
+  const { query, formula, expressionResult, computedValue, validation, context, sessionSummary } = opts;
 
   // Formata o resultado para o prompt
   const isPercent = expressionResult.resultUnit === "%";
@@ -59,25 +67,38 @@ export async function runConversationalAgent(opts: {
 
   const userContent = [
     `Fórmula usada: ${formula.name}`,
-    `Pergunta do usuário: ${query}`,
-    `Dados informados: ${varDesc}`,
-    `Resultado: ${expressionResult.solveFor} = ${resultWithUnit} (${expressionResult.resultLabel})`,
-    validation.valid
-      ? `Verificação: aprovada — ${validation.detail}`
-      : `Atenção: ${validation.detail}`,
+    `Pergunta atual do usuário: ${query}`,
+    `Dados usados no cálculo: ${varDesc}`,
+    `Resultado calculado pelo app: ${expressionResult.solveFor} = ${resultWithUnit} (${expressionResult.resultLabel})`,
+    `Verificação matemática: ${validation.valid ? `aprovada — ${validation.detail}` : validation.detail}`,
   ].join("\n");
+
+  // Monta o array de mensagens incluindo histórico da conversa
+  const messages: any[] = [{ role: "system", content: CONVERSATIONAL_PROMPT }];
+
+  if (sessionSummary) {
+    messages.push({ role: "user", content: `[Histórico resumido da sessão]\n${sessionSummary}` });
+    messages.push({ role: "assistant", content: "Entendido." });
+  }
+
+  if (context && context.length > 0) {
+    for (const m of context) {
+      messages.push({ role: m.role, content: m.content });
+    }
+  }
+
+  messages.push({ role: "user", content: userContent });
 
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       max_completion_tokens: 200,
-      messages: [
-        { role: "system", content: CONVERSATIONAL_PROMPT },
-        { role: "user", content: userContent },
-      ],
+      messages,
     } as any);
 
-    const text = response.choices[0]?.message?.content?.trim() ?? "";
+    let text = response.choices[0]?.message?.content?.trim() ?? "";
+    // LLM às vezes retorna literal "" como sinal de "vazio" — normalizar para string vazia real
+    if (/^["']+$/.test(text)) text = "";
     if (!text) throw new Error("empty response");
 
     logger.debug({ formulaName: formula.name }, "conversationalAgent: response generated");
