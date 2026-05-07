@@ -21,7 +21,7 @@ import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculate, type ResultData, type MissingVariable } from "@/lib/apiClient";
 import { buildContext } from "@/lib/contextBuilder";
-import { createSession, saveMessages, touchSession } from "@/lib/queries";
+import { createSession, saveMessages, touchSession, fetchSessionSummary } from "@/lib/queries";
 import type { DbFormula } from "@/lib/queries";
 
 const c = colors.light;
@@ -254,6 +254,8 @@ export default function SigmaScreen() {
   const [chat, setChat] = useState<ChatItem[]>([]);
   const [savedResultIds, setSavedResultIds] = useState<Set<string>>(new Set());
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [sessionSummary, setSessionSummary] = useState<string | null>(null);
+  const [messageCount, setMessageCount] = useState(0);
   const [viewingResult, setViewingResult] = useState<ResultData | null>(null);
   const inputRef = useRef<TextInput>(null);
 
@@ -274,6 +276,8 @@ export default function SigmaScreen() {
     setSavedResultIds(new Set());
     setActiveFormula(null);
     setCurrentSessionId(null);
+    setSessionSummary(null);
+    setMessageCount(0);
     setScreen("main");
   }, []);
 
@@ -293,7 +297,14 @@ export default function SigmaScreen() {
 
     try {
       const response = await calculate(
-        { query: text, formulaId: activeFormula?.id, context },
+        {
+          query: text,
+          formulaId: activeFormula?.id,
+          context,
+          sessionId: currentSessionId ?? undefined,
+          sessionSummary: sessionSummary ?? undefined,
+          messageCount,
+        },
         session.access_token
       );
 
@@ -337,6 +348,13 @@ export default function SigmaScreen() {
 
       if (sessId && response.status === "success") {
         await saveMessages(sessId, text, response.result);
+        // Incrementa contador (user msg + result = 2)
+        const newCount = messageCount + 2;
+        setMessageCount(newCount);
+        // Busca resumo atualizado (fire-and-forget — pode ter sido gerado pelo servidor)
+        fetchSessionSummary(sessId).then((s) => {
+          if (s) setSessionSummary(s);
+        });
       }
     } catch (err: any) {
       const errId = msgId + "_e";
@@ -351,7 +369,7 @@ export default function SigmaScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [query, isLoading, session, activeFormula, currentSessionId, queryClient, chat]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [query, isLoading, session, activeFormula, currentSessionId, sessionSummary, messageCount, queryClient, chat]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const canSend = query.trim().length > 0 && !isLoading;
   const invertedData = [...chat].reverse();

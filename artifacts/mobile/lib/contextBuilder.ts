@@ -1,7 +1,6 @@
 import type { ConversationMessage } from "./apiClient";
 
-const RECENT_WINDOW = 6;
-const SUMMARY_THRESHOLD = 14;
+const RECENT_WINDOW = 8;
 
 type ChatItem =
   | { kind: "user"; id: string; text: string }
@@ -10,25 +9,6 @@ type ChatItem =
   | { kind: "question"; id: string; message: string }
   | { kind: "error"; id: string; message: string };
 
-function itemToSummaryLine(item: ChatItem): string | null {
-  switch (item.kind) {
-    case "user":
-      return `• Usuário perguntou: "${item.text}"`;
-    case "assistant":
-      return `  → Sigma respondeu: "${item.text}"`;
-    case "result": {
-      const unit = item.result.resultUnit ? `${item.result.resultUnit} ` : "";
-      return `  → ${item.result.formulaName} = ${unit}${item.result.resultFormatted}`;
-    }
-    case "question":
-      return `  → Sigma pediu mais dados: "${item.message}"`;
-    case "error":
-      return `  → Erro: "${item.message}"`;
-    default:
-      return null;
-  }
-}
-
 function itemToMessage(item: ChatItem): ConversationMessage | null {
   switch (item.kind) {
     case "user":
@@ -36,8 +16,8 @@ function itemToMessage(item: ChatItem): ConversationMessage | null {
     case "assistant":
       return { role: "assistant", content: item.text };
     case "result": {
-      const unit = item.result.resultUnit ? `${item.result.resultUnit} ` : "";
-      const baseText = `Resultado calculado: ${item.result.formulaName} = ${unit}${item.result.resultFormatted}`;
+      const unit = item.result.resultUnit ? ` ${item.result.resultUnit}` : "";
+      const baseText = `Resultado: ${item.result.formulaName} = ${item.result.resultFormatted}${unit}`;
       return {
         role: "assistant",
         content: item.result.conversationalResponse
@@ -54,36 +34,16 @@ function itemToMessage(item: ChatItem): ConversationMessage | null {
   }
 }
 
+/**
+ * Retorna as últimas RECENT_WINDOW mensagens do chat como ConversationMessage[].
+ * O resumo da sessão (sessionSummary) é enviado separadamente no CalcRequest —
+ * não é embutido aqui para não inflar o payload de contexto recente.
+ */
 export function buildContext(chat: ChatItem[]): ConversationMessage[] {
-  if (chat.length === 0) return [];
-
-  if (chat.length <= RECENT_WINDOW) {
-    return chat.flatMap((item) => {
+  return chat
+    .slice(-RECENT_WINDOW)
+    .flatMap((item) => {
       const msg = itemToMessage(item);
       return msg ? [msg] : [];
     });
-  }
-
-  if (chat.length <= SUMMARY_THRESHOLD) {
-    return chat.slice(-RECENT_WINDOW).flatMap((item) => {
-      const msg = itemToMessage(item);
-      return msg ? [msg] : [];
-    });
-  }
-
-  const olderItems = chat.slice(0, chat.length - RECENT_WINDOW);
-  const recentItems = chat.slice(-RECENT_WINDOW);
-
-  const summaryLines = olderItems
-    .map(itemToSummaryLine)
-    .filter((line): line is string => line !== null);
-
-  const summaryText = `Resumo da sessão até este ponto:\n` + summaryLines.join("\n");
-
-  const recentMessages = recentItems.flatMap((item) => {
-    const msg = itemToMessage(item);
-    return msg ? [msg] : [];
-  });
-
-  return [{ role: "user", content: summaryText }, ...recentMessages];
 }

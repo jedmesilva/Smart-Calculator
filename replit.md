@@ -40,6 +40,7 @@ App mobile de calculadora inteligente com chat em português — o usuário desc
 - `artifacts/api-server/src/agents/validationAgent.ts` — Fase 4: prova reversa + checagem de razoabilidade
 - `artifacts/api-server/src/agents/conversationalAgent.ts` — Fase 5b: resposta em linguagem natural
 - `artifacts/api-server/src/agents/formulaValidationAgent.ts` — validação de fórmula ao criar (fluxo separado)
+- `artifacts/api-server/src/lib/summaryBuilder.ts` — geração de resumo LLM da sessão (gpt-4o-mini)
 - `artifacts/api-server/src/middlewares/auth.ts` — verificação JWT Supabase
 - `lib/integrations-openai-ai-server/` — cliente OpenAI via Replit proxy
 
@@ -59,7 +60,12 @@ App mobile de calculadora inteligente com chat em português — o usuário desc
 - **ResultData estendido**: inclui `proof: { verified, method, detail }` + `conversationalResponse: string`
 - **Chat UX**: resposta bem-sucedida → bubble de texto conversacional + card de resultado (dois itens no chat)
 - **CalcOverlay**: mostra seção "Verificação" com prova reversa (verde/aprovado ou amarelo/revisar)
-- **Contexto multi-turn**: mobile envia últimas 10 mensagens como `context[]`; contextBuilder usa `conversationalResponse` nas mensagens de contexto
+- **Contexto multi-turn inteligente**:
+  - Mobile envia `sessionId` + `sessionSummary` (resumo LLM) + últimas 8 mensagens + `messageCount`
+  - contextAgent detecta referências a contexto anterior invisível → retorna `needsHistory: true`
+  - Orquestrador: se `needsHistory`, busca últimas 30 msgs no Supabase e refaz extração com histórico completo
+  - Resumo LLM gerado pelo servidor (gpt-4o-mini, fire-and-forget) a cada 8 mensagens → salvo em `sessions.summary`
+  - Mobile busca resumo atualizado do Supabase após cada cálculo bem-sucedido
 - **Overlays absolutos** (não Modals) para transições suaves; FlatList invertida para auto-scroll do chat
 - **RLS no Supabase**: políticas de acesso por `auth.uid()` em todas as tabelas; fórmulas de sistema têm `is_system=true`
 

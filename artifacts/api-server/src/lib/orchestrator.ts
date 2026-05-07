@@ -5,6 +5,11 @@
    Fase 3: computeFormula via mathjs
    Fase 4: validationAgent (prova reversa)
    Fase 5: buildResult + conversationalAgent (paralelo)
+
+   Contexto inteligente:
+   - Recebe sessionSummary (resumo LLM da sessão) + últimas N msgs
+   - Se contextAgent retorna needsHistory: true, busca histórico completo
+   - Após sucesso, dispara geração de novo resumo quando necessário
    ═══════════════════════════════════════════════════════ */
 
 import { logger } from "./logger";
@@ -15,8 +20,13 @@ import { runContextAgent } from "../agents/contextAgent";
 import { runExpressionAgent } from "../agents/expressionAgent";
 import { runValidationAgent } from "../agents/validationAgent";
 import { runConversationalAgent } from "../agents/conversationalAgent";
+import { fetchSessionMessages } from "./supabase";
+import { generateSessionSummary } from "./summaryBuilder";
 import type { ConversationMessage } from "../agents/types";
 import type { ResultData } from "./explainBuilder";
+
+/* ── Limiar: gerar resumo a cada 8 mensagens salvas ── */
+const SUMMARY_EVERY = 8;
 
 /* ── Tipos do orquestrador ── */
 export type OrchestratorSuccess = {
@@ -48,27 +58,53 @@ export type OrchestratorResult =
   | OrchestratorFormulaError
   | OrchestratorWrongFormula;
 
+/* ── Converte mensagens do DB em ConversationMessage[] ── */
+function dbMessagesToContext(
+  rows: Array<{ kind: string; text: string | null; result_data: any | null }>
+): ConversationMessage[] {
+  const out: ConversationMessage[] = [];
+  for (const row of rows) {
+    if (row.kind === "user" && row.text) {
+      out.push({ role: "user", content: row.text });
+    } else if (row.kind === "result" && row.result_data) {
+      const r = row.result_data as any;
+      const unit = r.resultUnit ? ` ${r.resultUnit}` : "";
+      const base = `Resultado: ${r.formulaName} = ${r.resultFormatted}${unit}`;
+      out.push({
+        role: "assistant",
+        content: r.conversationalResponse ? `${r.conversationalResponse} (${base})` : base,
+      });
+    }
+  }
+  return out;
+}
+
 /* ── Exportação principal ── */
 export async function runCalculationPipeline(opts: {
   query: string;
   formulaId: string | undefined;
   context: ConversationMessage[];
+  sessionId?: string;
+  sessionSummary?: string;
+  messageCount?: number;
 }): Promise<OrchestratorResult> {
-  const { query, formulaId, context } = opts;
+  const { query, formulaId, context, sessionId, sessionSummary, messageCount = 0 } = opts;
 
   const pipelineStart = Date.now();
-  logger.info({ formulaId: formulaId ?? "dynamic", query: query.slice(0, 80) }, "orchestrator: pipeline start");
+  logger.info(
+    { formulaId: formulaId ?? "dynamic", query: query.slice(0, 80), sessionId, messageCount },
+    "orchestrator: pipeline start"
+  );
 
   /* ══════════════════════════════════════════════════════
      FASE 1 — formulaAgent + contextAgent em paralelo
-     formulaAgent: identifica/busca a fórmula
-     contextAgent: extrai valores genéricos da conversa
+     contextAgent recebe sessionSummary para contexto histórico
      ══════════════════════════════════════════════════════ */
 
   const phase1Start = Date.now();
   const [formulaResult, contextResult] = await Promise.all([
     runFormulaAgent(formulaId, query, context),
-    runContextAgent(query, context),
+    runContextAgent(query, context, sessionSummary),
   ]);
   logger.info({ ms: Date.now() - phase1Start }, "orchestrator: phase 1 complete");
 
@@ -76,7 +112,6 @@ export async function runCalculationPipeline(opts: {
   if (formulaResult.status === "not_found") {
     return { status: "formula_error", message: formulaResult.message };
   }
-
   if (formulaResult.status === "wrong_formula") {
     return {
       status: "wrong_formula",
@@ -88,10 +123,33 @@ export async function runCalculationPipeline(opts: {
   const formula = formulaResult.formula;
 
   /* ══════════════════════════════════════════════════════
+     BUSCA DE HISTÓRICO SOB DEMANDA
+     Se contextAgent sinalizou needsHistory E temos sessionId,
+     busca as últimas 30 mensagens do Supabase e refaz a extração
+     com o histórico completo como contexto.
+     ══════════════════════════════════════════════════════ */
+
+  let resolvedContextResult = contextResult;
+
+  if (contextResult.needsHistory && sessionId) {
+    logger.info({ sessionId }, "orchestrator: needsHistory — fetching full session history");
+    try {
+      const historyRows = await fetchSessionMessages(sessionId, 30);
+      const fullContext = dbMessagesToContext(historyRows);
+
+      const retryContext = await runContextAgent(query, fullContext, sessionSummary);
+      resolvedContextResult = retryContext;
+      logger.info(
+        { entityCount: retryContext.entities.length },
+        "orchestrator: history fetch — contextAgent retry complete"
+      );
+    } catch (err) {
+      logger.warn({ err }, "orchestrator: history fetch failed, using original result");
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════
      FASE 2 — expressionAgent (com loop de retry interno)
-     Mapeia valores extraídos → variáveis da fórmula
-     Constrói e valida expressão MathJS
-     Loop: máx 3 tentativas, busca web como fallback
      ══════════════════════════════════════════════════════ */
 
   const phase2Start = Date.now();
@@ -100,7 +158,7 @@ export async function runCalculationPipeline(opts: {
   try {
     expressionResult = await runExpressionAgent({
       formula,
-      contextResult,
+      contextResult: resolvedContextResult,
       query,
       context,
       maxAttempts: 3,
@@ -109,24 +167,27 @@ export async function runCalculationPipeline(opts: {
     logger.error({ err, formulaName: formula.name }, "orchestrator: expressionAgent failed all attempts");
     return {
       status: "formula_error",
-      message: err?.message ?? "Não foi possível montar a expressão matemática. Tente descrever o cálculo com mais detalhes.",
+      message:
+        err?.message ??
+        "Não foi possível montar a expressão matemática. Tente descrever o cálculo com mais detalhes.",
     };
   }
-  logger.info({ ms: Date.now() - phase2Start, searchUsed: expressionResult.searchUsed }, "orchestrator: phase 2 complete");
+  logger.info(
+    { ms: Date.now() - phase2Start, searchUsed: expressionResult.searchUsed },
+    "orchestrator: phase 2 complete"
+  );
 
   /* ── Variáveis faltando → pede ao usuário ── */
   if (!expressionResult.allPresent) {
-    const formulaDisplayName = formula.name || "este valor";
     return {
       status: "needs_input",
-      message: `Para calcular ${formulaDisplayName}, preciso de mais alguns dados:`,
+      message: `Para calcular ${formula.name || "este valor"}, preciso de mais alguns dados:`,
       missing: expressionResult.missing,
     };
   }
 
   /* ══════════════════════════════════════════════════════
      FASE 3 — computeFormula via mathjs
-     Se falhar, tenta re-executar expressionAgent uma vez mais
      ══════════════════════════════════════════════════════ */
 
   const phase3Start = Date.now();
@@ -137,11 +198,10 @@ export async function runCalculationPipeline(opts: {
   } catch (err: any) {
     logger.warn({ err, expression: expressionResult.expression }, "orchestrator: compute failed, retrying expression");
 
-    // Uma tentativa extra com contexto de erro
     try {
       const retryResult = await runExpressionAgent({
         formula,
-        contextResult,
+        contextResult: resolvedContextResult,
         query,
         context,
         maxAttempts: 2,
@@ -168,47 +228,26 @@ export async function runCalculationPipeline(opts: {
 
   /* ══════════════════════════════════════════════════════
      FASE 4 — validationAgent (prova reversa)
-     Verifica consistência matemática + razoabilidade
-     Se inválido, registra mas não bloqueia (adiciona aviso)
      ══════════════════════════════════════════════════════ */
 
   const phase4Start = Date.now();
-  const validation = await runValidationAgent({
-    formula,
-    expressionResult,
-    computedValue,
-    query,
-  });
+  const validation = await runValidationAgent({ formula, expressionResult, computedValue, query });
   logger.info({ ms: Date.now() - phase4Start, valid: validation.valid }, "orchestrator: phase 4 complete");
 
   /* ══════════════════════════════════════════════════════
      FASE 5 — buildResult + conversationalAgent (paralelo)
-     buildResult: monta ResultData com prova
-     conversationalAgent: gera resposta em linguagem natural
      ══════════════════════════════════════════════════════ */
 
   const phase5Start = Date.now();
   const [result, conversationalResponse] = await Promise.all([
     Promise.resolve(
-      buildResult(
-        formula.name,
-        formula.symbolic,
-        expressionResult,
-        computedValue,
-        {
-          searchUsed: expressionResult.searchUsed,
-          warning: validation.valid ? undefined : validation.detail,
-          proof: validation,
-        }
-      )
+      buildResult(formula.name, formula.symbolic, expressionResult, computedValue, {
+        searchUsed: expressionResult.searchUsed,
+        warning: validation.valid ? undefined : validation.detail,
+        proof: validation,
+      })
     ),
-    runConversationalAgent({
-      query,
-      formula,
-      expressionResult,
-      computedValue,
-      validation,
-    }),
+    runConversationalAgent({ query, formula, expressionResult, computedValue, validation }),
   ]);
   logger.info({ ms: Date.now() - phase5Start }, "orchestrator: phase 5 complete");
 
@@ -221,6 +260,20 @@ export async function runCalculationPipeline(opts: {
     },
     "orchestrator: pipeline complete"
   );
+
+  /* ══════════════════════════════════════════════════════
+     RESUMO DA SESSÃO — fire-and-forget
+     Gera novo resumo LLM a cada SUMMARY_EVERY mensagens salvas.
+     Após sucesso, o mobile salva 2 mensagens (user + result),
+     então disparamos quando messageCount % SUMMARY_EVERY <= 1.
+     ══════════════════════════════════════════════════════ */
+
+  if (sessionId && messageCount > 0 && messageCount % SUMMARY_EVERY <= 1) {
+    logger.info({ sessionId, messageCount }, "orchestrator: triggering summary generation");
+    generateSessionSummary(sessionId, messageCount + 2, sessionSummary).catch((err) => {
+      logger.warn({ err, sessionId }, "orchestrator: background summary failed");
+    });
+  }
 
   return {
     status: "success",

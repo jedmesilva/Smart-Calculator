@@ -15,6 +15,9 @@ const CalcBody = z.object({
   query: z.string().min(1).max(1000),
   formulaId: z.string().uuid().optional(),
   context: z.array(ConversationMessage).max(20).optional(),
+  sessionId: z.string().uuid().optional(),
+  sessionSummary: z.string().max(3000).optional(),
+  messageCount: z.number().int().min(0).optional(),
 });
 
 router.post("/calculate", requireAuth, async (req, res) => {
@@ -24,10 +27,17 @@ router.post("/calculate", requireAuth, async (req, res) => {
     return;
   }
 
-  const { query, formulaId, context = [] } = parsed.data;
+  const { query, formulaId, context = [], sessionId, sessionSummary, messageCount } = parsed.data;
 
   try {
-    const result = await runCalculationPipeline({ query, formulaId, context });
+    const result = await runCalculationPipeline({
+      query,
+      formulaId,
+      context,
+      sessionId,
+      sessionSummary,
+      messageCount,
+    });
     res.json(result);
   } catch (err: any) {
     logger.error({ err }, "calculate route: unhandled error");

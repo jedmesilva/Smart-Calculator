@@ -47,6 +47,7 @@ export type RawEntity = {
 export type ContextAgentResult = {
   entities: RawEntity[];
   rawText: string;
+  needsHistory?: boolean;
 };
 
 /* ── Expressão validada pelo expressionAgent ── */

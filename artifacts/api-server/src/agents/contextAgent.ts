@@ -3,13 +3,17 @@
    Extrai TODOS os valores numéricos mencionados na conversa,
    sem precisar conhecer a fórmula antecipadamente.
    Isso permite rodar em paralelo com o Agente de Fórmula.
+
+   Se os valores parecem referir-se a contexto anterior
+   não visível, retorna needsHistory: true para que o
+   orquestrador busque o histórico completo no Supabase.
    ═══════════════════════════════════════════════════════ */
 
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { logger } from "../lib/logger";
 import type { ConversationMessage, ContextAgentResult, RawEntity } from "./types";
 
-const CONTEXT_EXTRACT_PROMPT = `Você é um extrator de entidades numéricas para uma calculadora inteligente.
+const CONTEXT_EXTRACT_SYSTEM = `Você é um extrator de entidades numéricas para uma calculadora inteligente.
 Leia a conversa e extraia TODOS os valores numéricos, quantidades e medidas mencionados.
 
 RETORNE APENAS JSON VÁLIDO, sem markdown, sem texto adicional.
@@ -20,7 +24,8 @@ Formato de resposta:
     { "label": "capital inicial", "value": 1000, "humanReadable": "R$ 1.000", "unit": "R$" },
     { "label": "taxa de juros", "value": 0.01, "humanReadable": "1% ao mês", "unit": "%/mês" },
     { "label": "número de períodos", "value": 12, "humanReadable": "12 meses", "unit": "meses" }
-  ]
+  ],
+  "needsHistory": false
 }
 
 Regras de conversão:
@@ -34,32 +39,52 @@ Regras de conversão:
 - Se o valor é negativo (desconto, prejuízo), use valor negativo
 - "label": nome descritivo do que esse valor representa, em português
 - "humanReadable": como o usuário escreveu, formatado claramente
-- Se não houver nenhum valor numérico na conversa, retorne { "entities": [] }
-- Extraia valores de TODAS as mensagens da conversa, não só a última`;
+- Extraia valores de TODAS as mensagens da conversa, não só a última
+
+Campo "needsHistory":
+- Defina como true APENAS se o usuário mencionar claramente valores ou cálculos anteriores
+  que não aparecem em nenhuma mensagem visível aqui (ex: "use o mesmo valor de antes",
+  "com aquela taxa que calculamos", "os mesmos dados anteriores")
+- Em qualquer outro caso, defina como false`;
 
 function parseJson(raw: string): any {
   try {
     return JSON.parse(raw.replace(/```json\n?|\n?```/g, "").trim());
-  } catch (err) {
+  } catch {
     logger.warn({ raw }, "contextAgent: JSON parse failed, returning empty");
-    return { entities: [] };
+    return { entities: [], needsHistory: false };
   }
 }
 
 export async function runContextAgent(
   query: string,
-  context: ConversationMessage[]
+  context: ConversationMessage[],
+  sessionSummary?: string
 ): Promise<ContextAgentResult> {
-  const messages: any[] = [
-    { role: "system", content: CONTEXT_EXTRACT_PROMPT },
-    ...context.map((m) => ({ role: m.role, content: m.content })),
-    { role: "user", content: query },
-  ];
+  // Monta mensagens: summary (se houver) + contexto recente + query atual
+  const messages: any[] = [{ role: "system", content: CONTEXT_EXTRACT_SYSTEM }];
+
+  if (sessionSummary) {
+    messages.push({
+      role: "user",
+      content: `[Contexto desta sessão até agora]\n${sessionSummary}`,
+    });
+    messages.push({
+      role: "assistant",
+      content: "Entendido. Tenho esse contexto histórico disponível.",
+    });
+  }
+
+  for (const m of context) {
+    messages.push({ role: m.role, content: m.content });
+  }
+
+  messages.push({ role: "user", content: query });
 
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      max_completion_tokens: 512,
+      max_completion_tokens: 600,
       messages,
     } as any);
 
@@ -71,8 +96,14 @@ export async function runContextAgent(
       unit: String(e.unit ?? ""),
     }));
 
-    logger.debug({ entityCount: entities.length }, "contextAgent: extracted entities");
-    return { entities, rawText: query };
+    const needsHistory = parsed.needsHistory === true && entities.length === 0;
+
+    logger.debug(
+      { entityCount: entities.length, needsHistory },
+      "contextAgent: extracted entities"
+    );
+
+    return { entities, rawText: query, needsHistory };
   } catch (err) {
     logger.warn({ err }, "contextAgent: failed, returning empty");
     return { entities: [], rawText: query };

@@ -7,6 +7,9 @@ export type CalcRequest = {
   query: string;
   formulaId?: string;
   context?: ConversationMessage[];
+  sessionId?: string;
+  sessionSummary?: string;
+  messageCount?: number;
 };
 
 export type ProofResult = {

@@ -161,3 +161,13 @@ export async function touchSession(sessionId: string): Promise<void> {
     .update({ updated_at: new Date().toISOString() })
     .eq("id", sessionId);
 }
+
+export async function fetchSessionSummary(sessionId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("summary")
+    .eq("id", sessionId)
+    .single();
+  if (error || !data) return null;
+  return (data as any).summary as string | null;
+}
