@@ -105,10 +105,18 @@ async function identifyFormulaDynamic(
   }
 
   // Tenta enriquecer com dados do DB (expression + expression_meta) pelo nome
-  let dbFormula: typeof formulas.$inferSelect | undefined;
+  let dbFormula: { id: string; name: string; description: string; symbolic: string; category: string; expression: string | null; expression_meta: any } | undefined;
   try {
     const [match] = await db
-      .select()
+      .select({
+        id: formulas.id,
+        name: formulas.name,
+        description: formulas.description,
+        symbolic: formulas.symbolic,
+        category: formulas.category,
+        expression: formulas.expression,
+        expression_meta: formulas.expression_meta,
+      })
       .from(formulas)
       .where(ilike(formulas.name, parsed.name))
       .limit(1);

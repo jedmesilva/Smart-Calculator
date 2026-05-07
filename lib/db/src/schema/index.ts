@@ -24,7 +24,6 @@ export const formulas = pgTable("formulas", {
   llm_verified_at: timestamp("llm_verified_at"),
   llm_verdict_detail: text("llm_verdict_detail"),
   created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const savedFormulas = pgTable("saved_formulas", {
@@ -71,7 +70,7 @@ export const formulaNotes = pgTable("formula_notes", {
   updated_at: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const insertFormulaSchema = createInsertSchema(formulas).omit({ id: true, created_at: true, updated_at: true });
+export const insertFormulaSchema = createInsertSchema(formulas).omit({ id: true, created_at: true });
 export const insertSessionSchema = createInsertSchema(sessions).omit({ id: true, created_at: true, updated_at: true });
 export const insertMessageSchema = createInsertSchema(messages).omit({ id: true, created_at: true });
 

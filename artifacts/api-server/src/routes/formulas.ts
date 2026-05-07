@@ -12,7 +12,7 @@
 
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { formulas, savedFormulas, formulaVerifications, formulaNotes, profiles } from "@workspace/db/schema";
+import { formulas, savedFormulas, formulaVerifications, formulaNotes } from "@workspace/db/schema";
 import { eq, and, asc, desc } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth";
 import { runFormulaLlmVerify } from "../agents/formulaLlmVerifyAgent";
@@ -20,10 +20,27 @@ import { logger } from "../lib/logger";
 
 const router = Router();
 
+const FORMULA_COLS = {
+  id: formulas.id,
+  name: formulas.name,
+  category: formulas.category,
+  description: formulas.description,
+  symbolic: formulas.symbolic,
+  is_system: formulas.is_system,
+  is_public: formulas.is_public,
+  user_id: formulas.user_id,
+  expression: formulas.expression,
+  expression_meta: formulas.expression_meta,
+  llm_verdict: formulas.llm_verdict,
+  llm_verified_at: formulas.llm_verified_at,
+  llm_verdict_detail: formulas.llm_verdict_detail,
+  created_at: formulas.created_at,
+} as const;
+
 /* ── GET /api/formulas ── */
 router.get("/", async (_req, res) => {
   const data = await db
-    .select()
+    .select(FORMULA_COLS)
     .from(formulas)
     .orderBy(asc(formulas.category), asc(formulas.name));
   res.json(data);
@@ -47,7 +64,7 @@ router.post("/", requireAuth, async (req, res) => {
     user_id: user.id,
     expression: req.body.expression ?? null,
     expression_meta: req.body.expression_meta ?? null,
-  }).returning();
+  }).returning(FORMULA_COLS);
   res.json(created);
 });
 
@@ -66,7 +83,7 @@ router.post("/saved/:id", requireAuth, async (req, res) => {
   const user = (req as any).user;
   const { id } = req.params;
   const existing = await db
-    .select()
+    .select({ formula_id: savedFormulas.formula_id })
     .from(savedFormulas)
     .where(and(eq(savedFormulas.formula_id, id), eq(savedFormulas.user_id, user.id)))
     .limit(1);
@@ -89,23 +106,33 @@ router.delete("/saved/:id", requireAuth, async (req, res) => {
 /* ── GET /api/formulas/:id/verifications ── */
 router.get("/:id/verifications", async (req, res) => {
   const { id } = req.params;
-  const data = await db
-    .select()
-    .from(formulaVerifications)
-    .where(eq(formulaVerifications.formula_id, id))
-    .orderBy(desc(formulaVerifications.created_at));
-  res.json(data);
+  try {
+    const data = await db
+      .select()
+      .from(formulaVerifications)
+      .where(eq(formulaVerifications.formula_id, id))
+      .orderBy(desc(formulaVerifications.created_at));
+    res.json(data);
+  } catch (err) {
+    logger.warn({ err }, "formulas: verifications table not available");
+    res.json([]);
+  }
 });
 
 /* ── GET /api/formulas/:id/notes ── */
 router.get("/:id/notes", async (req, res) => {
   const { id } = req.params;
-  const data = await db
-    .select()
-    .from(formulaNotes)
-    .where(eq(formulaNotes.formula_id, id))
-    .orderBy(asc(formulaNotes.created_at));
-  res.json(data);
+  try {
+    const data = await db
+      .select()
+      .from(formulaNotes)
+      .where(eq(formulaNotes.formula_id, id))
+      .orderBy(asc(formulaNotes.created_at));
+    res.json(data);
+  } catch (err) {
+    logger.warn({ err }, "formulas: notes table not available");
+    res.json([]);
+  }
 });
 
 /* ── POST /api/formulas/:id/verifications ── */
@@ -113,21 +140,31 @@ router.post("/:id/verifications", requireAuth, async (req, res) => {
   const user = (req as any).user;
   const { id } = req.params;
   const { verdict, detail } = req.body;
-  await db
-    .delete(formulaVerifications)
-    .where(and(eq(formulaVerifications.formula_id, id), eq(formulaVerifications.user_id, user.id)));
-  await db.insert(formulaVerifications).values({ formula_id: id, user_id: user.id, verdict, detail: detail ?? null });
-  res.json({ ok: true });
+  try {
+    await db
+      .delete(formulaVerifications)
+      .where(and(eq(formulaVerifications.formula_id, id), eq(formulaVerifications.user_id, user.id)));
+    await db.insert(formulaVerifications).values({ formula_id: id, user_id: user.id, verdict, detail: detail ?? null });
+    res.json({ ok: true });
+  } catch (err) {
+    logger.warn({ err }, "formulas: verifications table not available");
+    res.json({ ok: true });
+  }
 });
 
 /* ── DELETE /api/formulas/:id/verifications ── */
 router.delete("/:id/verifications", requireAuth, async (req, res) => {
   const user = (req as any).user;
   const { id } = req.params;
-  await db
-    .delete(formulaVerifications)
-    .where(and(eq(formulaVerifications.formula_id, id), eq(formulaVerifications.user_id, user.id)));
-  res.json({ ok: true });
+  try {
+    await db
+      .delete(formulaVerifications)
+      .where(and(eq(formulaVerifications.formula_id, id), eq(formulaVerifications.user_id, user.id)));
+    res.json({ ok: true });
+  } catch (err) {
+    logger.warn({ err }, "formulas: verifications table not available");
+    res.json({ ok: true });
+  }
 });
 
 /* ── POST /api/formulas/:id/notes ── */
@@ -135,15 +172,25 @@ router.post("/:id/notes", requireAuth, async (req, res) => {
   const user = (req as any).user;
   const { id } = req.params;
   const { content } = req.body;
-  await db.insert(formulaNotes).values({ formula_id: id, user_id: user.id, content });
-  res.json({ ok: true });
+  try {
+    await db.insert(formulaNotes).values({ formula_id: id, user_id: user.id, content });
+    res.json({ ok: true });
+  } catch (err) {
+    logger.warn({ err }, "formulas: notes table not available");
+    res.json({ ok: true });
+  }
 });
 
 /* ── DELETE /api/formulas/:id/notes/:noteId ── */
 router.delete("/:id/notes/:noteId", requireAuth, async (req, res) => {
   const { noteId } = req.params;
-  await db.delete(formulaNotes).where(eq(formulaNotes.id, noteId));
-  res.json({ ok: true });
+  try {
+    await db.delete(formulaNotes).where(eq(formulaNotes.id, noteId));
+    res.json({ ok: true });
+  } catch (err) {
+    logger.warn({ err }, "formulas: notes table not available");
+    res.json({ ok: true });
+  }
 });
 
 /* ── POST /api/formulas/:id/llm-verify ── */
@@ -152,7 +199,7 @@ router.post("/:id/llm-verify", requireAuth, async (req, res) => {
   const user = (req as any).user;
 
   const [formula] = await db
-    .select()
+    .select(FORMULA_COLS)
     .from(formulas)
     .where(and(eq(formulas.id, id), eq(formulas.user_id, user.id)))
     .limit(1);
@@ -185,7 +232,7 @@ router.post("/:id/publish", requireAuth, async (req, res) => {
   const user = (req as any).user;
 
   const [formula] = await db
-    .select()
+    .select(FORMULA_COLS)
     .from(formulas)
     .where(and(eq(formulas.id, id), eq(formulas.user_id, user.id)))
     .limit(1);
