@@ -18,6 +18,7 @@ const CalcBody = z.object({
   sessionId: z.string().uuid().optional(),
   sessionSummary: z.string().max(3000).optional(),
   messageCount: z.number().int().min(0).optional(),
+  userName: z.string().max(100).optional(),
 });
 
 router.post("/calculate", requireAuth, async (req, res) => {
@@ -27,7 +28,7 @@ router.post("/calculate", requireAuth, async (req, res) => {
     return;
   }
 
-  const { query, formulaId, context = [], sessionId, sessionSummary, messageCount } = parsed.data;
+  const { query, formulaId, context = [], sessionId, sessionSummary, messageCount, userName } = parsed.data;
 
   try {
     const result = await runCalculationPipeline({
@@ -37,6 +38,7 @@ router.post("/calculate", requireAuth, async (req, res) => {
       sessionId,
       sessionSummary,
       messageCount,
+      userName,
     });
     res.json(result);
   } catch (err: any) {

@@ -232,7 +232,7 @@ function EmptyChat({ onSuggest }: { onSuggest: (text: string) => void }) {
 /* ─── MAIN ─── */
 export default function SigmaScreen() {
   const insets = useSafeAreaInsets();
-  const { session } = useAuth();
+  const { session, userName, setUserName } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: savedFormulaIds = new Set<string>() } = useSavedFormulaIds();
@@ -295,12 +295,24 @@ export default function SigmaScreen() {
           sessionId: currentSessionId ?? undefined,
           sessionSummary: sessionSummary ?? undefined,
           messageCount,
+          userName: userName ?? undefined,
         },
         session.access_token
       );
 
       const resultId = msgId + "_r";
       const assistantId = msgId + "_a";
+
+      // Salva nome capturado pelo Phormula (fire-and-forget)
+      if (!userName) {
+        const capturedName =
+          response.status === "success" || response.status === "conversational"
+            ? response.capturedName
+            : undefined;
+        if (capturedName) {
+          setUserName(capturedName);
+        }
+      }
 
       if (response.status === "success") {
         const items: ChatItem[] = [];
@@ -366,7 +378,7 @@ export default function SigmaScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [query, isLoading, session, activeFormula, currentSessionId, sessionSummary, messageCount, queryClient, chat]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [query, isLoading, session, activeFormula, currentSessionId, sessionSummary, messageCount, queryClient, chat, userName, setUserName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const canSend = query.trim().length > 0 && !isLoading;
   const invertedData = [...chat].reverse();

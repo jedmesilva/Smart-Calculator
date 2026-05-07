@@ -10,6 +10,7 @@ export type CalcRequest = {
   sessionId?: string;
   sessionSummary?: string;
   messageCount?: number;
+  userName?: string;
 };
 
 export type ProofResult = {
@@ -52,9 +53,9 @@ export type MissingVariable = {
  * status "wrong_formula"   → fórmula selecionada não é adequada; suggestion sugere outra
  */
 export type CalcResponse =
-  | { status: "success"; result: ResultData }
+  | { status: "success"; result: ResultData; capturedName?: string }
   | { status: "needs_input"; message: string; missing: MissingVariable[] }
-  | { status: "conversational"; message: string }
+  | { status: "conversational"; message: string; capturedName?: string }
   | { status: "formula_error"; message: string }
   | { status: "wrong_formula"; message: string; suggestion: string | null };
 

@@ -33,6 +33,7 @@ const SUMMARY_EVERY = 8;
 export type OrchestratorSuccess = {
   status: "success";
   result: ResultData;
+  capturedName?: string;
 };
 
 export type OrchestratorNeedsInput = {
@@ -44,6 +45,7 @@ export type OrchestratorNeedsInput = {
 export type OrchestratorConversational = {
   status: "conversational";
   message: string;
+  capturedName?: string;
 };
 
 export type OrchestratorFormulaError = {
@@ -102,8 +104,9 @@ export async function runCalculationPipeline(opts: {
   sessionId?: string;
   sessionSummary?: string;
   messageCount?: number;
+  userName?: string;
 }): Promise<OrchestratorResult> {
-  const { query, formulaId, context, sessionId, sessionSummary, messageCount = 0 } = opts;
+  const { query, formulaId, context, sessionId, sessionSummary, messageCount = 0, userName } = opts;
 
   const pipelineStart = Date.now();
   logger.info(
@@ -134,19 +137,20 @@ export async function runCalculationPipeline(opts: {
   /* ── Intenção conversacional detectada → responde diretamente ── */
   if (intent === "conversational") {
     logger.info({ query: query.slice(0, 60) }, "orchestrator: conversational intent — skipping pipeline");
-    const message = await runGuidanceAgent({ query, context, sessionSummary });
-    return { status: "conversational", message };
+    const guidance = await runGuidanceAgent({ query, context, sessionSummary, userName });
+    return { status: "conversational", message: guidance.message, capturedName: guidance.capturedName };
   }
 
   /* ── Trata resultados do formulaAgent ── */
   if (formulaResult.status === "not_found") {
-    const message = await runGuidanceAgent({
+    const guidance = await runGuidanceAgent({
       query,
       context,
       sessionSummary,
       failReason: formulaResult.message,
+      userName,
     });
-    return { status: "conversational", message };
+    return { status: "conversational", message: guidance.message, capturedName: guidance.capturedName };
   }
   if (formulaResult.status === "wrong_formula") {
     return {
@@ -201,13 +205,14 @@ export async function runCalculationPipeline(opts: {
     });
   } catch (err: any) {
     logger.error({ err, formulaName: formula.name }, "orchestrator: expressionAgent failed all attempts");
-    const message = await runGuidanceAgent({
+    const guidance = await runGuidanceAgent({
       query,
       context,
       sessionSummary,
       failReason: err?.message ?? "Não foi possível montar a expressão matemática.",
+      userName,
     });
-    return { status: "conversational", message };
+    return { status: "conversational", message: guidance.message, capturedName: guidance.capturedName };
   }
   logger.info(
     { ms: Date.now() - phase2Start, searchUsed: expressionResult.searchUsed },
@@ -255,13 +260,14 @@ export async function runCalculationPipeline(opts: {
       computedValue = computeFormula(retryResult.expression, retryResult.extracted);
       expressionResult = retryResult;
     } catch (retryErr: any) {
-      const message = await runGuidanceAgent({
+      const guidance = await runGuidanceAgent({
         query,
         context,
         sessionSummary,
         failReason: retryErr?.message ?? "Erro ao calcular a fórmula.",
+        userName,
       });
-      return { status: "conversational", message };
+      return { status: "conversational", message: guidance.message, capturedName: guidance.capturedName };
     }
   }
   logger.info({ ms: Date.now() - phase3Start, computedValue }, "orchestrator: phase 3 complete");
@@ -289,7 +295,7 @@ export async function runCalculationPipeline(opts: {
         proof: validation,
       })
     ),
-    runConversationalAgent({ query, formula, expressionResult, computedValue, validation, context, sessionSummary }),
+    runConversationalAgent({ query, formula, expressionResult, computedValue, validation, context, sessionSummary, userName }),
   ]);
   logger.info({ ms: Date.now() - phase5Start }, "orchestrator: phase 5 complete");
 
@@ -322,3 +328,4 @@ export async function runCalculationPipeline(opts: {
     result: { ...result, conversationalResponse },
   };
 }
+
