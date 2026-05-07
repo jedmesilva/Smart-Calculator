@@ -95,12 +95,12 @@ export function buildResult(
 ): Omit<ResultData, "conversationalResponse"> {
   const formatted = formatPtBR(computedValue, vars.resultUnit);
 
-  const variables = Object.entries(vars.variableValues)
+  const variables = Object.entries(vars.extracted)
     .filter(([sym]) => sym !== vars.solveFor)
-    .map(([symbol, value]) => ({
+    .map(([symbol, numVal]) => ({
       symbol,
       name: vars.variableNames[symbol] ?? symbol,
-      value,
+      value: vars.variableValues[symbol] ?? String(numVal),
     }));
 
   const steps = buildSteps(vars, formatted);
@@ -164,9 +164,12 @@ function formatPtBR(value: number, unit: string): string {
 }
 
 function buildSteps(vars: VarsLike, formattedResult: string): string[] {
-  const varList = Object.entries(vars.variableValues)
+  const varList = Object.entries(vars.extracted)
     .filter(([sym]) => sym !== vars.solveFor)
-    .map(([sym, val]) => `${sym} = ${val}`)
+    .map(([sym, numVal]) => {
+      const display = vars.variableValues[sym] ?? String(numVal);
+      return `${sym} = ${display}`;
+    })
     .join(", ");
 
   return [
