@@ -142,29 +142,6 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
           </>
         )}
 
-        {data.proof && (
-          <>
-            <Text style={[styles.sectionLabel, { marginTop: 20 }]}>Verificação</Text>
-            <View style={[styles.proofBox, data.proof.verified ? styles.proofBoxOk : styles.proofBoxWarn]}>
-              <View style={styles.proofHeader}>
-                <Feather
-                  name={data.proof.verified ? "check-circle" : "alert-triangle"}
-                  size={13}
-                  color={data.proof.verified ? "#2A7A4B" : "#B07D1A"}
-                />
-                <Text style={[styles.proofMethod, data.proof.verified ? styles.proofMethodOk : styles.proofMethodWarn]}>
-                  {data.proof.method}
-                </Text>
-                <View style={[styles.proofBadge, data.proof.verified ? styles.proofBadgeOk : styles.proofBadgeWarn]}>
-                  <Text style={[styles.proofBadgeText, data.proof.verified ? styles.proofBadgeTextOk : styles.proofBadgeTextWarn]}>
-                    {data.proof.verified ? "aprovado" : "revisar"}
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.proofDetail}>{data.proof.detail}</Text>
-            </View>
-          </>
-        )}
 
         {data.note && <Text style={styles.note}>* {data.note}</Text>}
       </ScrollView>

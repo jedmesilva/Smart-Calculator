@@ -142,12 +142,6 @@ function ResultRow({
                   <Text style={styles.searchUsedText}>verificado</Text>
                 </View>
               )}
-              {result.proof && !result.proof.verified && (
-                <View style={styles.proofWarningTag}>
-                  <Feather name="alert-triangle" size={8} color="#B07D1A" />
-                  <Text style={styles.proofWarningText}>revisar</Text>
-                </View>
-              )}
             </View>
             <Text style={styles.resultSubstituted} numberOfLines={1}>
               {result.formulaSubstituted}
@@ -190,12 +184,6 @@ function ResultRow({
         )}
       </Animated.View>
 
-      {result.warning && (
-        <View style={styles.warningRow}>
-          <Feather name="alert-triangle" size={12} color="#B07D1A" />
-          <Text style={styles.warningText}>{result.warning}</Text>
-        </View>
-      )}
     </View>
   );
 }

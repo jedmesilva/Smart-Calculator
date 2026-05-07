@@ -291,7 +291,6 @@ export async function runCalculationPipeline(opts: {
         formulaId: formula.id,
         formulaCategory: formula.category,
         searchUsed: expressionResult.searchUsed,
-        warning: validation.valid ? undefined : validation.detail,
         proof: validation,
       })
     ),
@@ -308,6 +307,15 @@ export async function runCalculationPipeline(opts: {
     },
     "orchestrator: pipeline complete"
   );
+
+  /* ── Se validação falhou, retorna conversacional em vez de mostrar resultado errado ── */
+  if (!validation.valid) {
+    logger.info(
+      { formulaName: formula.name, validationDetail: validation.detail },
+      "orchestrator: validation failed — returning conversational instead of invalid result"
+    );
+    return { status: "conversational", message: conversationalResponse };
+  }
 
   /* ══════════════════════════════════════════════════════
      RESUMO DA SESSÃO — fire-and-forget
