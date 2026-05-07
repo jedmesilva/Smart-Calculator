@@ -20,6 +20,7 @@ import { runContextAgent } from "../agents/contextAgent";
 import { runExpressionAgent } from "../agents/expressionAgent";
 import { runValidationAgent } from "../agents/validationAgent";
 import { runConversationalAgent, runGuidanceAgent } from "../agents/conversationalAgent";
+import { classifyIntent } from "../agents/intentAgent";
 import { fetchSessionMessages } from "./supabase";
 import { generateSessionSummary } from "./summaryBuilder";
 import type { ConversationMessage } from "../agents/types";
@@ -111,16 +112,31 @@ export async function runCalculationPipeline(opts: {
   );
 
   /* ══════════════════════════════════════════════════════
-     FASE 1 — formulaAgent + contextAgent em paralelo
-     contextAgent recebe sessionSummary para contexto histórico
+     FASE 0 (paralelo com Fase 1) — classifyIntent
+     intentAgent roda junto com formulaAgent + contextAgent,
+     sem adicionar latência ao caminho crítico de cálculo.
+     Se intenção for conversacional, ignora Phase 1 e responde.
      ══════════════════════════════════════════════════════ */
 
   const phase1Start = Date.now();
-  const [formulaResult, contextResult] = await Promise.all([
+
+  // Modo fixo (formulaId): pula intenção — usuário já escolheu uma fórmula, sempre calcula
+  const [intent, formulaResult, contextResult] = await Promise.all([
+    formulaId
+      ? Promise.resolve<"calculate">("calculate")
+      : classifyIntent(query, context, sessionSummary ?? undefined),
     runFormulaAgent(formulaId, query, context),
     runContextAgent(query, context, sessionSummary),
   ]);
-  logger.info({ ms: Date.now() - phase1Start }, "orchestrator: phase 1 complete");
+
+  logger.info({ ms: Date.now() - phase1Start, intent }, "orchestrator: phase 1 + intent complete");
+
+  /* ── Intenção conversacional detectada → responde diretamente ── */
+  if (intent === "conversational") {
+    logger.info({ query: query.slice(0, 60) }, "orchestrator: conversational intent — skipping pipeline");
+    const message = await runGuidanceAgent({ query, context, sessionSummary });
+    return { status: "conversational", message };
+  }
 
   /* ── Trata resultados do formulaAgent ── */
   if (formulaResult.status === "not_found") {
