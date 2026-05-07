@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "@/lib/supabase";
 
 export type ConversationMessage = {
   role: "user" | "assistant";
@@ -65,26 +65,16 @@ export type PublishResponse = {
   detail: string;
 };
 
-const USER_ID_KEY = "sigma_user_id";
-
-export async function getUserId(): Promise<string> {
-  let id = await AsyncStorage.getItem(USER_ID_KEY);
-  if (!id) {
-    id = "user_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-    await AsyncStorage.setItem(USER_ID_KEY, id);
-  }
-  return id;
-}
-
 const API_BASE = process.env.EXPO_PUBLIC_API_URL
   ? process.env.EXPO_PUBLIC_API_URL
   : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api`;
 
 async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
-  const userId = await getUserId();
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token ?? "";
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "x-user-id": userId,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...((options.headers as Record<string, string>) ?? {}),
   };
   return fetch(`${API_BASE}${path}`, { ...options, headers });

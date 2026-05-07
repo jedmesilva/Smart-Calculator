@@ -86,6 +86,8 @@ App mobile de calculadora inteligente com chat em português — o usuário desc
 
 ## Gotchas
 
+- **NUNCA trocar o banco de Supabase para Replit PostgreSQL** — `lib/db/src/index.ts` usa apenas `DATABASE_URL` (aponta para Supabase). Replit injeta vars `PGHOST/PGUSER/PGDATABASE` mas elas devem ser IGNORADAS.
+- **NUNCA remover Supabase Auth** — o middleware `auth.ts` verifica JWT via `supabase.auth.getUser(token)`. A autenticação é por Bearer token, não por `x-user-id` header.
 - Não usar `npx expo start` diretamente — usar restart_workflow
 - Não criar app.config.ts/js — usar app.json estático
 - FlatList inverted: data em ordem normal (mais antigo primeiro), `inverted=true` cuida do display
