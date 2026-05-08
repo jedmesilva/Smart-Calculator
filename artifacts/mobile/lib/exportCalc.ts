@@ -2,6 +2,7 @@ import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import * as Clipboard from "expo-clipboard";
 import * as FileSystem from "expo-file-system/legacy";
+import { Platform } from "react-native";
 import type { ResultData } from "@/lib/apiClient";
 
 function formatDate() {
@@ -115,6 +116,12 @@ function buildHTML(data: ResultData): string {
   const resSecNum = ++secIdx;
   const proofSecNum = resSecNum + 1;
 
+  const proofStepsHTML = prova?.steps?.length
+    ? `<div class="proof-steps">${prova.steps.map((s) => `<div class="proof-step">$$${s.latex}$$</div>`).join("")}</div>`
+    : prova?.latex
+      ? `<div class="proof-steps"><div class="proof-step">$$${prova.latex}$$</div></div>`
+      : "";
+
   const proofHTML = prova
     ? `<div class="section-label">${String(proofSecNum).padStart(2, "0")} — Verificação</div>
        <div class="proof-box ${prova.valido ? "proof-ok" : "proof-warn"}">
@@ -123,7 +130,7 @@ function buildHTML(data: ResultData): string {
            <span class="proof-method">${proofTipoLabel(prova.tipo)}</span>
            <span class="proof-badge">${prova.valido ? "aprovado" : "revisar"}</span>
          </div>
-         <p class="proof-detail">${prova.descricao}</p>
+         ${proofStepsHTML || `<p class="proof-detail">${prova.descricao}</p>`}
        </div>`
     : "";
 
@@ -142,6 +149,10 @@ function buildHTML(data: ResultData): string {
   <meta name="description" content="${titulo} — ${subcategoria}: ${resultUnidade} ${resultValor}" />
   <meta name="creator" content="Phormula" />
   <meta name="created" content="${new Date().toISOString()}" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false})"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -255,6 +266,8 @@ function buildHTML(data: ResultData): string {
     }
     .proof-warn .proof-badge { background: #E8DCA8; color: #7A5010; }
     .proof-detail { font-size: 12px; color: #6B6B66; line-height: 1.5; }
+    .proof-steps { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .proof-step { text-align: center; padding: 6px 0; }
     .warning { font-size: 11px; color: #B07D1A; margin-top: 20px; }
     .footer {
       margin-top: 48px;
@@ -264,6 +277,14 @@ function buildHTML(data: ResultData): string {
       color: #C8C7C2;
       display: flex;
       justify-content: space-between;
+    }
+    @media print {
+      @page { margin: 1.5cm; size: A4; }
+      body { background: white; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .id-card { background: #EFEFEC !important; }
+      .result-card { background: #1A1A18 !important; }
+      .proof-ok { background: #F0FAF4 !important; }
+      .proof-warn { background: #FBF8ED !important; }
     }
   </style>
 </head>
@@ -315,6 +336,25 @@ function buildHTML(data: ResultData): string {
 
 export async function exportAsPDF(data: ResultData): Promise<void> {
   const html = buildHTML(data);
+
+  if (Platform.OS === "web") {
+    const popup = window.open("", "_blank");
+    if (!popup) {
+      throw new Error("Pop-up bloqueado. Habilite pop-ups para este site e tente novamente.");
+    }
+    popup.document.open();
+    popup.document.write(html);
+    popup.document.close();
+    popup.addEventListener("load", () => {
+      popup.focus();
+      popup.print();
+    });
+    setTimeout(() => {
+      try { popup.focus(); popup.print(); } catch {}
+    }, 800);
+    return;
+  }
+
   const { uri: tmpUri } = await Print.printToFileAsync({ html, base64: false });
 
   const fileName = buildFileName(data);
