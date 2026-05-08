@@ -387,23 +387,30 @@ export async function buildDesenvolvimento(opts: {
   const subExpressionHints = buildSubExpressionHints(expression, extracted, solveFor);
 
   const userContent = [
+    `=== DADOS DO CÁLCULO ===`,
     `Fórmula: ${formulaName}`,
     `tipo_operacao: ${tipoOperacao}`,
     formulaSymbolic ? `Expressão simbólica: ${formulaSymbolic}` : "",
-    formulaSubstituted ? `Notação com valores substituídos: ${formulaSubstituted}` : "",
-    `Expressão mathjs completa: ${expression}`,
-    `Variável calculada: ${solveFor} (${resultLabel})`,
-    varDesc ? `Valores usados: ${varDesc}` : "",
-    varValDesc ? `Como o usuário forneceu: ${varValDesc}` : "",
-    subExpressionHints ? `Resultados intermediários calculados:\n${subExpressionHints}` : "",
-    `Resultado final: ${solveFor} = ${resultWithUnit}`,
-    `\nIMPORTANTE: Gere NO MÍNIMO 4 passos, decompondo CADA operação intermediária em um passo separado com valores concretos. Não salte da substituição direto para o resultado.`,
+    formulaSubstituted ? `Expressão com valores substituídos: ${formulaSubstituted}` : "",
+    `Expressão mathjs (para referência): ${expression}`,
+    `Variável calculada: ${solveFor} = ${resultLabel}`,
+    varDesc ? `Valores numéricos: ${varDesc}` : "",
+    varValDesc ? `Valores como fornecidos pelo usuário: ${varValDesc}` : "",
+    subExpressionHints ? `=== RESULTADOS INTERMEDIÁRIOS (calculados pelo servidor) ===\n${subExpressionHints}` : "",
+    `=== RESULTADO FINAL ===`,
+    `${solveFor} = ${resultWithUnit}`,
+    ``,
+    `=== INSTRUÇÃO ===`,
+    `Trace o caminho completo de ${formulaSymbolic || expression} até ${solveFor} = ${resultWithUnit}.`,
+    `Para cada operação na expressão (parênteses, potência, multiplicação, divisão, etc.), crie um passo "resolucao" mostrando o resultado parcial numérico.`,
+    `Use os resultados intermediários acima para garantir precisão numérica em cada passo.`,
+    `Quantidade de passos: decida você com base na complexidade real deste cálculo.`,
   ].filter(Boolean).join("\n");
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 3000,
+      model: "gpt-4o",
+      max_completion_tokens: 4000,
       messages: [
         { role: "system", content: DESENVOLV_SYSTEM },
         { role: "user", content: userContent },

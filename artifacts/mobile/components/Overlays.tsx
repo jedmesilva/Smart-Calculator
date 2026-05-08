@@ -249,31 +249,31 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
         {/* ── 03 Desenvolvimento ── */}
         {desenvolvimento.length > 0 && (
           <DocSection numero={nextSec()} titulo="Desenvolvimento">
-            {desenvolvimento.map((step, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.docStepRow,
-                  i < desenvolvimento.length - 1 && styles.rowBorder,
-                ]}
-              >
-                <View style={styles.docStepLeft}>
-                  <Text style={styles.docStepNum}>{String(step.ordem).padStart(2, "0")}</Text>
-                  {!!step.tipo && step.tipo !== "resultado" && (
-                    <Text style={styles.docStepTipo}>{step.tipo}</Text>
-                  )}
+            {desenvolvimento.map((step, i) => {
+              const isLast = i === desenvolvimento.length - 1;
+              return (
+                <View key={i} style={styles.docStepRow}>
+                  {/* Coluna esquerda: linha vertical + ponto */}
+                  <View style={styles.docStepTrack}>
+                    <View style={[
+                      styles.docStepDot,
+                      step.tipo === "resultado" && styles.docStepDotResult,
+                    ]} />
+                    {!isLast && <View style={styles.docStepLine} />}
+                  </View>
+                  {/* Conteúdo */}
+                  <View style={styles.docStepContent}>
+                    <Text style={styles.docStepText}>{step.descricao}</Text>
+                    {!!step.justificativa && (
+                      <Text style={styles.docStepJustificativa}>{step.justificativa}</Text>
+                    )}
+                    {step.latex && (
+                      <MathView latex={step.latex} color={step.tipo === "resultado" ? c.text : c.mid} />
+                    )}
+                  </View>
                 </View>
-                <View style={{ flex: 1, gap: 6 }}>
-                  <Text style={styles.docStepText}>{step.descricao}</Text>
-                  {!!step.justificativa && (
-                    <Text style={styles.docStepJustificativa}>{step.justificativa}</Text>
-                  )}
-                  {step.latex && (
-                    <MathView latex={step.latex} color={c.mid} />
-                  )}
-                </View>
-              </View>
-            ))}
+              );
+            })}
           </DocSection>
         )}
 
@@ -1090,34 +1090,43 @@ const styles = StyleSheet.create({
   /* ── Steps doc ── */
   docStepRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    paddingVertical: 11,
-    gap: 16,
+    alignItems: "stretch",
+    gap: 14,
+    paddingVertical: 2,
   },
-  docStepLeft: {
+  docStepTrack: {
     alignItems: "center",
-    gap: 4,
-    minWidth: 18,
-    paddingTop: 3,
+    width: 10,
+    paddingTop: 5,
   },
-  docStepNum: {
-    fontFamily: "Inter_700Bold",
-    fontSize: 10,
-    color: c.ghost,
+  docStepDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: c.ghost,
+    flexShrink: 0,
   },
-  docStepTipo: {
-    fontFamily: "Inter_400Regular",
-    fontSize: 8,
-    color: c.ghost,
-    letterSpacing: 0.2,
-    textAlign: "center",
+  docStepDotResult: {
+    backgroundColor: c.text,
+  },
+  docStepLine: {
+    flex: 1,
+    width: 1,
+    backgroundColor: c.line,
+    marginTop: 4,
+    marginBottom: 0,
+    minHeight: 12,
+  },
+  docStepContent: {
+    flex: 1,
+    gap: 6,
+    paddingBottom: 16,
   },
   docStepText: {
     fontFamily: "Inter_400Regular",
     fontSize: 13,
     color: c.mid,
-    lineHeight: 21,
-    flex: 1,
+    lineHeight: 20,
   },
   docStepJustificativa: {
     fontFamily: "Inter_400Regular",
