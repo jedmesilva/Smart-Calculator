@@ -171,14 +171,7 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
           </View>
         </View>
 
-        {/* ── 01 Contexto (conversational response) ── */}
-        {!!data.conversationalResponse && (
-          <DocSection numero={nextSec()} titulo="Contexto">
-            <Text style={styles.contextText}>{data.conversationalResponse}</Text>
-          </DocSection>
-        )}
-
-        {/* ── 02 Fórmula ── */}
+        {/* ── 01 Fórmula ── */}
         {hasFormula && (
           <DocSection numero={nextSec()} titulo="Fórmula">
             <View style={styles.formulaDocBox}>
