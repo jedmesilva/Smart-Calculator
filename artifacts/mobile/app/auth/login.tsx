@@ -187,7 +187,7 @@ export default function LoginScreen() {
 
         {/* Header — muda conforme o modo */}
         <View style={styles.header}>
-          <Text style={styles.sigma}>σ</Text>
+          <Text style={styles.sigma}>Φ</Text>
           {forgotMode ? (
             <>
               <Text style={styles.title}>Recuperar senha</Text>

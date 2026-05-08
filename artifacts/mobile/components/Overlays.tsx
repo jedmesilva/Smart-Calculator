@@ -355,7 +355,7 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
 
         {/* ── Footer ── */}
         <View style={styles.docFooter}>
-          <Text style={styles.docFooterText}>σ sigma</Text>
+          <Text style={styles.docFooterText}>Φ Phormula</Text>
           <Text style={styles.docFooterText}>{today} · {time}</Text>
         </View>
       </ScrollView>
@@ -591,7 +591,7 @@ export function FormulasScreen({
 
         {/* Search */}
         <View style={styles.searchBox}>
-          <Text style={styles.sigmaText}>σ</Text>
+          <Text style={styles.sigmaText}>Φ</Text>
           <TextInput
             value={search}
             onChangeText={setSearch}

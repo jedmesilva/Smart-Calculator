@@ -30,7 +30,7 @@ function buildFileName(data: ResultData): string {
   const yyyy = date.getFullYear();
 
   const name = slugify(data.meta?.titulo ?? "calculo");
-  return `sigma_${name}_${dd}${mm}${yyyy}.pdf`;
+  return `phormula_${name}_${dd}${mm}${yyyy}.pdf`;
 }
 
 function proofTipoLabel(tipo: string): string {
@@ -270,7 +270,7 @@ function buildHTML(data: ResultData): string {
 <body>
   <div class="header">
     <div>
-      <div class="logo">σ <span>sigma</span></div>
+      <div class="logo">Φ <span>Phormula</span></div>
       <div class="date">${dateStr}</div>
     </div>
     <div class="date" style="text-align:right;">${categoria}</div>

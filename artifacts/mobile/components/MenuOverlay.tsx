@@ -85,7 +85,7 @@ export function MenuOverlay({ onClose }: Props) {
       <Animated.View style={[styles.drawer, drawerStyle, { paddingTop: topPad, paddingBottom: botPad }]}>
         {/* Header */}
         <View style={styles.drawerHeader}>
-          <Text style={styles.drawerLogo}>sigma</Text>
+          <Text style={styles.drawerLogo}>Phormula</Text>
           <Pressable onPress={close} style={styles.closeBtn} hitSlop={12}>
             <Feather name="x" size={18} color={c.faint} />
           </Pressable>

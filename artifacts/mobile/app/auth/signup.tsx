@@ -193,7 +193,7 @@ export default function SignupScreen() {
         </Pressable>
 
         <View style={styles.header}>
-          <Text style={styles.sigma}>σ</Text>
+          <Text style={styles.sigma}>Φ</Text>
           <Text style={styles.title}>Criar sua conta</Text>
           <Text style={styles.subtitle}>
             Preencha os campos abaixo para começar a usar o Phormula.

@@ -22,8 +22,8 @@ export default function WelcomeScreen() {
   return (
     <View style={[styles.root, { paddingTop: topPad, paddingBottom: botPad + 24 }]}>
       <View style={styles.brand}>
-        <Text style={styles.sigma}>σ</Text>
-        <Text style={styles.appName}>sigma</Text>
+        <Text style={styles.sigma}>Φ</Text>
+        <Text style={styles.appName}>Phormula</Text>
         <Text style={styles.tagline}>CALCULADORA INTELIGENTE</Text>
       </View>
 

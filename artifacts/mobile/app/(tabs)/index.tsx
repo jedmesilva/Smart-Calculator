@@ -158,7 +158,7 @@ function ResultRow({
               onPress={onView}
               style={({ pressed }) => [styles.viewBtn, pressed && { backgroundColor: c.ghost }]}
             >
-              <Text style={styles.sigmaSmall}>σ</Text>
+              <Text style={styles.sigmaSmall}>Φ</Text>
               <Text style={styles.viewBtnText}>ver</Text>
             </Pressable>
           </View>
@@ -454,7 +454,7 @@ export default function PhormulаScreen() {
             <Pressable onPress={() => setScreen("menu")} style={styles.headerIconBtn} hitSlop={8}>
               <Feather name="menu" size={15} color={c.ghost} />
             </Pressable>
-            <Text style={styles.logo}>sigma</Text>
+            <Text style={styles.logo}>Phormula</Text>
           </View>
           <View style={styles.headerRight}>
             <Pressable onPress={handleNewSession} style={styles.headerIconBtn} hitSlop={8}>
@@ -498,7 +498,7 @@ export default function PhormulаScreen() {
                 pressed && hasResult && { backgroundColor: c.surface },
               ]}
             >
-              <Text style={styles.sigmaSmall}>σ</Text>
+              <Text style={styles.sigmaSmall}>Φ</Text>
               <Text style={[styles.verCalcText, { color: hasResult ? c.mid : c.ghost }]}>
                 ver cálculo
               </Text>
