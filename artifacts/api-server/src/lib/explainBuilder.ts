@@ -147,12 +147,11 @@ export function buildResult(
     : null;
   const svgSymbolic = latexSym ? latexToSvg(latexSym) : null;
 
-  // svgSubstituted: usa expressão do DB com valores substituídos, ou a do agente
-  const subExpr = options.formulaExpression ?? vars.expression;
-  const latexSub = subExpr
-    ? toLatexSubstituted(subExpr, vars.extracted, vars.solveFor, computedValue, vars.resultUnit)
-    : null;
-  const svgSubstituted = latexSub ? latexToSvg(latexSub) : null;
+  // formulaSubstituted text: expressão com valores + resultado (quebra linha no mobile)
+  const unitPrefix = vars.resultUnit && vars.resultUnit !== "%" ? `${vars.resultUnit} ` : "";
+  const formulaSubstitutedWithResult = vars.formulaSubstituted
+    ? `${vars.formulaSubstituted} = ${unitPrefix}${formatted}`
+    : "";
 
   return {
     formulaId: options.formulaId ?? null,
@@ -162,9 +161,9 @@ export function buildResult(
     resultUnit: vars.resultUnit,
     resultLabel: vars.resultLabel,
     formulaSymbolic: symbolic,
-    formulaSubstituted: vars.formulaSubstituted,
+    formulaSubstituted: formulaSubstitutedWithResult || vars.formulaSubstituted,
     svgSymbolic,
-    svgSubstituted,
+    svgSubstituted: null,
     variables,
     steps,
     note: null,

@@ -180,15 +180,11 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
               ) : !!data.formulaSymbolic ? (
                 <Text style={styles.formulaDocSymbolic}>{data.formulaSymbolic}</Text>
               ) : null}
-              {(data.svgSubstituted || data.formulaSubstituted) && (
+              {!!data.formulaSubstituted && (
                 <>
                   <View style={styles.formulaDocDivider} />
                   <Text style={styles.formulaDocSubLabel}>com valores substituídos</Text>
-                  {data.svgSubstituted ? (
-                    <MathView svg={data.svgSubstituted} color={c.mid} />
-                  ) : (
-                    <Text style={styles.formulaDocSubstituted}>{data.formulaSubstituted}</Text>
-                  )}
+                  <Text style={styles.formulaDocSubstituted}>{data.formulaSubstituted}</Text>
                 </>
               )}
             </View>
