@@ -106,25 +106,19 @@ export function MenuOverlay({ onClose }: Props) {
               <Text style={styles.userName} numberOfLines={1}>{displayName}</Text>
             ) : null}
             <Text style={styles.userEmail} numberOfLines={1}>{email}</Text>
-          </View>
-        </View>
-
-        {/* Plan / Credits Card */}
-        <View style={styles.creditsCard}>
-          <View style={styles.planRow}>
-            <Text style={styles.planBadge}>Gratuito</Text>
-          </View>
-          <View style={styles.creditsAmountRow}>
-            {carteiraLoading ? (
-              <ActivityIndicator size="small" color={c.faint} />
-            ) : (
-              <>
-                <Text style={styles.creditsAmount}>
-                  {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"}
+            <View style={styles.planInlineRow}>
+              <View style={styles.planInlineBadge}>
+                <Text style={styles.planInlineBadgeText}>Gratuito</Text>
+              </View>
+              <View style={styles.planInlineDot} />
+              {carteiraLoading ? (
+                <ActivityIndicator size={10} color={c.ghost} />
+              ) : (
+                <Text style={styles.planInlineCredits}>
+                  {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"} cr.
                 </Text>
-                <Text style={styles.creditsAmountLabel}> créditos disponíveis</Text>
-              </>
-            )}
+              )}
+            </View>
           </View>
         </View>
 
@@ -256,37 +250,32 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     color: c.faint,
   },
-  creditsCard: {
-    backgroundColor: c.panel,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 10,
-    gap: 5,
-  },
-  planRow: {
+  planInlineRow: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 5,
+    marginTop: 4,
   },
-  planBadge: {
-    fontSize: 11,
+  planInlineBadge: {
+    backgroundColor: c.surface,
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  planInlineBadgeText: {
+    fontSize: 10,
     fontFamily: "Inter_600SemiBold",
-    color: c.faint,
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
+    color: c.mid,
+    letterSpacing: 0.2,
   },
-  creditsAmountRow: {
-    flexDirection: "row",
-    alignItems: "baseline",
+  planInlineDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: c.ghost,
   },
-  creditsAmount: {
-    fontSize: 22,
-    fontFamily: "Inter_700Bold",
-    color: c.text,
-    letterSpacing: -0.8,
-  },
-  creditsAmountLabel: {
-    fontSize: 12,
+  planInlineCredits: {
+    fontSize: 11,
     fontFamily: "Inter_400Regular",
     color: c.faint,
   },
