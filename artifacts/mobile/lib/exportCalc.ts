@@ -405,7 +405,6 @@ export function buildTextSummary(data: ResultData): string {
   const desenvolvimento = data.desenvolvimento ?? [];
   const prova = data.prova ?? null;
   const objetivo = data.objetivo ?? "";
-  const conversacional = data.conversationalResponse ?? "";
 
   const dateStr = new Date().toLocaleDateString("pt-BR", {
     day: "2-digit",
@@ -435,14 +434,6 @@ export function buildTextSummary(data: ResultData): string {
     lines.push(`OBJETIVO`);
     lines.push(sep);
     lines.push(objetivo);
-  }
-
-  // Resposta conversacional
-  if (conversacional) {
-    lines.push(``);
-    lines.push(`CONTEXTO`);
-    lines.push(sep);
-    lines.push(conversacional);
   }
 
   let secIdx = 0;
