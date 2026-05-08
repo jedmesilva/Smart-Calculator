@@ -106,21 +106,39 @@ export function MenuOverlay({ onClose }: Props) {
               <Text style={styles.userName} numberOfLines={1}>{displayName}</Text>
             ) : null}
             <Text style={styles.userEmail} numberOfLines={1}>{email}</Text>
-            <View style={styles.planInlineRow}>
-              <View style={styles.planInlineBadge}>
-                <Text style={styles.planInlineBadgeText}>Gratuito</Text>
-              </View>
-              <View style={styles.planInlineDot} />
-              {carteiraLoading ? (
-                <ActivityIndicator size={10} color={c.ghost} />
-              ) : (
-                <Text style={styles.planInlineCredits}>
-                  {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"} cr.
-                </Text>
-              )}
-            </View>
           </View>
         </View>
+
+        {/* Plan Card */}
+        <Pressable
+          style={({ pressed }) => [styles.planCard, pressed && { opacity: 0.85 }]}
+          onPress={() => {}}
+        >
+          <View style={styles.planCardTop}>
+            <Text style={styles.planCardLabel}>GRATUITO</Text>
+            <Pressable
+              style={({ pressed }) => [styles.upgradeBtn, pressed && { opacity: 0.8 }]}
+              onPress={() => {}}
+              hitSlop={8}
+            >
+              <Text style={styles.upgradeBtnText}>Upgrade</Text>
+              <Feather name="chevron-right" size={12} color={c.background} />
+            </Pressable>
+          </View>
+          <View style={styles.planCardBottom}>
+            {carteiraLoading ? (
+              <ActivityIndicator size={14} color={c.ghost} />
+            ) : (
+              <Text style={styles.planCardCredits}>
+                <Text style={styles.planCardCreditsNum}>
+                  {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"}
+                </Text>
+                {"  "}
+                <Text style={styles.planCardCreditsSuffix}>créditos disponíveis</Text>
+              </Text>
+            )}
+          </View>
+        </Pressable>
 
         {/* Divider */}
         <View style={styles.divider} />
@@ -250,32 +268,58 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     color: c.faint,
   },
-  planInlineRow: {
+  planCard: {
+    backgroundColor: c.panel,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 16,
+    marginBottom: 10,
+    gap: 10,
+  },
+  planCardTop: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
-    marginTop: 4,
+    justifyContent: "space-between",
   },
-  planInlineBadge: {
-    backgroundColor: c.surface,
-    borderRadius: 4,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-  },
-  planInlineBadgeText: {
-    fontSize: 10,
-    fontFamily: "Inter_600SemiBold",
-    color: c.mid,
-    letterSpacing: 0.2,
-  },
-  planInlineDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: c.ghost,
-  },
-  planInlineCredits: {
+  planCardLabel: {
     fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    color: c.faint,
+    letterSpacing: 0.8,
+  },
+  upgradeBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    backgroundColor: c.text,
+    borderRadius: 20,
+    paddingVertical: 7,
+    paddingLeft: 13,
+    paddingRight: 10,
+  },
+  upgradeBtnText: {
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+    color: c.background,
+    letterSpacing: -0.1,
+  },
+  planCardBottom: {
+    flexDirection: "row",
+    alignItems: "baseline",
+  },
+  planCardCredits: {
+    flexDirection: "row",
+    alignItems: "baseline",
+  },
+  planCardCreditsNum: {
+    fontSize: 26,
+    fontFamily: "Inter_700Bold",
+    color: c.text,
+    letterSpacing: -0.5,
+  },
+  planCardCreditsSuffix: {
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
     color: c.faint,
   },
