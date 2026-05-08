@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, ScrollView } from "react-native";
+import { View } from "react-native";
 import { SvgXml } from "react-native-svg";
 
 interface Props {
@@ -21,7 +21,6 @@ export function MathView({ svg, color = "#3A3A38" }: Props) {
   const naturalW = widthMatch ? parseFloat(widthMatch[1]) : 200;
   const naturalH = heightMatch ? parseFloat(heightMatch[1]) : 60;
 
-  const needsScroll = containerWidth > 0 && naturalW > containerWidth;
   const scale = containerWidth > 0 && naturalW > containerWidth
     ? containerWidth / naturalW
     : 1;
@@ -30,23 +29,11 @@ export function MathView({ svg, color = "#3A3A38" }: Props) {
 
   return (
     <View
-      style={{ width: "100%" }}
+      style={{ alignItems: "center", width: "100%" }}
       onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
     >
       {containerWidth > 0 && (
-        needsScroll ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ alignItems: "center", paddingHorizontal: 4 }}
-          >
-            <SvgXml xml={colored} width={naturalW} height={naturalH} />
-          </ScrollView>
-        ) : (
-          <View style={{ alignItems: "center" }}>
-            <SvgXml xml={colored} width={displayW} height={displayH} />
-          </View>
-        )
+        <SvgXml xml={colored} width={displayW} height={displayH} />
       )}
     </View>
   );
