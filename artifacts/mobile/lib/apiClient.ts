@@ -19,7 +19,8 @@ export type DesenvolvimentoStep = {
   ordem: number;
   descricao: string;
   latex: string | null;
-  tipo: "substituicao" | "simplificacao" | "teorema" | "resolucao" | "resultado";
+  tipo: "enunciado" | "substituicao" | "simplificacao" | "teorema" | "aplicacao" | "resolucao" | "resultado";
+  justificativa?: string | null;
 };
 
 export type ResultData = {
@@ -27,6 +28,14 @@ export type ResultData = {
   searchUsed?: boolean;
   warning?: string | null;
   conversationalResponse: string;
+
+  dominio?: string;
+
+  operacao?: {
+    tipo: string;
+    nome_formal: string;
+    referencia: string;
+  };
 
   meta: {
     titulo: string;
@@ -44,6 +53,7 @@ export type ResultData = {
 
   variaveis: {
     simbolo: string;
+    papel?: string;
     descricao: string;
     valor: string;
     unidade: string;
@@ -55,6 +65,7 @@ export type ResultData = {
     valor: string;
     latex: string | null;
     unidade: string;
+    interpretacao?: string | null;
   };
 
   prova: {

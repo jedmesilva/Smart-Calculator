@@ -218,7 +218,12 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
               >
                 <View style={styles.docVarLeft}>
                   <Text style={styles.docVarSymbol}>{v.simbolo}</Text>
-                  <Text style={styles.docVarName}>{v.descricao}</Text>
+                  <View style={{ gap: 1 }}>
+                    <Text style={styles.docVarName}>{v.descricao}</Text>
+                    {!!v.papel && v.papel !== v.descricao && (
+                      <Text style={styles.docVarPapel}>{v.papel}</Text>
+                    )}
+                  </View>
                 </View>
                 <Text style={styles.docVarValue}>
                   {v.unidade ? `${v.unidade} ` : ""}{v.valor}
@@ -239,9 +244,17 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
                   i < desenvolvimento.length - 1 && styles.rowBorder,
                 ]}
               >
-                <Text style={styles.docStepNum}>{String(step.ordem).padStart(2, "0")}</Text>
+                <View style={styles.docStepLeft}>
+                  <Text style={styles.docStepNum}>{String(step.ordem).padStart(2, "0")}</Text>
+                  {!!step.tipo && step.tipo !== "resultado" && (
+                    <Text style={styles.docStepTipo}>{step.tipo}</Text>
+                  )}
+                </View>
                 <View style={{ flex: 1, gap: 6 }}>
                   <Text style={styles.docStepText}>{step.descricao}</Text>
+                  {!!step.justificativa && (
+                    <Text style={styles.docStepJustificativa}>{step.justificativa}</Text>
+                  )}
                   {step.latex && (
                     <MathView latex={step.latex} color={c.mid} />
                   )}
@@ -262,6 +275,12 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
             </View>
             <Text style={styles.resultDocNum}>{resultValor}</Text>
           </View>
+          {!!data.resultado?.interpretacao && (
+            <View style={styles.interpretacaoRow}>
+              <Feather name="info" size={10} color={c.ghost} />
+              <Text style={styles.interpretacaoText}>{data.resultado.interpretacao}</Text>
+            </View>
+          )}
         </DocSection>
 
         {/* ── 05 Verificação ── */}
@@ -997,7 +1016,7 @@ const styles = StyleSheet.create({
   },
   docVarLeft: {
     flexDirection: "row",
-    alignItems: "baseline",
+    alignItems: "flex-start",
     gap: 10,
     flex: 1,
     minWidth: 0,
@@ -1007,12 +1026,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: c.text,
     minWidth: 22,
+    paddingTop: 1,
   },
   docVarName: {
     fontFamily: "Inter_400Regular",
     fontSize: 13,
     color: c.faint,
     flex: 1,
+  },
+  docVarPapel: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 10,
+    color: c.ghost,
+    flex: 1,
+    letterSpacing: 0.1,
   },
   docVarValue: {
     fontFamily: "Inter_600SemiBold",
@@ -1027,12 +1054,23 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     gap: 16,
   },
+  docStepLeft: {
+    alignItems: "center",
+    gap: 4,
+    minWidth: 18,
+    paddingTop: 3,
+  },
   docStepNum: {
     fontFamily: "Inter_700Bold",
     fontSize: 10,
     color: c.ghost,
-    minWidth: 18,
-    paddingTop: 3,
+  },
+  docStepTipo: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 8,
+    color: c.ghost,
+    letterSpacing: 0.2,
+    textAlign: "center",
   },
   docStepText: {
     fontFamily: "Inter_400Regular",
@@ -1040,6 +1078,13 @@ const styles = StyleSheet.create({
     color: c.mid,
     lineHeight: 21,
     flex: 1,
+  },
+  docStepJustificativa: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 11,
+    color: c.ghost,
+    fontStyle: "italic",
+    lineHeight: 17,
   },
   /* ── Resultado doc ── */
   resultDocCard: {
@@ -1068,6 +1113,21 @@ const styles = StyleSheet.create({
     color: c.background,
     letterSpacing: -1.5,
     lineHeight: 42,
+  },
+  interpretacaoRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 6,
+    marginTop: 10,
+    paddingHorizontal: 2,
+  },
+  interpretacaoText: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 11,
+    color: c.ghost,
+    lineHeight: 16,
+    flex: 1,
+    fontStyle: "italic",
   },
   /* ── Notes & warnings ── */
   notesWrap: {

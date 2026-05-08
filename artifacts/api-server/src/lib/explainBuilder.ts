@@ -1,6 +1,6 @@
 import { parse } from "mathjs";
 import { openai } from "@workspace/integrations-openai-ai-server";
-import type { ExpressionResult, ValidationResult } from "../agents/types";
+import type { ExpressionResult, ValidationResult, FormulaExpressionMeta } from "../agents/types";
 import { logger } from "./logger";
 
 /* ═══════════════════════════════════════════════════════
@@ -11,7 +11,8 @@ export type DesenvolvimentoStep = {
   ordem: number;
   descricao: string;
   latex: string | null;
-  tipo: "substituicao" | "simplificacao" | "teorema" | "resolucao" | "resultado";
+  tipo: "enunciado" | "substituicao" | "simplificacao" | "teorema" | "aplicacao" | "resolucao" | "resultado";
+  justificativa?: string | null;
 };
 
 export type ResultData = {
@@ -19,6 +20,14 @@ export type ResultData = {
   searchUsed?: boolean;
   warning?: string | null;
   conversationalResponse: string;
+
+  dominio: string;
+
+  operacao: {
+    tipo: string;
+    nome_formal: string;
+    referencia: string;
+  };
 
   meta: {
     titulo: string;
@@ -36,6 +45,7 @@ export type ResultData = {
 
   variaveis: {
     simbolo: string;
+    papel: string;
     descricao: string;
     valor: string;
     unidade: string;
@@ -47,6 +57,7 @@ export type ResultData = {
     valor: string;
     latex: string | null;
     unidade: string;
+    interpretacao?: string | null;
   };
 
   prova: {
@@ -55,6 +66,46 @@ export type ResultData = {
     latex: string | null;
     valido: boolean;
   };
+};
+
+/* ── Metadados de operação por tipo de expressão ── */
+const OPERACAO_META: Record<string, { tipo: string; nome_formal: string; referencia: string }> = {
+  integral:  { tipo: "integracao_definida",  nome_formal: "Integral de Riemann",    referencia: "Teorema Fundamental do Cálculo" },
+  derivada:  { tipo: "derivacao",            nome_formal: "Derivada",               referencia: "Cálculo Diferencial" },
+  limite:    { tipo: "limite",               nome_formal: "Limite",                 referencia: "Análise Real" },
+  somatorio: { tipo: "somatorio",            nome_formal: "Somatório",              referencia: "Séries e Sequências" },
+  produto:   { tipo: "produto_notacao",      nome_formal: "Produto",                referencia: "Séries e Sequências" },
+  matriz:    { tipo: "algebra_linear",       nome_formal: "Operação Matricial",     referencia: "Álgebra Linear" },
+  algebra:   { tipo: "algebra",              nome_formal: "Álgebra",                referencia: "Álgebra Elementar" },
+};
+
+/* ── Mapeamento categoria da fórmula → domínio matemático ── */
+const CATEGORIA_TO_DOMINIO: Record<string, string> = {
+  "Financeiro":    "aritmetica",
+  "Financeira":    "aritmetica",
+  "Física":        "fisica",
+  "Fisica":        "fisica",
+  "Geometria":     "geometria",
+  "Estatística":   "estatistica",
+  "Estatistica":   "estatistica",
+  "Química":       "quimica",
+  "Quimica":       "quimica",
+  "Trigonometria": "analise",
+  "Cálculo":       "analise",
+  "Calculo":       "analise",
+  "Álgebra":       "algebra",
+  "Algebra":       "algebra",
+};
+
+/* ── Domínio base por tipo de operação (override por categoria se disponível) ── */
+const DOMINIO_FROM_TIPO: Record<string, string> = {
+  integral:  "analise",
+  derivada:  "analise",
+  limite:    "analise",
+  somatorio: "algebra",
+  produto:   "algebra",
+  matriz:    "algebra_linear",
+  algebra:   "algebra",
 };
 
 /* ── Gera LaTeX da fórmula simbólica via mathjs ── */
@@ -121,78 +172,91 @@ function detectExpressionType(expression: string): string {
   return "algebra";
 }
 
-const DESENVOLV_SYSTEM = `Você é um professor de matemática. Dado o cálculo, gere os passos do desenvolvimento matemático real — com raciocínio genuíno, não apenas substituição mecânica.
+const DESENVOLV_SYSTEM = `Você é um motor matemático. Dado qualquer cálculo, retorne APENAS um objeto JSON válido, sem markdown.
 
-RETORNE APENAS um array JSON válido, sem markdown, sem texto adicional.
-
-Formato de cada item:
+FORMATO DE RETORNO:
 {
-  "ordem": 1,
-  "descricao": "descrição em português do que foi feito",
-  "latex": "expressão LaTeX KaTeX para esse passo (ou null)",
-  "tipo": "teorema"
+  "interpretacao": "frase curta explicando o significado do resultado (ex: Área sob sin(x) de 0 a π)",
+  "passos": [
+    {
+      "ordem": 1,
+      "tipo": "enunciado",
+      "descricao": "descrição em português do que este passo faz",
+      "latex": "expressão LaTeX KaTeX (ou null)",
+      "justificativa": "obrigatório quando tipo=teorema: citar o teorema ou regra usada"
+    }
+  ]
 }
 
-Tipos de passo:
-- substituicao: substituir valores numéricos na expressão simbólica
+TIPOS DE PASSO:
+- enunciado: escrever a expressão de partida (integral, derivada, fórmula, etc.)
+- teorema: invocar propriedade, identidade, regra ou teorema matemático — justificativa obrigatória
+- aplicacao: aplicar o teorema ao caso concreto
+- substituicao: substituir valores numéricos
 - simplificacao: simplificar ou reorganizar algebricamente
-- teorema: aplicar propriedade, identidade, regra ou teorema matemático
-- resolucao: calcular uma operação ou subexpressão intermediária
-- resultado: passo final com o resultado (SEMPRE o último, obrigatório)
+- resolucao: calcular subexpressão intermediária
+- resultado: passo final com o valor numérico (SEMPRE o último, obrigatório)
 
 ══════════════════════════════════════
 ROTEIRO POR TIPO DE OPERAÇÃO
 ══════════════════════════════════════
 
 INTEGRAL DEFINIDA (tipo_operacao = "integral"):
-1. Escrever a integral: \\int_a^b f(x)\\,dx  →  tipo "teorema"
-2. Enunciar a regra de integração aplicada (primitiva imediata, partes, substituição u, etc.)  →  tipo "teorema"
-3. Calcular a primitiva F(x) mostrando o processo  →  tipo "resolucao"
-4. Aplicar o Teorema Fundamental do Cálculo: [F(x)]_a^b = F(b) - F(a)  →  tipo "teorema"
-5. Calcular F(b) e F(a) com os valores numéricos  →  tipo "resolucao"
-6. Computar F(b) - F(a) = resultado numérico  →  tipo "resultado"
+1. Escrever \\int_a^b f(x)\\,dx  →  "enunciado"
+2. Identificar e enunciar a regra de integração  →  "teorema" + justificativa
+3. Calcular a primitiva F(x)  →  "aplicacao"
+4. Enunciar o Teorema Fundamental do Cálculo  →  "teorema" + justificativa: "TFC: \\int_a^b f = F(b)-F(a)"
+5. Substituir os limites  →  "substituicao"
+6. Calcular F(b) − F(a)  →  "resultado"
 
 DERIVADA EM UM PONTO (tipo_operacao = "derivada"):
-1. Escrever a expressão: \\frac{d}{dx}[f(x)]  →  tipo "teorema"
-2. Enunciar a regra de derivação (potência, cadeia, produto, quociente)  →  tipo "teorema"
-3. Calcular f'(x) aplicando a regra passo a passo  →  tipo "resolucao"
-4. Substituir o ponto x = a na derivada  →  tipo "substituicao"
-5. Calcular o valor numérico  →  tipo "resultado"
+1. Escrever \\frac{d}{dx}[f(x)]  →  "enunciado"
+2. Enunciar a regra de derivação  →  "teorema" + justificativa
+3. Calcular f'(x)  →  "aplicacao"
+4. Substituir x = a  →  "substituicao"
+5. Valor numérico  →  "resultado"
 
 SOMATÓRIO (tipo_operacao = "somatorio"):
-1. Escrever o somatório \\sum_{k=a}^{b} f(k)  →  tipo "teorema"
-2. Se houver fórmula fechada, enunciá-la; senão expandir os termos  →  tipo "teorema" ou "resolucao"
-3. Calcular cada termo ou aplicar a fórmula  →  tipo "resolucao"
-4. Somar todos os termos  →  tipo "resultado"
+1. Escrever \\sum_{k=a}^{b} f(k)  →  "enunciado"
+2. Fórmula fechada (se existir) ou expandir termos  →  "teorema" + justificativa (ou "resolucao")
+3. Calcular cada termo / aplicar fórmula  →  "resolucao"
+4. Somar → "resultado"
 
 LIMITE (tipo_operacao = "limite"):
-1. Escrever \\lim_{x \\to a} f(x)  →  tipo "teorema"
-2. Tentar substituição direta; se indeterminado (0/0, ∞/∞), indicar a forma  →  tipo "resolucao"
-3. Aplicar a técnica adequada (L'Hôpital, fatoração, identidade trigonométrica)  →  tipo "teorema"
-4. Simplificar e calcular o limite  →  tipo "resultado"
+1. Escrever \\lim_{x \\to a} f(x)  →  "enunciado"
+2. Substituição direta; se indeterminado, indicar forma (0/0, ∞/∞)  →  "resolucao"
+3. Técnica aplicada (L'Hôpital, fatoração, identidade)  →  "teorema" + justificativa
+4. Simplificar → "resultado"
 
 PRODUTO / FATORIAL (tipo_operacao = "produto"):
-1. Escrever \\prod_{k=a}^{b} f(k)  →  tipo "teorema"
-2. Expandir os fatores explicitamente  →  tipo "resolucao"
-3. Calcular o produto  →  tipo "resultado"
+1. Escrever \\prod_{k=a}^{b} f(k)  →  "enunciado"
+2. Expandir fatores  →  "resolucao"
+3. Calcular produto  →  "resultado"
 
 ÁLGEBRA / FÓRMULAS (tipo_operacao = "algebra"):
-1. Apresentar a fórmula simbólica com LaTeX  →  tipo "teorema"
-2. Substituir cada valor numérico na expressão  →  tipo "substituicao"
-3. Resolver operações intermediárias (raiz, potência, divisão, etc.) uma por vez  →  tipo "resolucao"
-4. Resultado final  →  tipo "resultado"
+1. Fórmula simbólica  →  "enunciado"
+2. Invocar propriedade relevante (se houver)  →  "teorema" + justificativa
+3. Substituir valores  →  "substituicao"
+4. Resolver intermediários (raiz, potência, divisão)  →  "resolucao"
+5. Resultado final  →  "resultado"
 
 ══════════════════════════════════════
-REGRAS CRÍTICAS UNIVERSAIS
+REGRAS CRÍTICAS
 ══════════════════════════════════════
 - PROIBIDO escrever "Identificamos as variáveis" — isso não é um passo matemático
-- Nunca pule etapas. Nunca agrupe dois passos distintos em um.
-- O último passo SEMPRE tem tipo "resultado" com o valor numérico final
-- Mínimo 3 passos, máximo 8 passos
-- Use LaTeX compatível com KaTeX (sem \\begin{equation}, inline apenas)
-- Decimais pt-BR no LaTeX: use {,} — ex: 1{,}5 (nunca 1.5)
-- Inclua unidades quando relevante: \\text{m}, \\text{kg}, \\text{R\\$}, \\text{cm}^2
-- latex pode ser null apenas se o passo for puramente textual sem expressão`;
+- Nunca agrupe dois passos distintos em um
+- O passo "resultado" é obrigatório e sempre o último
+- Mínimo 3 passos, máximo 8
+- LaTeX compatível com KaTeX (sem \\begin{equation}, inline apenas)
+- Decimais pt-BR no LaTeX: {,} — ex: 1{,}5 (nunca 1.5)
+- Unidades: \\text{m}, \\text{kg}, \\text{R\\$}, \\text{cm}^2
+- justificativa é obrigatória quando tipo = "teorema"; null nos demais
+- interpretacao: frase curta e objetiva (max 15 palavras)`;
+
+export type DesenvolvimentoResult = {
+  steps: DesenvolvimentoStep[];
+  interpretacao: string | null;
+};
 
 export async function buildDesenvolvimento(opts: {
   formulaName: string;
@@ -206,7 +270,7 @@ export async function buildDesenvolvimento(opts: {
   computedValue: number;
   resultUnit: string;
   resultLabel: string;
-}): Promise<DesenvolvimentoStep[]> {
+}): Promise<DesenvolvimentoResult> {
   const { formulaName, formulaSymbolic, formulaSubstituted, expression, extracted,
           variableNames, variableValues, solveFor, computedValue, resultUnit, resultLabel } = opts;
 
@@ -252,26 +316,33 @@ export async function buildDesenvolvimento(opts: {
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      max_completion_tokens: 1500,
+      max_completion_tokens: 1800,
       messages: [
         { role: "system", content: DESENVOLV_SYSTEM },
         { role: "user", content: userContent },
       ],
     } as any);
 
-    const raw = response.choices[0]?.message?.content ?? "[]";
+    const raw = response.choices[0]?.message?.content ?? "{}";
     const parsed = JSON.parse(raw.replace(/```json\n?|\n?```/g, "").trim());
 
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      throw new Error("LLM returned empty or non-array");
-    }
+    const passos: any[] = Array.isArray(parsed) ? parsed : (parsed.passos ?? []);
+    if (passos.length === 0) throw new Error("LLM returned empty steps");
 
-    return parsed.map((step: any, idx: number) => ({
-      ordem: step.ordem ?? idx + 1,
-      descricao: step.descricao ?? "",
-      latex: step.latex ?? null,
-      tipo: step.tipo ?? "resolucao",
-    }));
+    const interpretacao: string | null = typeof parsed.interpretacao === "string"
+      ? parsed.interpretacao
+      : null;
+
+    return {
+      interpretacao,
+      steps: passos.map((step: any, idx: number) => ({
+        ordem: step.ordem ?? idx + 1,
+        descricao: step.descricao ?? "",
+        latex: step.latex ?? null,
+        tipo: step.tipo ?? "resolucao",
+        justificativa: step.justificativa ?? null,
+      })),
+    };
   } catch (err) {
     logger.warn({ err }, "buildDesenvolvimento: LLM failed, using fallback");
     return buildFallbackDesenvolvimento(tipoOperacao, formulaSymbolic, formulaSubstituted,
@@ -293,7 +364,7 @@ function buildFallbackDesenvolvimento(
   computedValue: number,
   resultUnit: string,
   resultLabel: string
-): DesenvolvimentoStep[] {
+): DesenvolvimentoResult {
   const steps: DesenvolvimentoStep[] = [];
 
   let displayValue = computedValue;
@@ -340,7 +411,7 @@ function buildFallbackDesenvolvimento(
       tipo: "resultado",
     });
 
-    return steps;
+    return { steps, interpretacao: null };
   }
 
   /* ── Álgebra: fallback com substituição explícita ── */
@@ -349,7 +420,7 @@ function buildFallbackDesenvolvimento(
       ordem: 1,
       descricao: `Fórmula: ${formulaSymbolic}`,
       latex: formulaSymbolic,
-      tipo: "teorema",
+      tipo: "enunciado",
     });
   }
 
@@ -375,7 +446,7 @@ function buildFallbackDesenvolvimento(
     tipo: "resultado",
   });
 
-  return steps;
+  return { steps, interpretacao: null };
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -406,9 +477,27 @@ export function buildResult(
     searchUsed?: boolean;
     proof?: ValidationResult;
     formulaExpression?: string | null;
+    formulaMeta?: FormulaExpressionMeta | null;
+    interpretacao?: string | null;
   } = {}
 ): Omit<ResultData, "conversationalResponse" | "desenvolvimento"> {
   const formatted = formatPtBR(computedValue, vars.resultUnit);
+
+  /* ── Determina tipo de operação e preenche dominio + operacao ── */
+  const tipoOp = detectExpressionType(vars.expression);
+  const opMeta = OPERACAO_META[tipoOp] ?? OPERACAO_META.algebra;
+
+  /* Categoria sobrescreve domínio base se mapeada */
+  const catKey = options.formulaCategory ?? "";
+  const dominio = CATEGORIA_TO_DOMINIO[catKey] ?? DOMINIO_FROM_TIPO[tipoOp] ?? "algebra";
+
+  /* ── Monta mapa de papel a partir do formulaMeta ── */
+  const papelMap: Record<string, string> = {};
+  if (options.formulaMeta?.variables) {
+    for (const v of options.formulaMeta.variables) {
+      papelMap[v.symbol] = v.description || v.name;
+    }
+  }
 
   const allSymbols = new Set([
     ...Object.keys(vars.variableValues),
@@ -419,6 +508,7 @@ export function buildResult(
     .filter((sym) => sym !== vars.solveFor)
     .map((sym) => ({
       simbolo: sym,
+      papel: papelMap[sym] ?? vars.variableNames[sym] ?? sym,
       descricao: vars.variableNames[sym] ?? sym,
       valor: vars.variableValues[sym] ?? String(vars.extracted[sym] ?? ""),
       unidade: "",
@@ -452,6 +542,14 @@ export function buildResult(
     searchUsed: options.searchUsed ?? false,
     warning: options.warning ?? null,
 
+    dominio,
+
+    operacao: {
+      tipo: opMeta.tipo,
+      nome_formal: opMeta.nome_formal,
+      referencia: opMeta.referencia,
+    },
+
     meta: {
       titulo: formulaName,
       categoria: options.formulaCategory ?? "Cálculo",
@@ -472,6 +570,7 @@ export function buildResult(
       valor: formatted,
       latex: latexRes,
       unidade: vars.resultUnit,
+      interpretacao: options.interpretacao ?? null,
     },
 
     prova,

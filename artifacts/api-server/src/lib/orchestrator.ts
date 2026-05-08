@@ -300,7 +300,7 @@ export async function runCalculationPipeline(opts: {
      ══════════════════════════════════════════════════════ */
 
   const phase5Start = Date.now();
-  const [result, conversationalResponse, desenvolvimento] = await Promise.all([
+  const [partialResult, conversationalResponse, desenvolvimentoResult] = await Promise.all([
     Promise.resolve(
       buildResult(formula.name, formula.symbolic, expressionResult, computedValue, {
         formulaId: formula.id,
@@ -308,6 +308,7 @@ export async function runCalculationPipeline(opts: {
         searchUsed: expressionResult.searchUsed,
         proof: validation,
         formulaExpression: formula.expression,
+        formulaMeta: formula.expression_meta,
       })
     ),
     runConversationalAgent({ query, formula, expressionResult, computedValue, validation, context, sessionSummary, userName }),
@@ -325,6 +326,17 @@ export async function runCalculationPipeline(opts: {
       resultLabel: expressionResult.resultLabel,
     }),
   ]);
+
+  /* Mescla interpretacao do desenvolvimento no resultado */
+  const result = {
+    ...partialResult,
+    resultado: {
+      ...partialResult.resultado,
+      interpretacao: desenvolvimentoResult.interpretacao ?? partialResult.resultado.interpretacao,
+    },
+  };
+  const desenvolvimento = desenvolvimentoResult.steps;
+
   logger.info({ ms: Date.now() - phase5Start }, "orchestrator: phase 5 complete");
 
   logger.info(
