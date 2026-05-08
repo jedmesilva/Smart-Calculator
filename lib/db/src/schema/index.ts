@@ -2,23 +2,8 @@ import { pgTable, text, boolean, timestamp, uuid, jsonb, integer } from "drizzle
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
-export const users = pgTable("users", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  email: text("email").notNull().unique(),
-  password_hash: text("password_hash").notNull(),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const authSessions = pgTable("auth_sessions", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  user_id: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  token: text("token").notNull().unique(),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  expires_at: timestamp("expires_at").notNull(),
-});
-
 export const profiles = pgTable("profiles", {
-  id: uuid("id").primaryKey(),
+  id: text("id").primaryKey(),
   full_name: text("full_name"),
   avatar_url: text("avatar_url"),
   created_at: timestamp("created_at").defaultNow().notNull(),

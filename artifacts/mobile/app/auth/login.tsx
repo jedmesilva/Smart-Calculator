@@ -14,7 +14,7 @@ import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 import colors from "@/constants/colors";
 
 const c = colors.light;
@@ -104,7 +104,6 @@ const fieldStyles = StyleSheet.create({
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { signIn } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -140,14 +139,15 @@ export default function LoginScreen() {
     if (!validateFields()) return;
     setLoading(true);
     setError(null);
-    const result = await signIn(email.trim(), password);
-    if (result.error) setError(translateError(result.error));
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) setError(translateError(error.message));
     setLoading(false);
   }
 
   async function handleForgotPassword() {
     if (!forgotEmail.trim()) return;
     setForgotLoading(true);
+    await supabase.auth.resetPasswordForEmail(forgotEmail.trim());
     setForgotLoading(false);
     setForgotSuccess(true);
   }

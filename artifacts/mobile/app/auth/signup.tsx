@@ -13,7 +13,7 @@ import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 import colors from "@/constants/colors";
 
 const c = colors.light;
@@ -92,7 +92,6 @@ const fieldStyles = StyleSheet.create({
 export default function SignupScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { signUp } = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -162,10 +161,13 @@ export default function SignupScreen() {
     setLoading(true);
     setError(null);
 
-    const result = await signUp(email.trim(), password, name.trim());
-    const error = result.error;
+    const { error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: { data: { full_name: name.trim() } },
+    });
 
-    if (error) setError(translateError(error));
+    if (error) setError(translateError(error.message));
     setLoading(false);
   }
 
