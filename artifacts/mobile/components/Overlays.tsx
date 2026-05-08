@@ -225,18 +225,22 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
                   i < variaveis.length - 1 && styles.rowBorder,
                 ]}
               >
-                <View style={styles.docVarLeft}>
+                {/* Linha superior: símbolo + nome + valor */}
+                <View style={styles.docVarTop}>
                   <Text style={styles.docVarSymbol}>{v.simbolo}</Text>
-                  <View style={{ gap: 1 }}>
-                    <Text style={styles.docVarName}>{v.descricao}</Text>
-                    {!!v.papel && v.papel !== v.descricao && (
-                      <Text style={styles.docVarPapel}>{v.papel}</Text>
-                    )}
-                  </View>
+                  <Text style={styles.docVarName} numberOfLines={1} ellipsizeMode="tail">
+                    {v.descricao}
+                  </Text>
+                  <Text style={styles.docVarValue}>
+                    {v.unidade ? `${v.unidade} ` : ""}{v.valor}
+                  </Text>
                 </View>
-                <Text style={styles.docVarValue}>
-                  {v.unidade ? `${v.unidade} ` : ""}{v.valor}
-                </Text>
+                {/* Linha inferior: papel/descrição complementar (largura total) */}
+                {!!v.papel && v.papel !== v.descricao && (
+                  <View style={styles.docVarBottom}>
+                    <Text style={styles.docVarPapel}>{v.papel}</Text>
+                  </View>
+                )}
               </View>
             ))}
           </DocSection>
@@ -1038,11 +1042,16 @@ const styles = StyleSheet.create({
   },
   /* ── Variáveis doc ── */
   docVarRow: {
+    paddingVertical: 12,
+    gap: 3,
+  },
+  docVarTop: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 11,
-    gap: 12,
+    gap: 10,
+  },
+  docVarBottom: {
+    paddingLeft: 32,
   },
   docVarLeft: {
     flexDirection: "row",
@@ -1056,26 +1065,27 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: c.text,
     minWidth: 22,
-    paddingTop: 1,
   },
   docVarName: {
     fontFamily: "Inter_400Regular",
     fontSize: 13,
     color: c.faint,
     flex: 1,
+    minWidth: 0,
   },
   docVarPapel: {
     fontFamily: "Inter_400Regular",
-    fontSize: 10,
+    fontSize: 11,
     color: c.ghost,
-    flex: 1,
     letterSpacing: 0.1,
+    lineHeight: 16,
   },
   docVarValue: {
     fontFamily: "Inter_600SemiBold",
     fontSize: 13,
     color: c.text,
     flexShrink: 0,
+    textAlign: "right",
   },
   /* ── Steps doc ── */
   docStepRow: {
