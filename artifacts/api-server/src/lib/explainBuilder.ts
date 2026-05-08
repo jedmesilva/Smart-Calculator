@@ -57,7 +57,9 @@ function toLatexSymbolic(expression: string, solveFor: string): string | null {
 function toLatexSubstituted(
   expression: string,
   extracted: Record<string, number>,
-  solveFor: string
+  solveFor: string,
+  computedValue?: number,
+  resultUnit?: string
 ): string | null {
   try {
     // Substitui os valores na expressão, do símbolo mais longo para o mais curto
@@ -73,7 +75,22 @@ function toLatexSubstituted(
       .toTex()
       .replace(/\bPI\b/g, "\\pi")
       .replace(/\bE\b(?=[^a-zA-Z])/g, "e");
-    return `${solveFor} = ${tex}`;
+
+    let result = `${solveFor} = ${tex}`;
+
+    if (computedValue !== undefined) {
+      let displayValue = computedValue;
+      if (resultUnit === "%") displayValue = computedValue * 100;
+      const decimals = Number.isInteger(displayValue) ? 0 : 2;
+      const formatted = new Intl.NumberFormat("pt-BR", {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      }).format(displayValue).replace(",", "{,}");
+      const unitPart = resultUnit && resultUnit !== "%" ? `\\;\\text{${resultUnit}}` : (resultUnit === "%" ? "\\%" : "");
+      result += ` = ${formatted}${unitPart}`;
+    }
+
+    return result;
   } catch {
     return null;
   }
@@ -133,7 +150,7 @@ export function buildResult(
   // svgSubstituted: usa expressão do DB com valores substituídos, ou a do agente
   const subExpr = options.formulaExpression ?? vars.expression;
   const latexSub = subExpr
-    ? toLatexSubstituted(subExpr, vars.extracted, vars.solveFor)
+    ? toLatexSubstituted(subExpr, vars.extracted, vars.solveFor, computedValue, vars.resultUnit)
     : null;
   const svgSubstituted = latexSub ? latexToSvg(latexSub) : null;
 
