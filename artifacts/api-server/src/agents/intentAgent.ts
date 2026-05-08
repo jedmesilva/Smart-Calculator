@@ -25,15 +25,18 @@ Dado o histórico da conversa e a mensagem atual, determine se o usuário quer:
   • Perguntas que implicam cálculo ("quanto rende?", "qual o troco?", "qual a diferença?")
   • Perguntas de comparação que requerem cálculo ("quem é mais rápido?")
   • Conversas que continuam um cálculo anterior ("e se forem 3 itens?", "comprei mais 2")
-  • CÁLCULO DIFERENCIAL E INTEGRAL — SEMPRE "calculate":
-    - Integrais definidas ou indefinidas: "integral de ...", "∫...", "área sob a curva de ...",
-      "calcule a integral", "integre", "primitiva de ...", "antiderivada de ..."
-    - Derivadas: "derivada de ...", "d/dx de ...", "taxa de variação de ...", "f'(x) de ...",
-      "diferencial de ...", "derive ..."
+  • CÁLCULO AVANÇADO — SEMPRE "calculate":
+    - Integrais: "integral de ...", "∫...", "área sob a curva", "calcule a integral", "primitiva de ..."
+    - Derivadas: "derivada de ...", "d/dx", "taxa de variação em ...", "f'(x)", "derive ..."
     - Limites: "limite de ... quando ... tende a ..."
-    - Somatórios e produtos: "somatório de ...", "Σ ..."
-    - Qualquer pedido que inclua "calcule", "compute", "avalie", "encontre o valor de"
-      seguido de qualquer operação matemática
+    - Somatórios: "somatório de ...", "Σ de k=1 até n", "soma dos termos", "série de ..."
+    - Produtos: "produto de ... de ... até ...", "∏...", "produtório"
+    - Matrizes: "determinante de ...", "det da matriz", "traço da matriz", "norma do vetor"
+    - Raízes aninhadas: "raiz de raiz de ...", "√(√...)"
+    - Frações aninhadas: "fração contínua ...", "1 sobre 1 mais 1 sobre ..."
+    - Expoentes em cadeia: "2 elevado a 3 elevado a 4", "a^b^c"
+    - Fatorial: "fatorial de ...", "n!"
+    - Qualquer pedido com "calcule", "compute", "avalie", "encontre o valor" + operação matemática
 
 - "conversational": qualquer coisa que NÃO é um pedido de cálculo. Inclui:
   • Perguntas sobre um resultado anterior ("por que deu 20?", "não entendi", "explica melhor")

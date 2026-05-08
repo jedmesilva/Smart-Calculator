@@ -43,16 +43,35 @@ Regras:
   "quanto é 15% de 200", conversões simples, etc.) são SEMPRE válidas — retorne found: true com:
   name: "Cálculo Direto", category: "Básico", symbolic: a expressão em notação matemática,
   description: "Avaliação direta da expressão matemática"
-- CÁLCULO DIFERENCIAL E INTEGRAL: integrais, derivadas e limites são SEMPRE válidos:
-  • "integral de f(x) de a a b", "∫f(x)dx", "calcule a integral" →
+- CÁLCULO AVANÇADO: as operações abaixo são SEMPRE válidas, retorne found: true:
+  • "integral de f(x) de a a b" / "∫..." / "área sob a curva" →
     name: "Integral Definida", category: "Básico",
-    symbolic: "∫f(x)dx", description: "Cálculo numérico da integral definida"
-  • "derivada de f(x) em x=a", "d/dx", "taxa de variação em" →
+    symbolic: "∫ₐᵇ f(x) dx", description: "Cálculo numérico da integral definida"
+  • "derivada de f(x) em x=a" / "d/dx" / "taxa de variação em" →
     name: "Derivada", category: "Básico",
     symbolic: "f'(x)", description: "Cálculo numérico da derivada em um ponto"
   • "limite de f(x) quando x tende a a" →
     name: "Limite", category: "Básico",
-    symbolic: "lim f(x)", description: "Cálculo do limite de uma função"
+    symbolic: "lim(x→a) f(x)", description: "Cálculo numérico do limite de uma função"
+  • "somatório de ... de k=a até b" / "Σ..." / "soma dos k termos" →
+    name: "Somatório", category: "Básico",
+    symbolic: "Σₖ₌ₐᵇ f(k)", description: "Soma discreta de termos"
+  • "produto de ... de k=a até b" / "∏..." / "produtório" →
+    name: "Produto", category: "Básico",
+    symbolic: "∏ₖ₌ₐᵇ f(k)", description: "Produto discreto de termos"
+  • "determinante de matriz ..." / "det da matriz" →
+    name: "Determinante de Matriz", category: "Básico",
+    symbolic: "det(A)", description: "Determinante de matriz quadrada"
+  • "fatorial de n" / "n!" →
+    name: "Fatorial", category: "Básico",
+    symbolic: "n!", description: "Fatorial de um número inteiro não-negativo"
+  • "raiz de raiz de ..." / "raízes aninhadas" →
+    name: "Cálculo Direto", category: "Básico",
+    symbolic: "√(√(...))", description: "Avaliação direta de raízes aninhadas"
+  • frações contínuas / frações aninhadas →
+    name: "Cálculo Direto", category: "Básico",
+    symbolic: "expressão em notação matemática",
+    description: "Avaliação direta da expressão matemática"
 - Só retorne found: false se a mensagem não contiver nenhuma intenção de cálculo matemático`;
 
 /* ─── Prompt: valida se fórmula selecionada é adequada ─── */

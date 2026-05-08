@@ -75,40 +75,95 @@ Regras críticas:
   Isso garante que o usuário veja as variáveis na visualização do cálculo.
 
 ══════════════════════════════════════════════════════
-SUPORTE A CÁLCULO DIFERENCIAL E INTEGRAL
+FUNÇÕES ESPECIAIS DE CÁLCULO AVANÇADO
 ══════════════════════════════════════════════════════
-O sistema suporta duas funções especiais de cálculo que você DEVE usar para integrais e derivadas:
+O sistema tem um motor de cálculo avançado com 5 funções especiais.
+Use-as SEMPRE que o pedido envolver cálculo diferencial/integral/discreto.
 
 1. INTEGRAL DEFINIDA: integrate(f, x, a, b)
-   - f: expressão do integrando em sintaxe mathjs (use x como variável de integração)
-   - x: variável de integração (geralmente "x" ou "t")
-   - a: limite inferior (número ou "pi", "e")
-   - b: limite superior (número ou "pi", "e")
+   - f: expressão do integrando em sintaxe mathjs
+   - x: variável de integração
+   - a, b: limites inferior e superior (números, "pi", "e" são válidos)
    Exemplos:
-   • ∫sin(x)dx de 0 a π  → expression: "integrate(sin(x), x, 0, pi)"
-   • ∫x²dx de 1 a 3      → expression: "integrate(x^2, x, 1, 3)"
-   • ∫e^x dx de 0 a 1    → expression: "integrate(exp(x), x, 0, 1)"
-   • ∫(1/x)dx de 1 a e   → expression: "integrate(1/x, x, 1, e)"
-   Para integrais, "extracted" deve ser {} (vazio) e "allPresent": true.
+   • ∫sin(x)dx de 0 a π     → "integrate(sin(x), x, 0, pi)"
+   • ∫x²dx de 1 a 3         → "integrate(x^2, x, 1, 3)"
+   • ∫eˣdx de 0 a 1         → "integrate(exp(x), x, 0, 1)"
+   • ∫(1/x)dx de 1 a e      → "integrate(1/x, x, 1, e)"
+   • ∫√(1-x²)dx de -1 a 1  → "integrate(sqrt(1-x^2), x, -1, 1)"
+   extracted: {}, allPresent: true
 
 2. DERIVADA EM UM PONTO: derivative(f, x, a)
-   - f: expressão da função em sintaxe mathjs
-   - x: variável de diferenciação
-   - a: ponto onde calcular a derivada (número ou "pi", "e")
+   - f: expressão da função, x: variável, a: ponto
    Exemplos:
-   • f'(x) de sin(x) em x=0   → expression: "derivative(sin(x), x, 0)"
-   • f'(x) de x³ em x=2       → expression: "derivative(x^3, x, 2)"
-   Para derivadas, "extracted" deve ser {} (vazio) e "allPresent": true.
+   • d/dx[sin(x)] em x=0   → "derivative(sin(x), x, 0)"
+   • d/dx[x³] em x=2       → "derivative(x^3, x, 2)"
+   • d/dx[ln(x)] em x=1    → "derivative(log(x), x, 1)"
+   extracted: {}, allPresent: true
 
-QUANDO USAR:
-- Qualquer pedido de "integral de ... de ... a ...", "∫...", "área sob a curva"   → use integrate()
-- Qualquer pedido de "derivada de ... em ...", "taxa de variação em ...", "inclinação em ..."  → use derivative()
-- NÃO tente converter integrais para antiderivadas manualmente — use sempre integrate()
-- NÃO use a palavra "integrate" ou "derivative" em expressões normais de álgebra
+3. SOMATÓRIO (Σ): summation(f, k, start, end)
+   - f: termo geral, k: índice (inteiro), start/end: limites do somatório
+   Exemplos:
+   • Σᵢ₌₁¹⁰ i²              → "summation(k^2, k, 1, 10)"
+   • Σₙ₌₀⁵ (1/2)^n          → "summation((1/2)^n, n, 0, 5)"
+   • Σₖ₌₁¹⁰⁰ (1/k)          → "summation(1/k, k, 1, 100)"
+   • Σₙ₌₁²⁰ n               → "summation(n, n, 1, 20)"
+   extracted: {}, allPresent: true
 
-IMPORTANT: Para esses casos especiais, "formulaSubstituted" deve mostrar a notação matemática pt-BR:
-   ∫sin(x)dx de 0 a π = 2 → "∫₀^π sin(x) dx"
-   f'(x³) em x=2 → "d/dx(x³) | x=2"
+4. LIMITE: limit(f, x, a)  ou  limit(f, x, a, "left"|"right")
+   - f: expressão, x: variável, a: ponto de aproximação
+   Exemplos:
+   • lim x→0 sin(x)/x      → "limit(sin(x)/x, x, 0)"
+   • lim x→∞ (1/x)         → "limit(1/x, x, 1e15)"  ← use valor grande para ∞
+   • lim x→0⁺ ln(x)        → "limit(log(x), x, 0, \"right\")"
+   • lim x→2 (x²-4)/(x-2) → "limit((x^2-4)/(x-2), x, 2)"
+   extracted: {}, allPresent: true
+
+5. PRODUTO (∏): product(f, k, start, end)
+   - f: fator geral, k: índice (inteiro), start/end: limites
+   Exemplos:
+   • 5! = ∏ₖ₌₁⁵ k          → "product(k, k, 1, 5)"
+   • ∏ₖ₌₁⁴ (2k)            → "product(2*k, k, 1, 4)"
+   extracted: {}, allPresent: true
+
+══════════════════════════════════════════════════════
+OPERAÇÕES QUE MATHJS JÁ SUPORTA NATIVAMENTE (sem função especial)
+══════════════════════════════════════════════════════
+Estas operações funcionam diretamente com evaluate() — NÃO use funções especiais:
+
+• Raízes aninhadas:    sqrt(2 + sqrt(3 + sqrt(5)))
+• Expoentes em cadeia: 2^(3^(4^2))  ← use parênteses para deixar explícita a associação
+• Frações aninhadas:   1/(1 + 1/(2 + 1/(3 + 1/4)))
+• Trigonometria:       sin, cos, tan, asin, acos, atan, atan2, sinh, cosh, tanh
+• Logaritmos:          log(x) = ln(x), log(x, 10) = log₁₀(x), log2(x) = log₂(x)
+• Matrizes (det):      det([[a,b],[c,d]])  → use quando pede determinante de matriz
+• Matrizes (trace):    trace([[a,b,0],[0,c,d],[e,0,f]])
+• Matrizes (norm):     norm([a,b,c])  → magnitude de vetor
+• Fatorial:            factorial(n)  ou  n!  (ex: factorial(10))
+• Constantes:          pi = π, e = e (número de Euler)
+
+Para matrizes 2×2: det([[a,b],[c,d]]) = a*d - b*c — SEMPRE use essa forma.
+Para matrizes 3×3: det([[a,b,c],[d,e,f],[g,h,i]])
+
+REGRA: Para det/trace/norm de matrizes, substitua os valores numéricos diretamente na expressão.
+Exemplo: det([[2,3],[1,4]]) = det da matriz {{2,3},{1,4}} → expression: "det([[2,3],[1,4]])", extracted: {}
+
+══════════════════════════════════════════════════════
+QUANDO USAR CADA FUNÇÃO ESPECIAL
+══════════════════════════════════════════════════════
+- "integral de ... de ... a ..." / "∫..." / "área sob a curva"  → integrate()
+- "derivada de ... em x=..." / "d/dx" / "inclinação em"         → derivative()
+- "somatório de ... de ... até ..." / "Σ..." / "soma de k=1 a n" → summation()
+- "limite de ... quando ... tende a ..."                         → limit()
+- "produto de ... de ... até ..." / "∏..."                       → product()
+- "fatorial de n"                                                → factorial(n)  ← mathjs nativo
+
+Para funções especiais: "extracted" SEMPRE {} e "allPresent": true.
+"formulaSubstituted" deve mostrar notação matemática pt-BR clara:
+   integrate(sin(x),x,0,pi)  → "∫₀^π sin(x) dx"
+   summation(k^2,k,1,10)     → "Σₖ₌₁¹⁰ k²"
+   limit(sin(x)/x,x,0)       → "lim(x→0) sin(x)/x"
+   product(k,k,1,5)          → "∏ₖ₌₁⁵ k = 5!"
+   det([[2,3],[1,4]])         → "det|2 3; 1 4|"
 ══════════════════════════════════════════════════════`;
 
 const BUILD_DYNAMIC_PROMPT = `Você é um especialista em matemática. Dado uma fórmula identificada e os valores extraídos, 
@@ -143,9 +198,15 @@ function parseJson(raw: string, ctx: string): any {
 }
 
 function validateExpressionSyntax(expression: string, extracted: Record<string, number>): void {
-  // Expressões de cálculo especiais são validadas pelo formulaCompute — não pelo mathjs direto
+  // Funções especiais são validadas pelo formulaCompute — não pelo mathjs direto
   const trimmed = expression.trim().toLowerCase();
-  if (trimmed.startsWith("integrate(") || trimmed.startsWith("derivative(")) {
+  if (
+    trimmed.startsWith("integrate(") ||
+    trimmed.startsWith("derivative(") ||
+    trimmed.startsWith("summation(") ||
+    trimmed.startsWith("limit(") ||
+    trimmed.startsWith("product(")
+  ) {
     return;
   }
 
