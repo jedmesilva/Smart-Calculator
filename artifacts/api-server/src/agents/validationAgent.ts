@@ -154,13 +154,21 @@ async function runInverseProof(
     const expectedFmt = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 4 }).format(expectedValue);
     const tolerancePct = (tolerance * 100).toFixed(2);
 
-    // Expressão inversa com "result" substituído pelo valor numérico real
-    const exprDisplay = inverseExpression.replace(/\bresult\b/g, resultFmt);
+    // Normaliza constantes na expressão inversa (LLM usa PI/E maiúsculo, mathjs usa pi/e)
+    const normalizeExpr = (expr: string) =>
+      expr.replace(/\bPI\b/g, "pi").replace(/\bE\b/g, "e");
 
-    // Tenta gerar LaTeX da expressão inversa para renderização no overlay
+    // Texto legível: result → valor formatado pt-BR, PI → símbolo π
+    const exprDisplay = normalizeExpr(inverseExpression)
+      .replace(/\bresult\b/g, resultFmt)
+      .replace(/\bpi\b/g, "π");
+
+    // LaTeX: result → valor arredondado a 4 casas (sem float bruto), PI → pi p/ mathjs gerar \pi
     let proofLatex: string | null = null;
     try {
-      const exprForLatex = inverseExpression.replace(/\bresult\b/g, String(computedValue));
+      const roundedResult = Math.round(computedValue * 10000) / 10000;
+      const exprForLatex = normalizeExpr(inverseExpression)
+        .replace(/\bresult\b/g, String(roundedResult));
       const latexBody = parse(exprForLatex).toTex({ parenthesis: "auto" });
       proofLatex = `${isolatedVar} = ${latexBody}`;
     } catch {
