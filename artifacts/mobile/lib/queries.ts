@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   fetchFormulas,
   fetchSavedFormulaIds,
@@ -236,11 +237,14 @@ export function useInvalidateFormula() {
 }
 
 export function useCarteira() {
+  const { userId } = useAuth();
   return useQuery<CarteiraInfo | null>({
-    queryKey: ["carteira"],
+    queryKey: ["carteira", userId],
     queryFn: fetchCarteira,
+    enabled: !!userId,
     staleTime: 60_000,
     refetchOnWindowFocus: true,
+    retry: 2,
   });
 }
 
