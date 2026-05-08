@@ -21,7 +21,7 @@ import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateStream, type ResultData, type MissingVariable } from "@/lib/apiClient";
 import { buildContext } from "@/lib/contextBuilder";
-import { createSession, saveMessages, touchSession, fetchSessionSummary, useSavedFormulaIds, useSaveFormulaFromChat } from "@/lib/queries";
+import { createSession, saveMessages, touchSession, fetchSessionSummary, useSavedFormulaIds, useSaveFormulaFromChat, useInvalidateCarteira } from "@/lib/queries";
 import type { DbFormula } from "@/lib/queries";
 
 const c = colors.light;
@@ -264,6 +264,7 @@ export default function PhormulаScreen() {
 
   const { data: savedFormulaIds = new Set<string>() } = useSavedFormulaIds();
   const saveMutation = useSaveFormulaFromChat();
+  const invalidateCarteira = useInvalidateCarteira();
 
   const [query, setQuery] = useState("");
   const [screen, setScreen] = useState<"main" | "calc" | "history" | "formulas" | "menu">("main");
@@ -392,6 +393,13 @@ export default function PhormulаScreen() {
         fetchSessionSummary(sessId).then((s) => {
           if (s) setSessionSummary(s);
         });
+        // Atualiza saldo de créditos após delay (billing é fire-and-forget no server)
+        setTimeout(() => invalidateCarteira(), 2000);
+      }
+
+      // Também invalida para consultas conversacionais que geram billing
+      if (response.status === "conversational") {
+        setTimeout(() => invalidateCarteira(), 2000);
       }
     } catch (err: any) {
       const errId = msgId + "_e";
@@ -407,7 +415,7 @@ export default function PhormulаScreen() {
       setIsLoading(false);
       setThinkingMessage(null);
     }
-  }, [query, isLoading, activeFormula, currentSessionId, sessionSummary, messageCount, queryClient, chat, userName, setUserName]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [query, isLoading, activeFormula, currentSessionId, sessionSummary, messageCount, queryClient, chat, userName, setUserName, invalidateCarteira]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const canSend = query.trim().length > 0 && !isLoading;
   const invertedData = [...chat].reverse();

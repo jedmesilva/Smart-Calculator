@@ -250,5 +250,5 @@ export function useCarteira() {
 
 export function useInvalidateCarteira() {
   const qc = useQueryClient();
-  return () => qc.invalidateQueries({ queryKey: ["carteira"] });
+  return () => qc.invalidateQueries({ queryKey: ["carteira"], exact: false });
 }
