@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAuth } from "../middlewares/auth";
 import { logger } from "../lib/logger";
 import { runCalculationPipeline } from "../lib/orchestrator";
+import { registerConsulta } from "../lib/billingService";
 
 const router = Router();
 
@@ -29,6 +30,7 @@ router.post("/calculate", requireAuth, async (req, res) => {
   }
 
   const { query, formulaId, context = [], sessionId, sessionSummary, messageCount, userName } = parsed.data;
+  const userId = (req as any).user.id as string;
 
   res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
   res.setHeader("Cache-Control", "no-cache, no-transform");
@@ -55,6 +57,26 @@ router.post("/calculate", requireAuth, async (req, res) => {
       userName,
       emit,
     });
+
+    // Débito de créditos — fire-and-forget (não bloqueia resposta)
+    if (result.status === "success" && result.tokenUsage) {
+      registerConsulta({
+        userId,
+        modelo: result.tokenUsage.model,
+        tipo: "calculo",
+        sessionId: sessionId ?? null,
+        tokenUsage: result.tokenUsage,
+      }).catch((err) => logger.warn({ err }, "calculate: billing failed silently"));
+    } else if (result.status === "conversational" && result.tokenUsage) {
+      registerConsulta({
+        userId,
+        modelo: result.tokenUsage.model,
+        tipo: "conversacional",
+        sessionId: sessionId ?? null,
+        tokenUsage: result.tokenUsage,
+      }).catch((err) => logger.warn({ err }, "calculate: billing failed silently"));
+    }
+
     res.write(`data: ${JSON.stringify({ type: "result", data: result })}\n\n`);
   } catch (err: any) {
     logger.error({ err }, "calculate route: unhandled error");

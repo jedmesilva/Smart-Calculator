@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Platform,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import Animated, {
   useSharedValue,
@@ -18,6 +19,7 @@ import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCarteira } from "@/lib/queries";
 import colors from "@/constants/colors";
 
 const c = colors.light;
@@ -32,6 +34,7 @@ export function MenuOverlay({ onClose }: Props) {
   const email = user?.email ?? "";
   const opacity = useSharedValue(0);
   const translateX = useSharedValue(-280);
+  const { data: carteira, isLoading: carteiraLoading } = useCarteira();
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const botPad = Platform.OS === "web" ? 34 : insets.bottom;
@@ -74,6 +77,10 @@ export function MenuOverlay({ onClose }: Props) {
     );
   };
 
+  const saldo = carteira?.saldo ?? null;
+  const totalConsultas = carteira?.totalConsultas ?? 0;
+  const totalGasto = carteira?.totalGastoBrl ?? 0;
+
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       {/* Backdrop */}
@@ -102,6 +109,34 @@ export function MenuOverlay({ onClose }: Props) {
             ) : null}
             <Text style={styles.userEmail} numberOfLines={1}>{email}</Text>
           </View>
+        </View>
+
+        {/* Credits Card */}
+        <View style={styles.creditsCard}>
+          <View style={styles.creditsRow}>
+            <View style={styles.creditsBadge}>
+              <Text style={styles.creditsBadgeText}>cr</Text>
+            </View>
+            <Text style={styles.creditsLabel}>Créditos</Text>
+            {carteiraLoading ? (
+              <ActivityIndicator size="small" color={c.faint} style={{ marginLeft: "auto" }} />
+            ) : (
+              <Text style={styles.creditsValue}>
+                {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"}
+              </Text>
+            )}
+          </View>
+          {!carteiraLoading && carteira && (
+            <View style={styles.creditsStats}>
+              <Text style={styles.creditsStat}>
+                {totalConsultas} {totalConsultas === 1 ? "consulta" : "consultas"}
+              </Text>
+              <View style={styles.creditsDot} />
+              <Text style={styles.creditsStat}>
+                R$ {totalGasto.toFixed(2).replace(".", ",")} gastos
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Divider */}
@@ -199,7 +234,7 @@ const styles = StyleSheet.create({
     backgroundColor: c.panel,
     borderRadius: 16,
     padding: 16,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   avatar: {
     width: 44,
@@ -231,6 +266,62 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Inter_400Regular",
     color: c.faint,
+  },
+  creditsCard: {
+    backgroundColor: c.panel,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 10,
+    gap: 6,
+  },
+  creditsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  creditsBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: c.text,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  creditsBadgeText: {
+    fontSize: 9,
+    fontFamily: "Inter_700Bold",
+    color: c.background,
+    letterSpacing: 0.3,
+  },
+  creditsLabel: {
+    fontSize: 13,
+    fontFamily: "Inter_500Medium",
+    color: c.mid,
+  },
+  creditsValue: {
+    marginLeft: "auto" as any,
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
+    color: c.text,
+    letterSpacing: -0.5,
+  },
+  creditsStats: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginLeft: 30,
+  },
+  creditsStat: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    color: c.faint,
+  },
+  creditsDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: c.ghost,
   },
   divider: {
     height: 1,

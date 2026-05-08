@@ -349,3 +349,38 @@ export async function addNote(formulaId: string, content: string): Promise<void>
 export async function deleteNote(noteId: string, formulaId: string): Promise<void> {
   await apiFetch(`/formulas/${formulaId}/notes/${noteId}`, { method: "DELETE" });
 }
+
+export type CarteiraInfo = {
+  saldo: number;
+  totalConsultas: number;
+  totalGastoBrl: number;
+};
+
+export async function fetchCarteira(): Promise<CarteiraInfo | null> {
+  try {
+    const res = await apiFetch("/credits");
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export type Transacao = {
+  tipo: string;
+  creditos: number;
+  saldo_anterior: number;
+  saldo_posterior: number;
+  descricao: string | null;
+  criado_em: string;
+};
+
+export async function fetchTransacoes(limit = 20): Promise<Transacao[]> {
+  try {
+    const res = await apiFetch(`/credits/historico?limit=${limit}`);
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}

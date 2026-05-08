@@ -16,8 +16,9 @@ import {
   removeVerification,
   addNote,
   deleteNote,
+  fetchCarteira,
 } from "@/lib/apiClient";
-import type { ResultData } from "@/lib/apiClient";
+import type { ResultData, CarteiraInfo } from "@/lib/apiClient";
 
 export type FormulaVariableDef = {
   symbol: string;
@@ -232,4 +233,18 @@ export function useInvalidateFormula() {
     qc.invalidateQueries({ queryKey: ["formula_verifications", formulaId] });
     qc.invalidateQueries({ queryKey: ["formula_notes", formulaId] });
   };
+}
+
+export function useCarteira() {
+  return useQuery<CarteiraInfo | null>({
+    queryKey: ["carteira"],
+    queryFn: fetchCarteira,
+    staleTime: 60_000,
+    refetchOnWindowFocus: true,
+  });
+}
+
+export function useInvalidateCarteira() {
+  const qc = useQueryClient();
+  return () => qc.invalidateQueries({ queryKey: ["carteira"] });
 }

@@ -31,6 +31,7 @@ import type {
   RawEntity,
 } from "../agents/types";
 import type { ResultData } from "./explainBuilder";
+import type { TokenUsage } from "./billingService";
 
 const SUMMARY_EVERY = 8;
 
@@ -42,26 +43,31 @@ export type OrchestratorSuccess = {
   status: "success";
   result: ResultData;
   capturedName?: string;
+  tokenUsage?: TokenUsage;
 };
 export type OrchestratorNeedsInput = {
   status: "needs_input";
   message: string;
   missing: { symbol: string; name: string; description: string }[];
+  tokenUsage?: TokenUsage;
 };
 export type OrchestratorConversational = {
   status: "conversational";
   message: string;
   capturedName?: string;
+  tokenUsage?: TokenUsage;
 };
 export type OrchestratorFormulaError = {
   status: "formula_error";
   message: string;
   suggestion?: string | null;
+  tokenUsage?: TokenUsage;
 };
 export type OrchestratorWrongFormula = {
   status: "wrong_formula";
   message: string;
   suggestion: string | null;
+  tokenUsage?: TokenUsage;
 };
 
 export type OrchestratorResult =
@@ -553,13 +559,19 @@ export async function runCalculationPipeline(opts: {
   const MAX_ITERATIONS = 6;
   let iteration = 0;
   const sentenceBuf: SentenceBuffer = { text: "" };
+  const MODEL_NAME = "gpt-4o";
+
+  // Acumuladores de tokens — somados em todas as iterações do loop
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
 
   while (iteration < MAX_ITERATIONS) {
     iteration++;
 
     const stream = await (openai.chat.completions as any).create({
-      model: "gpt-4o",
+      model: MODEL_NAME,
       stream: true,
+      stream_options: { include_usage: true },
       tools: THINKING_TOOLS,
       tool_choice: "auto",
       messages,
@@ -570,6 +582,12 @@ export async function runCalculationPipeline(opts: {
     let finishReason = "";
 
     for await (const chunk of stream) {
+      // Captura uso de tokens do chunk final (stream_options.include_usage)
+      if (chunk.usage) {
+        totalInputTokens  += chunk.usage.prompt_tokens     ?? 0;
+        totalOutputTokens += chunk.usage.completion_tokens ?? 0;
+      }
+
       const choice = chunk.choices?.[0];
       if (!choice) continue;
 
@@ -663,6 +681,12 @@ export async function runCalculationPipeline(opts: {
      Trata resultados do loop
      ══════════════════════════════════════════════════════ */
 
+  const tokenUsage: import("./billingService").TokenUsage = {
+    inputTokens:  totalInputTokens,
+    outputTokens: totalOutputTokens,
+    model:        MODEL_NAME,
+  };
+
   // Caso: faltam valores
   if (store.missingVars !== null) {
     const formulaName = store.formula?.name ?? "este cálculo";
@@ -670,13 +694,14 @@ export async function runCalculationPipeline(opts: {
       status: "needs_input",
       message: `Para calcular ${formulaName}, preciso de mais alguns dados:`,
       missing: store.missingVars,
+      tokenUsage,
     };
   }
 
   // Caso: conversacional (sem cálculo)
   if (store.isConversational || store.computedValue === null || !store.expressionResult || !store.formula) {
     const msg = store.lastAssistantText.trim() || "Pode me contar mais sobre o que você quer calcular?";
-    return { status: "conversational", message: msg };
+    return { status: "conversational", message: msg, tokenUsage };
   }
 
   /* ══════════════════════════════════════════════════════
@@ -777,5 +802,6 @@ export async function runCalculationPipeline(opts: {
       desenvolvimento: desenvolvimentoResult.steps,
       objetivo,
     },
+    tokenUsage,
   };
 }
