@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   fetchFormulas,
@@ -238,7 +240,9 @@ export function useInvalidateFormula() {
 
 export function useCarteira() {
   const { userId } = useAuth();
-  return useQuery<CarteiraInfo | null>({
+  const qc = useQueryClient();
+
+  const query = useQuery<CarteiraInfo | null>({
     queryKey: ["carteira", userId],
     queryFn: fetchCarteira,
     enabled: !!userId,
@@ -246,6 +250,37 @@ export function useCarteira() {
     refetchOnWindowFocus: true,
     retry: 2,
   });
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`carteira_rt:${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "carteira",
+          filter: `usuario_id=eq.${userId}`,
+        },
+        (payload) => {
+          const row = payload.new as any;
+          qc.setQueryData(["carteira", userId], {
+            saldo: row.saldo_creditos ?? 0,
+            totalConsultas: row.total_consultas ?? 0,
+            totalGastoBrl: parseFloat(row.total_gasto_brl ?? "0"),
+          } satisfies CarteiraInfo);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, qc]);
+
+  return query;
 }
 
 export function useInvalidateCarteira() {
