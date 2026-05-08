@@ -19,7 +19,7 @@ import colors from "@/constants/colors";
 import { CalcOverlay, HistoryOverlay, FormulasScreen } from "@/components/Overlays";
 import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
-import { calculate, type ResultData, type MissingVariable } from "@/lib/apiClient";
+import { calculateStream, type ResultData, type MissingVariable } from "@/lib/apiClient";
 import { buildContext } from "@/lib/contextBuilder";
 import { createSession, saveMessages, touchSession, fetchSessionSummary, useSavedFormulaIds, useSaveFormulaFromChat } from "@/lib/queries";
 import type { DbFormula } from "@/lib/queries";
@@ -188,43 +188,39 @@ function ResultRow({
   );
 }
 
-/* ─── LOADING DOTS ─── */
-function LoadingDots() {
-  const d0 = useRef(new Animated.Value(0)).current;
-  const d1 = useRef(new Animated.Value(0)).current;
-  const d2 = useRef(new Animated.Value(0)).current;
+/* ─── THINKING BAR ─── */
+function ThinkingBar({ message }: { message: string }) {
+  const opacity = useRef(new Animated.Value(1)).current;
+  const [displayed, setDisplayed] = useState(message);
 
   useEffect(() => {
-    const makeAnim = (val: Animated.Value, delay: number) =>
-      Animated.loop(
-        Animated.sequence([
-          Animated.delay(delay),
-          Animated.timing(val, { toValue: 1, duration: 380, useNativeDriver: true }),
-          Animated.timing(val, { toValue: 0, duration: 380, useNativeDriver: true }),
-          Animated.delay(Math.max(0, 480 - delay)),
-        ])
-      );
-    const a0 = makeAnim(d0, 0);
-    const a1 = makeAnim(d1, 160);
-    const a2 = makeAnim(d2, 320);
-    a0.start(); a1.start(); a2.start();
-    return () => { a0.stop(); a1.stop(); a2.stop(); };
-  }, [d0, d1, d2]);
+    Animated.timing(opacity, { toValue: 0, duration: 120, useNativeDriver: true }).start(() => {
+      setDisplayed(message);
+      Animated.timing(opacity, { toValue: 1, duration: 200, useNativeDriver: true }).start();
+    });
+  }, [message]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const dotAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(dotAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+        Animated.timing(dotAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
+      ])
+    ).start();
+  }, [dotAnim]);
 
   return (
-    <View style={styles.loadingBubble}>
-      {([d0, d1, d2] as Animated.Value[]).map((val, i) => (
-        <Animated.View
-          key={i}
-          style={[
-            styles.loadingDot,
-            {
-              opacity: val.interpolate({ inputRange: [0, 1], outputRange: [0.2, 1] }),
-              transform: [{ translateY: val.interpolate({ inputRange: [0, 1], outputRange: [0, -4] }) }],
-            },
-          ]}
-        />
-      ))}
+    <View style={styles.thinkingBar}>
+      <Animated.View
+        style={[
+          styles.thinkingDot,
+          { opacity: dotAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] }) },
+        ]}
+      />
+      <Animated.Text style={[styles.thinkingText, { opacity }]} numberOfLines={1}>
+        {displayed}
+      </Animated.Text>
     </View>
   );
 }
@@ -279,6 +275,7 @@ export default function PhormulаScreen() {
   const [sessionSummary, setSessionSummary] = useState<string | null>(null);
   const [messageCount, setMessageCount] = useState(0);
   const [viewingResult, setViewingResult] = useState<ResultData | null>(null);
+  const [thinkingMessage, setThinkingMessage] = useState<string | null>(null);
   const inputRef = useRef<TextInput>(null);
 
   const lastResult = [...chat].reverse().find((x) => x.kind === "result");
@@ -318,15 +315,18 @@ export default function PhormulаScreen() {
     const context = buildContext(contextSnapshot);
 
     try {
-      const response = await calculate({
-        query: text,
-        formulaId: activeFormula?.id,
-        context,
-        sessionId: currentSessionId ?? undefined,
-        sessionSummary: sessionSummary ?? undefined,
-        messageCount,
-        userName: userName ?? undefined,
-      });
+      const response = await calculateStream(
+        {
+          query: text,
+          formulaId: activeFormula?.id,
+          context,
+          sessionId: currentSessionId ?? undefined,
+          sessionSummary: sessionSummary ?? undefined,
+          messageCount,
+          userName: userName ?? undefined,
+        },
+        (msg) => setThinkingMessage(msg),
+      );
 
       const resultId = msgId + "_r";
       const assistantId = msgId + "_a";
@@ -405,6 +405,7 @@ export default function PhormulаScreen() {
       ]);
     } finally {
       setIsLoading(false);
+      setThinkingMessage(null);
     }
   }, [query, isLoading, activeFormula, currentSessionId, sessionSummary, messageCount, queryClient, chat, userName, setUserName]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -554,7 +555,13 @@ export default function PhormulаScreen() {
           showsVerticalScrollIndicator={false}
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
-          ListHeaderComponent={isLoading ? <LoadingDots /> : null}
+          ListHeaderComponent={
+            isLoading && thinkingMessage
+              ? <ThinkingBar message={thinkingMessage} />
+              : isLoading
+              ? <ThinkingBar message="Processando…" />
+              : null
+          }
           ListEmptyComponent={
             <EmptyChat
               onSuggest={(text) => {
@@ -811,11 +818,26 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginBottom: 4,
   },
-  loadingDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
+  thinkingBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    marginBottom: 4,
+  },
+  thinkingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: c.faint,
+    flexShrink: 0,
+  },
+  thinkingText: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 13,
+    color: c.faint,
+    flex: 1,
   },
   assistantBubble: {
     backgroundColor: "#F0EFEB",

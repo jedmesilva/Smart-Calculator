@@ -116,6 +116,68 @@ async function apiFetch(path: string, options: RequestInit = {}): Promise<Respon
   return fetch(`${API_BASE}${path}`, { ...options, headers });
 }
 
+export async function calculateStream(
+  req: CalcRequest,
+  onThinking: (message: string) => void,
+): Promise<CalcResponse> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token ?? "";
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Accept: "text/event-stream",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  const res = await fetch(`${API_BASE}/calculate`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(req),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as any).error ?? `Erro ${res.status}`);
+  }
+
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error("Stream não suportado");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+
+    const events = buffer.split("\n\n");
+    buffer = events.pop() ?? "";
+
+    for (const block of events) {
+      for (const line of block.split("\n")) {
+        if (!line.startsWith("data: ")) continue;
+        const raw = line.slice(6).trim();
+        if (!raw || raw === "[DONE]") continue;
+        try {
+          const event = JSON.parse(raw);
+          if (event.type === "thinking" && typeof event.message === "string") {
+            onThinking(event.message);
+          } else if (event.type === "result") {
+            return event.data as CalcResponse;
+          } else if (event.type === "error") {
+            throw new Error(event.message ?? "Erro no servidor");
+          }
+        } catch (parseErr: any) {
+          if (parseErr?.message && !parseErr.message.includes("JSON")) throw parseErr;
+        }
+      }
+    }
+  }
+
+  throw new Error("Stream encerrado sem resultado");
+}
+
 export async function calculate(req: CalcRequest): Promise<CalcResponse> {
   const res = await apiFetch("/calculate", {
     method: "POST",

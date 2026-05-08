@@ -30,6 +30,20 @@ router.post("/calculate", requireAuth, async (req, res) => {
 
   const { query, formulaId, context = [], sessionId, sessionSummary, messageCount, userName } = parsed.data;
 
+  res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders();
+
+  const emit = (message: string) => {
+    try {
+      res.write(`data: ${JSON.stringify({ type: "thinking", message })}\n\n`);
+    } catch {
+      // client disconnected
+    }
+  };
+
   try {
     const result = await runCalculationPipeline({
       query,
@@ -39,8 +53,9 @@ router.post("/calculate", requireAuth, async (req, res) => {
       sessionSummary,
       messageCount,
       userName,
+      emit,
     });
-    res.json(result);
+    res.write(`data: ${JSON.stringify({ type: "result", data: result })}\n\n`);
   } catch (err: any) {
     logger.error({ err }, "calculate route: unhandled error");
 
@@ -51,11 +66,16 @@ router.post("/calculate", requireAuth, async (req, res) => {
         err.message.startsWith("O resultado") ||
         err.message.startsWith("Para calcular"));
 
-    res.status(500).json({
-      error: isUserFacing
-        ? err.message
-        : "Falha ao processar o cálculo. Tente novamente.",
-    });
+    res.write(
+      `data: ${JSON.stringify({
+        type: "error",
+        message: isUserFacing
+          ? err.message
+          : "Falha ao processar o cálculo. Tente novamente.",
+      })}\n\n`
+    );
+  } finally {
+    res.end();
   }
 });
 

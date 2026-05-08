@@ -121,14 +121,17 @@ export async function runCalculationPipeline(opts: {
   sessionSummary?: string;
   messageCount?: number;
   userName?: string;
+  emit?: (message: string) => void;
 }): Promise<OrchestratorResult> {
-  const { query, formulaId, context, sessionId, sessionSummary, messageCount = 0, userName } = opts;
+  const { query, formulaId, context, sessionId, sessionSummary, messageCount = 0, userName, emit = () => {} } = opts;
 
   const pipelineStart = Date.now();
   logger.info(
     { formulaId: formulaId ?? "dynamic", query: query.slice(0, 80), sessionId, messageCount },
     "orchestrator: pipeline start"
   );
+
+  emit("Analisando o que você quer calcular…");
 
   /* ══════════════════════════════════════════════════════
      FASE 0 (paralelo com Fase 1) — classifyIntent
@@ -138,6 +141,8 @@ export async function runCalculationPipeline(opts: {
      ══════════════════════════════════════════════════════ */
 
   const phase1Start = Date.now();
+
+  emit(formulaId ? "Identificando variáveis do cálculo…" : "Identificando fórmula e variáveis…");
 
   // Modo fixo (formulaId): pula intenção — usuário já escolheu uma fórmula, sempre calcula
   const [intent, formulaResult, contextResult] = await Promise.all([
@@ -153,12 +158,14 @@ export async function runCalculationPipeline(opts: {
   /* ── Intenção conversacional detectada → responde diretamente ── */
   if (intent === "conversational") {
     logger.info({ query: query.slice(0, 60) }, "orchestrator: conversational intent — skipping pipeline");
+    emit("Preparando resposta…");
     const guidance = await runGuidanceAgent({ query, context, sessionSummary, userName });
     return { status: "conversational", message: guidance.message, capturedName: guidance.capturedName };
   }
 
   /* ── Trata resultados do formulaAgent ── */
   if (formulaResult.status === "not_found") {
+    emit("Preparando resposta…");
     const guidance = await runGuidanceAgent({
       query,
       context,
@@ -178,6 +185,8 @@ export async function runCalculationPipeline(opts: {
 
   const formula = formulaResult.formula;
 
+  emit(`Fórmula: ${formula.name}`);
+
   /* ══════════════════════════════════════════════════════
      BUSCA DE HISTÓRICO SOB DEMANDA
      Se contextAgent sinalizou needsHistory E temos sessionId,
@@ -189,6 +198,7 @@ export async function runCalculationPipeline(opts: {
 
   if (contextResult.needsHistory && sessionId) {
     logger.info({ sessionId }, "orchestrator: needsHistory — fetching full session history");
+    emit("Buscando contexto da conversa…");
     try {
       const historyRows = await fetchSessionMessages(sessionId, 30);
       const fullContext = dbMessagesToContext(historyRows);
@@ -211,6 +221,8 @@ export async function runCalculationPipeline(opts: {
   const phase2Start = Date.now();
   let expressionResult;
 
+  emit("Montando a expressão matemática…");
+
   try {
     expressionResult = await runExpressionAgent({
       formula,
@@ -221,6 +233,7 @@ export async function runCalculationPipeline(opts: {
     });
   } catch (err: any) {
     logger.error({ err, formulaName: formula.name }, "orchestrator: expressionAgent failed all attempts");
+    emit("Preparando resposta…");
     const guidance = await runGuidanceAgent({
       query,
       context,
@@ -234,6 +247,10 @@ export async function runCalculationPipeline(opts: {
     { ms: Date.now() - phase2Start, searchUsed: expressionResult.searchUsed },
     "orchestrator: phase 2 complete"
   );
+
+  if (expressionResult.searchUsed) {
+    emit("Consultando referências externas…");
+  }
 
   /* ── Variáveis faltando → pede ao usuário ── */
   if (!expressionResult.allPresent) {
@@ -251,10 +268,13 @@ export async function runCalculationPipeline(opts: {
   const phase3Start = Date.now();
   let computedValue: number;
 
+  emit("Calculando o resultado…");
+
   try {
     computedValue = computeFormula(expressionResult.expression, expressionResult.extracted);
   } catch (err: any) {
     logger.warn({ err, expression: expressionResult.expression }, "orchestrator: compute failed, retrying expression");
+    emit("Revisando a expressão e recalculando…");
 
     try {
       const retryResult = await runExpressionAgent({
@@ -276,6 +296,7 @@ export async function runCalculationPipeline(opts: {
       computedValue = computeFormula(retryResult.expression, retryResult.extracted);
       expressionResult = retryResult;
     } catch (retryErr: any) {
+      emit("Preparando resposta…");
       const guidance = await runGuidanceAgent({
         query,
         context,
@@ -293,6 +314,7 @@ export async function runCalculationPipeline(opts: {
      ══════════════════════════════════════════════════════ */
 
   const phase4Start = Date.now();
+  emit("Verificando o resultado…");
   const validation = await runValidationAgent({ formula, expressionResult, computedValue, query });
   logger.info({ ms: Date.now() - phase4Start, valid: validation.valid }, "orchestrator: phase 4 complete");
 
@@ -300,6 +322,7 @@ export async function runCalculationPipeline(opts: {
      FASE 5 — buildResult + conversationalAgent (paralelo)
      ══════════════════════════════════════════════════════ */
 
+  emit("Gerando explicação detalhada…");
   const phase5Start = Date.now();
   const [partialResult, conversationalResponse, desenvolvimentoResult, objetivo] = await Promise.all([
     Promise.resolve(
