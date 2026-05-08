@@ -96,7 +96,8 @@ function toLatexResultado(
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     }).format(displayValue).replace(",", "{,}");
-    const unitPart = resultUnit && resultUnit !== "%" ? `\\;\\text{${resultUnit}}` : (resultUnit === "%" ? "\\%" : "");
+    const safeUnit = resultUnit.replace(/\$/g, "\\$");
+    const unitPart = resultUnit && resultUnit !== "%" ? `\\;\\text{${safeUnit}}` : (resultUnit === "%" ? "\\%" : "");
 
     return `${solveFor} = ${tex} = ${formatted}${unitPart}`;
   } catch {
@@ -302,7 +303,8 @@ function buildFallbackDesenvolvimento(
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }).format(displayValue);
-  const unitSuffix = resultUnit && resultUnit !== "%" ? `\\;\\text{${resultUnit}}` : resultUnit === "%" ? "\\%" : "";
+  const safeUnit2 = resultUnit.replace(/\$/g, "\\$");
+  const unitSuffix = resultUnit && resultUnit !== "%" ? `\\;\\text{${safeUnit2}}` : resultUnit === "%" ? "\\%" : "";
 
   /* ── Operações de cálculo avançado: fallback genérico porém informativo ── */
   if (tipoOperacao !== "algebra") {

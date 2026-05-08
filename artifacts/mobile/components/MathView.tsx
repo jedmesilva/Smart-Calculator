@@ -8,8 +8,17 @@ interface Props {
   fontSize?: number;
 }
 
+/** Escapa $ dentro de \text{...} para evitar erros de KaTeX */
+function sanitizeLatex(latex: string): string {
+  // Substitui $ não escapados dentro de \text{...} por \$
+  return latex.replace(/\\text\{([^}]*)\}/g, (_, inner: string) =>
+    `\\text{${inner.replace(/(?<!\\)\$/g, "\\$")}}`
+  );
+}
+
 function buildHtml(latex: string, color: string, fontSize: number): string {
-  const escaped = latex
+  const safe = sanitizeLatex(latex);
+  const escaped = safe
     .replace(/\\/g, "\\\\")
     .replace(/`/g, "\\`");
 
