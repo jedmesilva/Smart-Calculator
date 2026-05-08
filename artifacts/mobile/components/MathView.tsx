@@ -1,40 +1,92 @@
 import React, { useState } from "react";
-import { View } from "react-native";
-import { SvgXml } from "react-native-svg";
+import { View, Platform } from "react-native";
+import WebView from "react-native-webview";
 
 interface Props {
-  svg: string;
+  latex: string;
   color?: string;
+  fontSize?: number;
 }
 
-function injectColor(svg: string, color: string): string {
-  if (color === "#000000" || color === "black") return svg;
-  return svg.replace(/<svg/, `<svg fill="${color}" color="${color}"`);
+function buildHtml(latex: string, color: string, fontSize: number): string {
+  const escaped = latex
+    .replace(/\\/g, "\\\\")
+    .replace(/`/g, "\\`");
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { background: transparent; width: 100%; overflow: hidden; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 4px 8px;
+    }
+    .katex { color: ${color}; font-size: ${fontSize}px; }
+    .katex-display { margin: 0; overflow-x: auto; overflow-y: hidden; }
+    .katex-display > .katex { white-space: normal; }
+  </style>
+</head>
+<body>
+  <div id="math"></div>
+  <script>
+    function render() {
+      try {
+        katex.render(\`${escaped}\`, document.getElementById('math'), {
+          displayMode: true,
+          throwOnError: false,
+          output: 'html',
+          trust: false
+        });
+      } catch(e) {
+        document.getElementById('math').textContent = \`${escaped}\`;
+      }
+      reportHeight();
+    }
+    function reportHeight() {
+      var h = document.body.scrollHeight;
+      window.ReactNativeWebView.postMessage(String(h));
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', render);
+    } else {
+      render();
+    }
+  </script>
+</body>
+</html>`;
 }
 
-export function MathView({ svg, color = "#3A3A38" }: Props) {
-  const [containerWidth, setContainerWidth] = useState<number>(0);
-  const colored = injectColor(svg, color);
+export function MathView({ latex, color = "#3A3A38", fontSize = 18 }: Props) {
+  const [height, setHeight] = useState(60);
 
-  const widthMatch = colored.match(/width="([\d.]+)"/);
-  const heightMatch = colored.match(/height="([\d.]+)"/);
-  const naturalW = widthMatch ? parseFloat(widthMatch[1]) : 200;
-  const naturalH = heightMatch ? parseFloat(heightMatch[1]) : 60;
-
-  const scale = containerWidth > 0 && naturalW > containerWidth
-    ? containerWidth / naturalW
-    : 1;
-  const displayW = naturalW * scale;
-  const displayH = naturalH * scale;
+  const html = buildHtml(latex, color, fontSize);
 
   return (
-    <View
-      style={{ alignItems: "center", width: "100%" }}
-      onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
-    >
-      {containerWidth > 0 && (
-        <SvgXml xml={colored} width={displayW} height={displayH} />
-      )}
+    <View style={{ width: "100%", height }}>
+      <WebView
+        source={{ html }}
+        style={{ flex: 1, backgroundColor: "transparent" }}
+        scrollEnabled={false}
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+        onMessage={(e) => {
+          const h = parseInt(e.nativeEvent.data, 10);
+          if (!isNaN(h) && h > 0) setHeight(h);
+        }}
+        originWhitelist={["*"]}
+        javaScriptEnabled
+        domStorageEnabled={false}
+        allowsInlineMediaPlayback={false}
+        mediaPlaybackRequiresUserAction
+        cacheEnabled={Platform.OS === "android"}
+      />
     </View>
   );
 }

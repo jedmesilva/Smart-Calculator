@@ -1,5 +1,4 @@
 import { parse } from "mathjs";
-import { latexToSvg } from "./mathRenderer";
 import type { ExpressionResult } from "../agents/types";
 import type { ValidationResult } from "../agents/types";
 
@@ -18,6 +17,7 @@ export type ResultData = {
   resultLabel: string;
   formulaSymbolic: string;
   formulaSubstituted: string;
+  latexSymbolic?: string | null;
   svgSymbolic?: string | null;
   svgSubstituted?: string | null;
   variables: { symbol: string; name: string; value: string }[];
@@ -141,11 +141,10 @@ export function buildResult(
         detail: "Verificação não realizada.",
       };
 
-  // svgSymbolic: apenas quando temos a expressão do DB (fórmula com símbolos conhecidos)
+  // latexSymbolic: string LaTeX para renderização no cliente (KaTeX)
   const latexSym = options.formulaExpression
     ? toLatexSymbolic(options.formulaExpression, vars.solveFor)
     : null;
-  const svgSymbolic = latexSym ? latexToSvg(latexSym) : null;
 
   // formulaSubstituted text: expressão com valores + resultado (quebra linha no mobile)
   const unitPrefix = vars.resultUnit && vars.resultUnit !== "%" ? `${vars.resultUnit} ` : "";
@@ -162,7 +161,8 @@ export function buildResult(
     resultLabel: vars.resultLabel,
     formulaSymbolic: symbolic,
     formulaSubstituted: formulaSubstitutedWithResult || vars.formulaSubstituted,
-    svgSymbolic,
+    latexSymbolic: latexSym ?? null,
+    svgSymbolic: null,
     svgSubstituted: null,
     variables,
     steps,

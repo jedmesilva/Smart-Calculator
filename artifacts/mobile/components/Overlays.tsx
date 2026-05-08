@@ -93,7 +93,7 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
 
   const proofVerified = data.proof?.verified ?? true;
   const hasFormula =
-    data.svgSymbolic || data.svgSubstituted || data.formulaSymbolic || data.formulaSubstituted;
+    data.latexSymbolic || data.svgSymbolic || data.formulaSymbolic || data.formulaSubstituted;
 
   let sectionNum = 0;
   const nextSec = () => String(++sectionNum).padStart(2, "0");
@@ -175,8 +175,8 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
         {hasFormula && (
           <DocSection numero={nextSec()} titulo="Fórmula">
             <View style={styles.formulaDocBox}>
-              {data.svgSymbolic ? (
-                <MathView svg={data.svgSymbolic} color={c.text} />
+              {data.latexSymbolic ? (
+                <MathView latex={data.latexSymbolic} color={c.text} />
               ) : !!data.formulaSymbolic ? (
                 <Text style={styles.formulaDocSymbolic}>{data.formulaSymbolic}</Text>
               ) : null}

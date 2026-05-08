@@ -30,6 +30,7 @@ export type ResultData = {
   resultLabel: string;
   formulaSymbolic: string;
   formulaSubstituted: string;
+  latexSymbolic?: string | null;
   svgSymbolic?: string | null;
   svgSubstituted?: string | null;
   variables: { symbol: string; name: string; value: string }[];
