@@ -246,7 +246,11 @@ export async function runGuidanceAgent(opts: {
     if (!raw) throw new Error("empty response");
 
     try {
-      const parsed = JSON.parse(raw.replace(/```json\n?|\n?```/g, "").trim());
+      const cleaned = raw
+        .replace(/```json\n?|\n?```/g, "")
+        .trim()
+        .replace(/,(\s*[}\]])/g, "$1"); // remove trailing commas before } or ]
+      const parsed = JSON.parse(cleaned);
       const result: GuidanceResponse = { message: parsed.message ?? raw };
       if (parsed.capturedName && typeof parsed.capturedName === "string") {
         result.capturedName = parsed.capturedName.trim();
@@ -254,6 +258,9 @@ export async function runGuidanceAgent(opts: {
       logger.debug({ query: query.slice(0, 60), capturedName: result.capturedName }, "guidanceAgent: response generated");
       return result;
     } catch {
+      // Fallback: try to extract message field with regex if JSON.parse failed
+      const match = raw.match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+      if (match) return { message: match[1].replace(/\\n/g, "\n").replace(/\\"/g, '"') };
       return { message: raw };
     }
   } catch (err) {
