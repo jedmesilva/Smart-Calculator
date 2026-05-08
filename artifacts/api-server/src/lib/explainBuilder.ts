@@ -322,12 +322,12 @@ ROTEIRO — SOMATÓRIO (tipo_operacao = "somatorio")
 ══════════════════════════════════════
 REGRAS OBRIGATÓRIAS
 ══════════════════════════════════════
-1. NUNCA agrupe duas operações num só passo — cada operação matemática tem seu passo
+1. NUNCA agrupe duas operações num só passo — cada operação matemática tem seu passo próprio
 2. NUNCA escreva "Identificamos as variáveis" — isso não é passo matemático
 3. NUNCA salte da fórmula simbólica direto para o resultado — sempre mostre os intermediários
 4. A descrição de cada passo DEVE mencionar os valores numéricos concretos envolvidos
 5. O passo "resultado" é OBRIGATÓRIO e SEMPRE o último
-6. Mínimo 4 passos para qualquer cálculo, máximo 12
+6. Use QUANTOS PASSOS FOREM NECESSÁRIOS para o cálculo — não há limite mínimo nem máximo. Um cálculo simples pode ter 3 passos; uma fórmula complexa pode ter 15. Você decide com base na complexidade real do cálculo.
 7. LaTeX compatível com KaTeX (sem \\begin{equation}, sem align — apenas inline)
 8. Decimais pt-BR no LaTeX: vírgula com chaves — ex: 1{,}5 ou 5{.}634{,}13
 9. Separador de milhar: ponto com chaves — ex: 5{.}000 ou 1{.}126{,}83
