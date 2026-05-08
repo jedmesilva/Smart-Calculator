@@ -20,6 +20,7 @@ import { runContextAgent } from "../agents/contextAgent";
 import { runExpressionAgent } from "../agents/expressionAgent";
 import { runValidationAgent } from "../agents/validationAgent";
 import { runConversationalAgent, runGuidanceAgent } from "../agents/conversationalAgent";
+import { runObjectiveAgent } from "../agents/objectiveAgent";
 import { classifyIntent } from "../agents/intentAgent";
 import { fetchSessionMessages } from "./supabase";
 import { generateSessionSummary } from "./summaryBuilder";
@@ -300,7 +301,7 @@ export async function runCalculationPipeline(opts: {
      ══════════════════════════════════════════════════════ */
 
   const phase5Start = Date.now();
-  const [partialResult, conversationalResponse, desenvolvimentoResult] = await Promise.all([
+  const [partialResult, conversationalResponse, desenvolvimentoResult, objetivo] = await Promise.all([
     Promise.resolve(
       buildResult(formula.name, formula.symbolic, expressionResult, computedValue, {
         formulaId: formula.id,
@@ -325,6 +326,7 @@ export async function runCalculationPipeline(opts: {
       resultUnit: expressionResult.resultUnit,
       resultLabel: expressionResult.resultLabel,
     }),
+    runObjectiveAgent({ query, formula, expressionResult, computedValue }),
   ]);
 
   /* Mescla interpretacao do desenvolvimento no resultado */
@@ -365,7 +367,7 @@ export async function runCalculationPipeline(opts: {
 
   return {
     status: "success",
-    result: { ...result, conversationalResponse, desenvolvimento },
+    result: { ...result, conversationalResponse, desenvolvimento, objetivo },
   };
 }
 

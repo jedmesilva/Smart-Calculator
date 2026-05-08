@@ -20,6 +20,7 @@ export type ResultData = {
   searchUsed?: boolean;
   warning?: string | null;
   conversationalResponse: string;
+  objetivo?: string | null;
 
   dominio: string;
 

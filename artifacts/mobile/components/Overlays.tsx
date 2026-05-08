@@ -113,6 +113,7 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
   const desenvolvimento = data.desenvolvimento ?? [];
   const prova = data.prova ?? null;
   const proofValido = prova?.valido ?? true;
+  const objetivo = data.objetivo ?? null;
 
   const hasFormula = !!(formulaLatex || formulaAbstrata);
 
@@ -191,6 +192,14 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
             </View>
           </View>
         </View>
+
+        {/* ── Contextualização ── */}
+        {!!objetivo && (
+          <View style={styles.objetivoBox}>
+            <Text style={styles.objetivoLabel}>Objetivo</Text>
+            <Text style={styles.objetivoText}>{objetivo}</Text>
+          </View>
+        )}
 
         {/* ── 01 Fórmula ── */}
         {hasFormula && (
@@ -966,6 +975,27 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     fontSize: 12,
     color: c.mid,
+  },
+  /* ── Objetivo / Contextualização ── */
+  objetivoBox: {
+    borderLeftWidth: 2,
+    borderLeftColor: c.ghost,
+    paddingLeft: 14,
+    marginBottom: 22,
+    gap: 4,
+  },
+  objetivoLabel: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 9,
+    color: c.ghost,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  objetivoText: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 13,
+    color: c.mid,
+    lineHeight: 20,
   },
   /* ── Context ── */
   contextText: {
