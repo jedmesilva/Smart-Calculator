@@ -19,15 +19,20 @@ function itemToMessage(item: ChatItem): ConversationMessage | null {
 
     case "result": {
       const r = item.result;
-      const unit = r.resultUnit ? ` ${r.resultUnit}` : "";
-      const base = `Resultado: ${r.formulaName} = ${r.resultFormatted}${unit}`;
 
-      // Inclui variáveis e expressão para que o contextAgent possa derivar
-      // valores intermediários de cálculos anteriores (ex: preço por item = total/qtd)
-      const vars = r.variables && r.variables.length > 0
-        ? ` | Valores usados: ${r.variables.map((v) => `${v.name}=${v.value}`).join(", ")}`
+      const titulo = r.meta?.titulo ?? "";
+      const valor = r.resultado?.valor ?? "";
+      const unidade = r.resultado?.unidade ?? "";
+      const unit = unidade ? ` ${unidade}` : "";
+      const base = `Resultado: ${titulo} = ${valor}${unit}`;
+
+      const varList = r.variaveis ?? [];
+      const vars = varList.length > 0
+        ? ` | Valores usados: ${varList.map((v) => `${v.descricao}=${v.valor}`).join(", ")}`
         : "";
-      const expr = r.formulaSubstituted ? ` | Expressão: ${r.formulaSubstituted}` : "";
+
+      const formulaText = r.formula?.abstrata ?? "";
+      const expr = formulaText ? ` | Fórmula: ${formulaText}` : "";
 
       return { role: "assistant", content: `${base}${vars}${expr}` };
     }

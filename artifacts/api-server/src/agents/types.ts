@@ -66,10 +66,13 @@ export type ExpressionResult = {
 };
 
 /* ── Prova reversa do validationAgent ── */
+export type ProofTipo = "inversa" | "derivacao" | "substituicao" | "razoabilidade";
+
 export type ValidationResult = {
   valid: boolean;
   method: string;
   detail: string;
+  tipo: ProofTipo;
 };
 
 /* ── Resultado da validação de fórmula (cadastro) ── */

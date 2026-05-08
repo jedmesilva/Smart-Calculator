@@ -54,6 +54,17 @@ function DocSection({
   );
 }
 
+/* ── Rótulo legível do tipo de prova ── */
+function proofTipoLabel(tipo: string): string {
+  switch (tipo) {
+    case "inversa": return "Prova real";
+    case "derivacao": return "Derivação analítica";
+    case "substituicao": return "Verificação por substituição";
+    case "razoabilidade": return "Verificação de razoabilidade";
+    default: return "Verificação";
+  }
+}
+
 /* ─── CALC OVERLAY ─── */
 export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () => void }) {
   const insets = useSafeAreaInsets();
@@ -91,9 +102,19 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
     minute: "2-digit",
   });
 
-  const proofVerified = data.proof?.verified ?? true;
-  const hasFormula =
-    data.latexSymbolic || data.svgSymbolic || data.formulaSymbolic || data.formulaSubstituted;
+  const titulo = data.meta?.titulo ?? "";
+  const categoria = data.meta?.categoria ?? "";
+  const subcategoria = data.meta?.subcategoria ?? "";
+  const resultValor = data.resultado?.valor ?? "";
+  const resultUnidade = data.resultado?.unidade ?? "";
+  const formulaLatex = data.formula?.latex ?? null;
+  const formulaAbstrata = data.formula?.abstrata ?? "";
+  const variaveis = data.variaveis ?? [];
+  const desenvolvimento = data.desenvolvimento ?? [];
+  const prova = data.prova ?? null;
+  const proofValido = prova?.valido ?? true;
+
+  const hasFormula = !!(formulaLatex || formulaAbstrata);
 
   let sectionNum = 0;
   const nextSec = () => String(++sectionNum).padStart(2, "0");
@@ -143,7 +164,7 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
         {/* ── ID Card ── */}
         <View style={styles.idCard}>
           <View style={styles.idCardTop}>
-            <Text style={styles.idTitle}>{data.formulaName}</Text>
+            <Text style={styles.idTitle}>{titulo}</Text>
             {data.searchUsed && (
               <View style={styles.idBadge}>
                 <Feather name="globe" size={9} color={c.mid} />
@@ -152,10 +173,10 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
             )}
           </View>
           <View style={styles.idMeta}>
-            {!!data.formulaCategory && (
+            {!!categoria && (
               <View style={styles.idMetaItem}>
                 <Text style={styles.idMetaLabel}>Categoria</Text>
-                <Text style={styles.idMetaValue}>{data.formulaCategory}</Text>
+                <Text style={styles.idMetaValue}>{categoria}</Text>
               </View>
             )}
             <View style={styles.idMetaItem}>
@@ -165,7 +186,7 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
             <View style={styles.idMetaItem}>
               <Text style={styles.idMetaLabel}>Resultado</Text>
               <Text style={styles.idMetaValue}>
-                {data.resultUnit ? `${data.resultUnit} ` : ""}{data.resultFormatted}
+                {resultUnidade ? `${resultUnidade} ` : ""}{resultValor}
               </Text>
             </View>
           </View>
@@ -175,115 +196,113 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
         {hasFormula && (
           <DocSection numero={nextSec()} titulo="Fórmula">
             <View style={styles.formulaDocBox}>
-              {data.latexSymbolic ? (
-                <MathView latex={data.latexSymbolic} color={c.text} />
-              ) : !!data.formulaSymbolic ? (
-                <Text style={styles.formulaDocSymbolic}>{data.formulaSymbolic}</Text>
-              ) : null}
-              {!!data.formulaSubstituted && (
-                <>
-                  <View style={styles.formulaDocDivider} />
-                  <Text style={styles.formulaDocSubLabel}>com valores substituídos</Text>
-                  <Text style={styles.formulaDocSubstituted}>{data.formulaSubstituted}</Text>
-                </>
+              {formulaLatex ? (
+                <MathView latex={formulaLatex} color={c.text} />
+              ) : (
+                <Text style={styles.formulaDocSymbolic}>{formulaAbstrata}</Text>
               )}
             </View>
           </DocSection>
         )}
 
-        {/* ── 03 Variáveis ── */}
-        {data.variables?.length > 0 && (
+        {/* ── 02 Variáveis ── */}
+        {variaveis.length > 0 && (
           <DocSection numero={nextSec()} titulo="Variáveis">
-            {data.variables.map((v, i) => (
+            {variaveis.map((v, i) => (
               <View
                 key={i}
                 style={[
                   styles.docVarRow,
-                  i < data.variables.length - 1 && styles.rowBorder,
+                  i < variaveis.length - 1 && styles.rowBorder,
                 ]}
               >
                 <View style={styles.docVarLeft}>
-                  <Text style={styles.docVarSymbol}>{v.symbol}</Text>
-                  <Text style={styles.docVarName}>{v.name}</Text>
+                  <Text style={styles.docVarSymbol}>{v.simbolo}</Text>
+                  <Text style={styles.docVarName}>{v.descricao}</Text>
                 </View>
-                <Text style={styles.docVarValue}>{v.value}</Text>
+                <Text style={styles.docVarValue}>
+                  {v.unidade ? `${v.unidade} ` : ""}{v.valor}
+                </Text>
               </View>
             ))}
           </DocSection>
         )}
 
-        {/* ── 04 Desenvolvimento ── */}
-        {data.steps?.length > 0 && (
+        {/* ── 03 Desenvolvimento ── */}
+        {desenvolvimento.length > 0 && (
           <DocSection numero={nextSec()} titulo="Desenvolvimento">
-            {data.steps.map((step, i) => (
+            {desenvolvimento.map((step, i) => (
               <View
                 key={i}
                 style={[
                   styles.docStepRow,
-                  i < data.steps.length - 1 && styles.rowBorder,
+                  i < desenvolvimento.length - 1 && styles.rowBorder,
                 ]}
               >
-                <Text style={styles.docStepNum}>{String(i + 1).padStart(2, "0")}</Text>
-                <Text style={styles.docStepText}>{step}</Text>
+                <Text style={styles.docStepNum}>{String(step.ordem).padStart(2, "0")}</Text>
+                <View style={{ flex: 1, gap: 6 }}>
+                  <Text style={styles.docStepText}>{step.descricao}</Text>
+                  {step.latex && (
+                    <MathView latex={step.latex} color={c.mid} />
+                  )}
+                </View>
               </View>
             ))}
           </DocSection>
         )}
 
-        {/* ── 05 Resultado ── */}
+        {/* ── 04 Resultado ── */}
         <DocSection numero={nextSec()} titulo="Resultado">
           <View style={styles.resultDocCard}>
             <View>
-              <Text style={styles.resultDocLabel}>{data.resultLabel}</Text>
-              {!!data.resultUnit && (
-                <Text style={styles.resultDocUnit}>{data.resultUnit}</Text>
+              <Text style={styles.resultDocLabel}>{subcategoria}</Text>
+              {!!resultUnidade && (
+                <Text style={styles.resultDocUnit}>{resultUnidade}</Text>
               )}
             </View>
-            <Text style={styles.resultDocNum}>{data.resultFormatted}</Text>
+            <Text style={styles.resultDocNum}>{resultValor}</Text>
           </View>
         </DocSection>
 
-        {/* ── 06 Verificação ── */}
-        {data.proof && (
+        {/* ── 05 Verificação ── */}
+        {prova && (
           <DocSection numero={nextSec()} titulo="Verificação">
-            <View style={[styles.proofBox, proofVerified ? styles.proofBoxOk : styles.proofBoxWarn]}>
+            <View style={[styles.proofBox, proofValido ? styles.proofBoxOk : styles.proofBoxWarn]}>
               <View style={styles.proofHeader}>
                 <Feather
-                  name={proofVerified ? "check-circle" : "alert-circle"}
+                  name={proofValido ? "check-circle" : "alert-circle"}
                   size={14}
-                  color={proofVerified ? "#2A7A4B" : "#B07D1A"}
+                  color={proofValido ? "#2A7A4B" : "#B07D1A"}
                 />
                 <Text
                   style={[
                     styles.proofMethod,
-                    proofVerified ? styles.proofMethodOk : styles.proofMethodWarn,
+                    proofValido ? styles.proofMethodOk : styles.proofMethodWarn,
                   ]}
                 >
-                  {data.proof.method}
+                  {proofTipoLabel(prova.tipo)}
                 </Text>
-                <View style={[styles.proofBadge, proofVerified ? styles.proofBadgeOk : styles.proofBadgeWarn]}>
-                  <Text style={[styles.proofBadgeText, proofVerified ? styles.proofBadgeTextOk : styles.proofBadgeTextWarn]}>
-                    {proofVerified ? "aprovado" : "revisar"}
+                <View style={[styles.proofBadge, proofValido ? styles.proofBadgeOk : styles.proofBadgeWarn]}>
+                  <Text style={[styles.proofBadgeText, proofValido ? styles.proofBadgeTextOk : styles.proofBadgeTextWarn]}>
+                    {proofValido ? "aprovado" : "revisar"}
                   </Text>
                 </View>
               </View>
-              <Text style={styles.proofDetail}>{data.proof.detail}</Text>
+              <Text style={styles.proofDetail}>{prova.descricao}</Text>
+              {prova.latex && (
+                <MathView latex={prova.latex} color={proofValido ? "#2A7A4B" : "#B07D1A"} />
+              )}
             </View>
           </DocSection>
         )}
 
-        {/* ── Nota & Warning ── */}
-        {(data.note || data.warning) && (
+        {/* ── Warning ── */}
+        {data.warning && (
           <View style={styles.notesWrap}>
-            {data.note && (
-              <Text style={styles.note}>* {data.note}</Text>
-            )}
-            {data.warning && (
-              <View style={styles.warningRow}>
-                <Feather name="alert-triangle" size={11} color="#B07D1A" />
-                <Text style={styles.warningText}>{data.warning}</Text>
-              </View>
-            )}
+            <View style={styles.warningRow}>
+              <Feather name="alert-triangle" size={11} color="#B07D1A" />
+              <Text style={styles.warningText}>{data.warning}</Text>
+            </View>
           </View>
         )}
 

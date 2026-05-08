@@ -149,6 +149,7 @@ async function runInverseProof(
       valid: verified,
       method: "Prova real",
       detail,
+      tipo: "inversa" as const,
     };
   } catch (err) {
     logger.warn({ err }, "validationAgent: inverse proof failed");
@@ -199,6 +200,7 @@ async function checkReasonability(
       valid: parsed.reasonable !== false,
       method: "Verificação de razoabilidade",
       detail: parsed.explanation ?? "Resultado verificado como razoável.",
+      tipo: "razoabilidade" as const,
     };
   } catch (err) {
     logger.warn({ err }, "validationAgent: reasonability check failed");
@@ -206,6 +208,7 @@ async function checkReasonability(
       valid: true,
       method: "Verificação automática",
       detail: "Verificação automática não disponível.",
+      tipo: "razoabilidade" as const,
     };
   }
 }

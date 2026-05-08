@@ -15,31 +15,54 @@ export type CalcRequest = {
   userName?: string;
 };
 
-export type ProofResult = {
-  verified: boolean;
-  method: string;
-  detail: string;
+export type DesenvolvimentoStep = {
+  ordem: number;
+  descricao: string;
+  latex: string | null;
+  tipo: "substituicao" | "simplificacao" | "teorema" | "resolucao" | "resultado";
 };
 
 export type ResultData = {
   formulaId?: string | null;
-  formulaCategory?: string | null;
-  formulaName: string;
-  resultFormatted: string;
-  resultUnit: string;
-  resultLabel: string;
-  formulaSymbolic: string;
-  formulaSubstituted: string;
-  latexSymbolic?: string | null;
-  svgSymbolic?: string | null;
-  svgSubstituted?: string | null;
-  variables: { symbol: string; name: string; value: string }[];
-  steps: string[];
-  note: string | null;
-  warning?: string | null;
   searchUsed?: boolean;
-  proof: ProofResult;
+  warning?: string | null;
   conversationalResponse: string;
+
+  meta: {
+    titulo: string;
+    categoria: string;
+    subcategoria: string;
+    responsavel: string;
+    timestamp: string;
+  };
+
+  formula: {
+    abstrata: string;
+    latex: string | null;
+    referencia: string | null;
+  };
+
+  variaveis: {
+    simbolo: string;
+    descricao: string;
+    valor: string;
+    unidade: string;
+  }[];
+
+  desenvolvimento: DesenvolvimentoStep[];
+
+  resultado: {
+    valor: string;
+    latex: string | null;
+    unidade: string;
+  };
+
+  prova: {
+    tipo: "inversa" | "derivacao" | "substituicao" | "razoabilidade";
+    descricao: string;
+    latex: string | null;
+    valido: boolean;
+  };
 };
 
 export type MissingVariable = {
@@ -146,10 +169,10 @@ export async function createFormulaFromResult(result: ResultData): Promise<strin
   const res = await apiFetch("/formulas", {
     method: "POST",
     body: JSON.stringify({
-      name: result.formulaName,
-      category: result.formulaCategory ?? "Outro",
-      description: `${result.formulaName} — salva do chat`,
-      symbolic: result.formulaSymbolic || result.formulaName,
+      name: result.meta.titulo,
+      category: result.meta.categoria ?? "Outro",
+      description: `${result.meta.titulo} — salva do chat`,
+      symbolic: result.formula.abstrata || result.meta.titulo,
     }),
   });
   if (!res.ok) throw new Error("Falha ao criar fórmula");

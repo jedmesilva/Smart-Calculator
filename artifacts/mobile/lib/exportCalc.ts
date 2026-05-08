@@ -29,42 +29,58 @@ function buildFileName(data: ResultData): string {
   const mm = String(date.getMonth() + 1).padStart(2, "0");
   const yyyy = date.getFullYear();
 
-  const name = slugify(data.formulaName);
+  const name = slugify(data.meta?.titulo ?? "calculo");
   return `sigma_${name}_${dd}${mm}${yyyy}.pdf`;
 }
 
-function buildHTML(data: ResultData): string {
-  const title = data.formulaName;
-  const dateStr = formatDate();
-  const category = data.formulaCategory ?? "Cálculo";
+function proofTipoLabel(tipo: string): string {
+  switch (tipo) {
+    case "inversa": return "Prova real";
+    case "derivacao": return "Derivação analítica";
+    case "substituicao": return "Verificação por substituição";
+    case "razoabilidade": return "Verificação de razoabilidade";
+    default: return "Verificação";
+  }
+}
 
-  const varsRows = (data.variables ?? [])
+function buildHTML(data: ResultData): string {
+  const titulo = data.meta?.titulo ?? "Cálculo";
+  const categoria = data.meta?.categoria ?? "Cálculo";
+  const subcategoria = data.meta?.subcategoria ?? "";
+  const resultValor = data.resultado?.valor ?? "";
+  const resultUnidade = data.resultado?.unidade ?? "";
+  const formulaAbstrata = data.formula?.abstrata ?? "";
+  const variaveis = data.variaveis ?? [];
+  const desenvolvimento = data.desenvolvimento ?? [];
+  const prova = data.prova ?? null;
+  const dateStr = formatDate();
+
+  const varsRows = variaveis
     .map(
       (v) => `
       <tr>
-        <td class="var-symbol">${v.symbol}</td>
-        <td class="var-name">${v.name}</td>
-        <td class="var-value">${v.value}</td>
+        <td class="var-symbol">${v.simbolo}</td>
+        <td class="var-name">${v.descricao}</td>
+        <td class="var-value">${v.unidade ? v.unidade + " " : ""}${v.valor}</td>
       </tr>`
     )
     .join("");
 
-  const stepsHTML = (data.steps ?? [])
+  const stepsHTML = desenvolvimento
     .map(
-      (step, i) => `
+      (step) => `
       <div class="step">
-        <span class="step-num">${String(i + 1).padStart(2, "0")}</span>
-        <span class="step-text">${step}</span>
+        <span class="step-num">${String(step.ordem).padStart(2, "0")}</span>
+        <div class="step-body">
+          <span class="step-text">${step.descricao}</span>
+          ${step.tipo !== "resultado" ? `<span class="step-tipo">${step.tipo}</span>` : ""}
+        </div>
       </div>`
     )
     .join("");
 
-  const noteHTML = data.note ? `<p class="note">* ${data.note}</p>` : "";
   const warningHTML = data.warning
     ? `<p class="warning">⚠ ${data.warning}</p>`
-    : "";
-  const unitHTML = data.resultUnit
-    ? `<span class="result-unit">${data.resultUnit}</span>`
     : "";
 
   const contextoHTML = data.conversationalResponse
@@ -72,15 +88,42 @@ function buildHTML(data: ResultData): string {
        <p class="contexto-text">${data.conversationalResponse}</p>`
     : "";
 
-  const proofHTML = data.proof
-    ? `<div class="section-label">${data.conversationalResponse ? "06" : "05"} — Verificação</div>
-       <div class="proof-box ${data.proof.verified ? "proof-ok" : "proof-warn"}">
+  const secBase = data.conversationalResponse ? 1 : 0;
+  const hasFormula = !!formulaAbstrata;
+  const hasVars = varsRows.length > 0;
+  const hasSteps = stepsHTML.length > 0;
+
+  let secIdx = secBase;
+
+  const formulaHTML = hasFormula
+    ? `<div class="section-label">${String(++secIdx).padStart(2, "0")} — Fórmula</div>
+       <div class="formula-box">
+         <div class="formula-symbolic">${formulaAbstrata}</div>
+       </div>`
+    : "";
+
+  const varsHTML = hasVars
+    ? `<div class="section-label">${String(++secIdx).padStart(2, "0")} — Variáveis</div>
+       <table>${varsRows}</table>`
+    : "";
+
+  const desenvolHTML = hasSteps
+    ? `<div class="section-label">${String(++secIdx).padStart(2, "0")} — Desenvolvimento</div>
+       <div class="steps">${stepsHTML}</div>`
+    : "";
+
+  const resSecNum = ++secIdx;
+  const proofSecNum = resSecNum + 1;
+
+  const proofHTML = prova
+    ? `<div class="section-label">${String(proofSecNum).padStart(2, "0")} — Verificação</div>
+       <div class="proof-box ${prova.valido ? "proof-ok" : "proof-warn"}">
          <div class="proof-header">
-           <span class="proof-icon">${data.proof.verified ? "✓" : "⚠"}</span>
-           <span class="proof-method">${data.proof.method}</span>
-           <span class="proof-badge">${data.proof.verified ? "aprovado" : "revisar"}</span>
+           <span class="proof-icon">${prova.valido ? "✓" : "⚠"}</span>
+           <span class="proof-method">${proofTipoLabel(prova.tipo)}</span>
+           <span class="proof-badge">${prova.valido ? "aprovado" : "revisar"}</span>
          </div>
-         <p class="proof-detail">${data.proof.detail}</p>
+         <p class="proof-detail">${prova.descricao}</p>
        </div>`
     : "";
 
@@ -93,10 +136,10 @@ function buildHTML(data: ResultData): string {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${title}</title>
+  <title>${titulo}</title>
   <meta name="author" content="Sigma — Calculadora Inteligente" />
-  <meta name="subject" content="${category}" />
-  <meta name="description" content="${title} — ${data.resultLabel}: ${data.resultUnit} ${data.resultFormatted}" />
+  <meta name="subject" content="${categoria}" />
+  <meta name="description" content="${titulo} — ${subcategoria}: ${resultUnidade} ${resultValor}" />
   <meta name="creator" content="Sigma App" />
   <meta name="created" content="${new Date().toISOString()}" />
   <style>
@@ -143,7 +186,6 @@ function buildHTML(data: ResultData): string {
       white-space: nowrap;
     }
     .id-meta { display: flex; gap: 24px; flex-wrap: wrap; }
-    .id-meta-item { }
     .id-meta-label { font-size: 9px; color: #C8C7C2; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
     .id-meta-value { font-size: 12px; font-weight: 600; color: #6B6B66; }
     .section-label {
@@ -164,9 +206,7 @@ function buildHTML(data: ResultData): string {
       padding: 16px 20px;
       margin-top: 8px;
     }
-    .formula-symbolic { font-size: 12px; color: #AEADA8; margin-bottom: 4px; }
-    .formula-sub-label { font-size: 10px; color: #C8C7C2; margin: 8px 0 4px; }
-    .formula-substituted { font-size: 15px; font-weight: 700; color: #1A1A18; }
+    .formula-symbolic { font-size: 13px; color: #1A1A18; font-family: monospace; }
     table { width: 100%; border-collapse: collapse; margin-top: 8px; }
     tr { border-bottom: 1px solid #E8E7E3; }
     tr:last-child { border-bottom: none; }
@@ -183,7 +223,9 @@ function buildHTML(data: ResultData): string {
     }
     .step:last-child { border-bottom: none; }
     .step-num { font-weight: 700; font-size: 10px; color: #C8C7C2; min-width: 20px; padding-top: 2px; }
-    .step-text { font-size: 13px; color: #6B6B66; line-height: 1.6; flex: 1; }
+    .step-body { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .step-text { font-size: 13px; color: #6B6B66; line-height: 1.6; }
+    .step-tipo { font-size: 9px; color: #C8C7C2; text-transform: uppercase; letter-spacing: 0.5px; }
     .result-card {
       background: #1A1A18;
       border-radius: 12px;
@@ -213,8 +255,7 @@ function buildHTML(data: ResultData): string {
     }
     .proof-warn .proof-badge { background: #E8DCA8; color: #7A5010; }
     .proof-detail { font-size: 12px; color: #6B6B66; line-height: 1.5; }
-    .note { font-size: 11px; color: #AEADA8; font-style: italic; margin-top: 20px; }
-    .warning { font-size: 11px; color: #B07D1A; margin-top: 10px; }
+    .warning { font-size: 11px; color: #B07D1A; margin-top: 20px; }
     .footer {
       margin-top: 48px;
       padding-top: 16px;
@@ -232,49 +273,36 @@ function buildHTML(data: ResultData): string {
       <div class="logo">σ <span>sigma</span></div>
       <div class="date">${dateStr}</div>
     </div>
-    <div class="date" style="text-align:right;">${category}</div>
+    <div class="date" style="text-align:right;">${categoria}</div>
   </div>
 
   <div class="id-card">
     <div class="id-card-top">
-      <div class="id-title">${title}</div>
+      <div class="id-title">${titulo}</div>
       ${searchBadge}
     </div>
     <div class="id-meta">
-      ${data.formulaCategory ? `<div class="id-meta-item"><div class="id-meta-label">Categoria</div><div class="id-meta-value">${data.formulaCategory}</div></div>` : ""}
+      ${categoria ? `<div class="id-meta-item"><div class="id-meta-label">Categoria</div><div class="id-meta-value">${categoria}</div></div>` : ""}
       <div class="id-meta-item"><div class="id-meta-label">Data</div><div class="id-meta-value">${dateStr}</div></div>
-      <div class="id-meta-item"><div class="id-meta-label">Resultado</div><div class="id-meta-value">${data.resultUnit ? data.resultUnit + " " : ""}${data.resultFormatted}</div></div>
+      <div class="id-meta-item"><div class="id-meta-label">Resultado</div><div class="id-meta-value">${resultUnidade ? resultUnidade + " " : ""}${resultValor}</div></div>
     </div>
   </div>
 
   ${contextoHTML}
+  ${formulaHTML}
+  ${varsHTML}
+  ${desenvolHTML}
 
-  ${data.formulaSymbolic || data.formulaSubstituted ? `
-  <div class="section-label">${data.conversationalResponse ? "02" : "01"} — Fórmula</div>
-  <div class="formula-box">
-    ${data.formulaSymbolic ? `<div class="formula-symbolic">${data.formulaSymbolic}</div>` : ""}
-    ${data.formulaSubstituted ? `<div class="formula-sub-label">com valores substituídos</div><div class="formula-substituted">${data.formulaSubstituted}</div>` : ""}
-  </div>` : ""}
-
-  ${varsRows ? `
-  <div class="section-label">${data.conversationalResponse ? "03" : "02"} — Variáveis</div>
-  <table>${varsRows}</table>` : ""}
-
-  ${stepsHTML ? `
-  <div class="section-label">${data.conversationalResponse ? "04" : "03"} — Desenvolvimento</div>
-  <div class="steps">${stepsHTML}</div>` : ""}
-
-  <div class="section-label">${data.conversationalResponse ? "05" : "04"} — Resultado</div>
+  <div class="section-label">${String(resSecNum).padStart(2, "0")} — Resultado</div>
   <div class="result-card">
     <div>
-      <div class="result-label">${data.resultLabel}</div>
-      ${data.resultUnit ? `<div class="result-unit">${data.resultUnit}</div>` : ""}
+      <div class="result-label">${subcategoria}</div>
+      ${resultUnidade ? `<div class="result-unit">${resultUnidade}</div>` : ""}
     </div>
-    <div class="result-num">${data.resultFormatted}</div>
+    <div class="result-num">${resultValor}</div>
   </div>
 
   ${proofHTML}
-  ${noteHTML}
   ${warningHTML}
 
   <div class="footer">
@@ -298,9 +326,13 @@ export async function exportAsPDF(data: ResultData): Promise<void> {
     throw new Error("Compartilhamento não disponível neste dispositivo");
   }
 
+  const titulo = data.meta?.titulo ?? "Cálculo";
+  const resultUnidade = data.resultado?.unidade ?? "";
+  const resultValor = data.resultado?.valor ?? "";
+
   await Sharing.shareAsync(destUri, {
     mimeType: "application/pdf",
-    dialogTitle: `${data.formulaName} — ${data.resultUnit} ${data.resultFormatted}`,
+    dialogTitle: `${titulo} — ${resultUnidade} ${resultValor}`,
     UTI: "com.adobe.pdf",
   });
 
@@ -308,32 +340,42 @@ export async function exportAsPDF(data: ResultData): Promise<void> {
 }
 
 export function buildTextSummary(data: ResultData): string {
+  const titulo = data.meta?.titulo ?? "Cálculo";
+  const subcategoria = data.meta?.subcategoria ?? "";
+  const resultValor = data.resultado?.valor ?? "";
+  const resultUnidade = data.resultado?.unidade ?? "";
+  const formulaAbstrata = data.formula?.abstrata ?? "";
+  const variaveis = data.variaveis ?? [];
+  const desenvolvimento = data.desenvolvimento ?? [];
+  const prova = data.prova ?? null;
+
   const lines: string[] = [
-    `σ Sigma — ${data.formulaName}`,
+    `σ Sigma — ${titulo}`,
     ``,
-    `Resultado: ${data.resultUnit} ${data.resultFormatted} (${data.resultLabel})`,
+    `Resultado: ${resultUnidade ? resultUnidade + " " : ""}${resultValor}${subcategoria ? " (" + subcategoria + ")" : ""}`,
   ];
 
-  if (data.formulaSymbolic) lines.push(`Fórmula: ${data.formulaSymbolic}`);
-  if (data.formulaSubstituted) lines.push(`Cálculo: ${data.formulaSubstituted}`);
+  if (formulaAbstrata) lines.push(`Fórmula: ${formulaAbstrata}`);
 
-  if (data.variables?.length) {
+  if (variaveis.length > 0) {
     lines.push(``, `Variáveis:`);
-    data.variables.forEach((v) => lines.push(`  ${v.symbol} = ${v.value} (${v.name})`));
+    variaveis.forEach((v) =>
+      lines.push(`  ${v.simbolo} = ${v.unidade ? v.unidade + " " : ""}${v.valor} (${v.descricao})`)
+    );
   }
 
-  if (data.steps?.length) {
+  if (desenvolvimento.length > 0) {
     lines.push(``, `Passo a passo:`);
-    data.steps.forEach((s, i) => lines.push(`  ${i + 1}. ${s}`));
+    desenvolvimento.forEach((step) => lines.push(`  ${step.ordem}. ${step.descricao}`));
   }
 
-  if (data.proof) {
-    lines.push(``, `Verificação: ${data.proof.method} — ${data.proof.verified ? "aprovado" : "revisar"}`);
-    lines.push(`  ${data.proof.detail}`);
+  if (prova) {
+    const label = proofTipoLabel(prova.tipo);
+    lines.push(``, `Verificação: ${label} — ${prova.valido ? "aprovado" : "revisar"}`);
+    lines.push(`  ${prova.descricao}`);
   }
 
-  if (data.note) lines.push(``, `* ${data.note}`);
-  if (data.warning) lines.push(`⚠ ${data.warning}`);
+  if (data.warning) lines.push(``, `⚠ ${data.warning}`);
 
   lines.push(``, `Gerado pelo Sigma — calculadora inteligente`);
   return lines.join("\n");

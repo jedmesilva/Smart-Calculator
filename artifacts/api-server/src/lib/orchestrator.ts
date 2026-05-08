@@ -14,7 +14,7 @@
 
 import { logger } from "./logger";
 import { computeFormula } from "./formulaCompute";
-import { buildResult } from "./explainBuilder";
+import { buildResult, buildDesenvolvimento } from "./explainBuilder";
 import { runFormulaAgent } from "../agents/formulaAgent";
 import { runContextAgent } from "../agents/contextAgent";
 import { runExpressionAgent } from "../agents/expressionAgent";
@@ -67,7 +67,8 @@ export type OrchestratorResult =
   | OrchestratorFormulaError
   | OrchestratorWrongFormula;
 
-/* ── Converte mensagens do DB em ConversationMessage[] ── */
+/* ── Converte mensagens do DB em ConversationMessage[] ──
+   Suporta schema antigo (flat) e novo (universal) de forma transparente. ── */
 function dbMessagesToContext(
   rows: Array<{ kind: string; text: string | null; result_data: any | null }>
 ): ConversationMessage[] {
@@ -77,15 +78,29 @@ function dbMessagesToContext(
       out.push({ role: "user", content: row.text });
     } else if (row.kind === "result" && row.result_data) {
       const r = row.result_data as any;
-      const unit = r.resultUnit ? ` ${r.resultUnit}` : "";
-      const base = `Resultado: ${r.formulaName} = ${r.resultFormatted}${unit}`;
 
-      // Inclui variáveis e expressão substituída para que o contextAgent
-      // possa derivar valores intermediários (ex: preço por item) de cálculos anteriores
-      const vars = Array.isArray(r.variables) && r.variables.length > 0
-        ? ` | Valores usados: ${(r.variables as any[]).map((v: any) => `${v.name}=${v.value}`).join(", ")}`
+      // ── Suporte dual: novo schema (r.meta / r.resultado / r.variaveis) e antigo (r.formulaName / r.resultFormatted / r.variables)
+      const titulo = r.meta?.titulo ?? r.formulaName ?? "Cálculo";
+      const valor = r.resultado?.valor ?? r.resultFormatted ?? "";
+      const unidade = r.resultado?.unidade ?? r.resultUnit ?? "";
+      const unit = unidade ? ` ${unidade}` : "";
+      const base = `Resultado: ${titulo} = ${valor}${unit}`;
+
+      // Variáveis: novo schema usa variaveis[].descricao + .valor; antigo usa variables[].name + .value
+      const varList: any[] = Array.isArray(r.variaveis)
+        ? r.variaveis
+        : Array.isArray(r.variables) ? r.variables : [];
+      const vars = varList.length > 0
+        ? ` | Valores usados: ${varList.map((v: any) => {
+            const name = v.descricao ?? v.name ?? v.simbolo ?? v.symbol ?? "";
+            const val = v.valor ?? v.value ?? "";
+            return `${name}=${val}`;
+          }).join(", ")}`
         : "";
-      const expr = r.formulaSubstituted ? ` | Expressão: ${r.formulaSubstituted}` : "";
+
+      // Fórmula/expressão: novo schema usa formula.abstrata; antigo usa formulaSubstituted
+      const formulaText = r.formula?.abstrata ?? r.formulaSubstituted ?? "";
+      const expr = formulaText ? ` | Fórmula: ${formulaText}` : "";
 
       out.push({
         role: "assistant",
@@ -285,7 +300,7 @@ export async function runCalculationPipeline(opts: {
      ══════════════════════════════════════════════════════ */
 
   const phase5Start = Date.now();
-  const [result, conversationalResponse] = await Promise.all([
+  const [result, conversationalResponse, desenvolvimento] = await Promise.all([
     Promise.resolve(
       buildResult(formula.name, formula.symbolic, expressionResult, computedValue, {
         formulaId: formula.id,
@@ -296,6 +311,18 @@ export async function runCalculationPipeline(opts: {
       })
     ),
     runConversationalAgent({ query, formula, expressionResult, computedValue, validation, context, sessionSummary, userName }),
+    buildDesenvolvimento({
+      formulaName: formula.name,
+      formulaSymbolic: formula.symbolic,
+      expression: expressionResult.expression,
+      extracted: expressionResult.extracted,
+      variableNames: expressionResult.variableNames,
+      variableValues: expressionResult.variableValues,
+      solveFor: expressionResult.solveFor,
+      computedValue,
+      resultUnit: expressionResult.resultUnit,
+      resultLabel: expressionResult.resultLabel,
+    }),
   ]);
   logger.info({ ms: Date.now() - phase5Start }, "orchestrator: phase 5 complete");
 
@@ -325,7 +352,7 @@ export async function runCalculationPipeline(opts: {
 
   return {
     status: "success",
-    result: { ...result, conversationalResponse },
+    result: { ...result, conversationalResponse, desenvolvimento },
   };
 }
 

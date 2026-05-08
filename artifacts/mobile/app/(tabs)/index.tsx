@@ -135,7 +135,7 @@ function ResultRow({
         <View style={styles.resultCardTop}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>
-              <Text style={styles.resultFormula}>{result.formulaName}</Text>
+              <Text style={styles.resultFormula}>{result.meta?.titulo ?? ""}</Text>
               {result.searchUsed && (
                 <View style={styles.searchUsedTag}>
                   <Feather name="globe" size={8} color={c.mid} />
@@ -144,15 +144,15 @@ function ResultRow({
               )}
             </View>
             <Text style={styles.resultSubstituted} numberOfLines={1}>
-              {result.formulaSubstituted}
+              {result.formula?.abstrata ?? ""}
             </Text>
           </View>
           <View style={styles.resultRight}>
             <View style={{ alignItems: "flex-end" }}>
-              {!!result.resultUnit && (
-                <Text style={styles.resultUnit}>{result.resultUnit}</Text>
+              {!!result.resultado?.unidade && (
+                <Text style={styles.resultUnit}>{result.resultado.unidade}</Text>
               )}
-              <Text style={styles.resultNum}>{result.resultFormatted}</Text>
+              <Text style={styles.resultNum}>{result.resultado?.valor ?? ""}</Text>
             </View>
             <Pressable
               onPress={onView}
@@ -252,7 +252,7 @@ export default function SigmaScreen() {
   const lastResult = [...chat].reverse().find((x) => x.kind === "result");
   const current = lastResult?.kind === "result" ? lastResult.result : null;
   const hasResult = !!current;
-  const displayNum = current?.resultFormatted ?? "0";
+  const displayNum = current?.resultado?.valor ?? "0";
   const numFontSize = displayNum.length > 12 ? 38 : displayNum.length > 8 ? 50 : 64;
 
   const topPad = Platform.OS === "web" ? 0 : insets.top;
@@ -435,8 +435,8 @@ export default function SigmaScreen() {
 
         <View style={styles.numSection}>
           <View style={styles.numRow}>
-            {hasResult && !!current.resultUnit && (
-              <Text style={styles.numUnit}>{current.resultUnit}</Text>
+            {hasResult && !!current.resultado?.unidade && (
+              <Text style={styles.numUnit}>{current.resultado.unidade}</Text>
             )}
             <Text
               style={[
@@ -449,7 +449,7 @@ export default function SigmaScreen() {
           </View>
           <View style={styles.numMeta}>
             <Text style={[styles.numLabel, { color: hasResult ? c.faint : c.ghost }]}>
-              {hasResult ? current.resultLabel : "resultado"}
+              {hasResult ? (current.meta?.subcategoria || current.meta?.titulo || "resultado") : "resultado"}
             </Text>
             <Pressable
               onPress={() => {
