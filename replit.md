@@ -1,4 +1,4 @@
-# Sigma — Calculadora Inteligente
+# Phormula — Calculadora Inteligente
 
 App mobile de calculadora inteligente com chat em português — o usuário descreve o cálculo em linguagem natural e recebe o resultado com fórmula, variáveis e passo a passo.
 

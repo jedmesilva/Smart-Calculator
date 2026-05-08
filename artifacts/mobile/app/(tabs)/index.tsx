@@ -261,7 +261,7 @@ function EmptyChat({ onSuggest }: { onSuggest: (text: string) => void }) {
 }
 
 /* ─── MAIN ─── */
-export default function SigmaScreen() {
+export default function PhormulаScreen() {
   const insets = useSafeAreaInsets();
   const { userId, userName, setUserName } = useAuth();
   const queryClient = useQueryClient();

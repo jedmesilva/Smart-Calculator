@@ -196,7 +196,7 @@ export default function SignupScreen() {
           <Text style={styles.sigma}>σ</Text>
           <Text style={styles.title}>Criar sua conta</Text>
           <Text style={styles.subtitle}>
-            Preencha os campos abaixo para começar a usar o Sigma.
+            Preencha os campos abaixo para começar a usar o Phormula.
           </Text>
         </View>
 

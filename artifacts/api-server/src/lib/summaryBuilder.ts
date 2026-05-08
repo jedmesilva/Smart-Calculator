@@ -36,9 +36,9 @@ function messagesToText(messages: MessageRow[], existingSummary?: string): strin
     } else if (msg.kind === "result" && msg.result_data) {
       const r = msg.result_data as any;
       const unit = r.resultUnit ? ` ${r.resultUnit}` : "";
-      parts.push(`Sigma calculou: ${r.formulaName} = ${r.resultFormatted}${unit}`);
+      parts.push(`Phormula calculou: ${r.formulaName} = ${r.resultFormatted}${unit}`);
       if (r.conversationalResponse) {
-        parts.push(`Sigma: ${r.conversationalResponse}`);
+        parts.push(`Phormula: ${r.conversationalResponse}`);
       }
     }
   }

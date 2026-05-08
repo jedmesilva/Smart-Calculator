@@ -137,10 +137,10 @@ function buildHTML(data: ResultData): string {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${titulo}</title>
-  <meta name="author" content="Sigma — Calculadora Inteligente" />
+  <meta name="author" content="Phormula — Calculadora Inteligente" />
   <meta name="subject" content="${categoria}" />
   <meta name="description" content="${titulo} — ${subcategoria}: ${resultUnidade} ${resultValor}" />
-  <meta name="creator" content="Sigma App" />
+  <meta name="creator" content="Phormula" />
   <meta name="created" content="${new Date().toISOString()}" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -306,7 +306,7 @@ function buildHTML(data: ResultData): string {
   ${warningHTML}
 
   <div class="footer">
-    <span>Gerado pelo Sigma — calculadora inteligente</span>
+    <span>Gerado pelo Phormula — calculadora inteligente</span>
     <span>${dateStr}</span>
   </div>
 </body>
@@ -350,7 +350,7 @@ export function buildTextSummary(data: ResultData): string {
   const prova = data.prova ?? null;
 
   const lines: string[] = [
-    `σ Sigma — ${titulo}`,
+    `Phormula — ${titulo}`,
     ``,
     `Resultado: ${resultUnidade ? resultUnidade + " " : ""}${resultValor}${subcategoria ? " (" + subcategoria + ")" : ""}`,
   ];
@@ -377,7 +377,7 @@ export function buildTextSummary(data: ResultData): string {
 
   if (data.warning) lines.push(``, `⚠ ${data.warning}`);
 
-  lines.push(``, `Gerado pelo Sigma — calculadora inteligente`);
+  lines.push(``, `Gerado pelo Phormula — calculadora inteligente`);
   return lines.join("\n");
 }
 
