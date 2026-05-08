@@ -158,34 +158,80 @@ async function runInverseProof(
     const normalizeExpr = (expr: string) =>
       expr.replace(/\bPI\b/g, "pi").replace(/\bE\b/g, "e");
 
-    // Texto legível: result → valor formatado pt-BR, PI → símbolo π
-    const exprDisplay = normalizeExpr(inverseExpression)
-      .replace(/\bresult\b/g, resultFmt)
-      .replace(/\bpi\b/g, "π");
+    // Formata número para pt-BR no LaTeX (vírgula decimal, ponto de milhar com chaves)
+    const toLatexNum = (n: number, maxDec = 2): string => {
+      const dec = Number.isInteger(n) ? 0 : maxDec;
+      const s = new Intl.NumberFormat("pt-BR", {
+        minimumFractionDigits: dec,
+        maximumFractionDigits: dec,
+      }).format(n);
+      // "1.234,56" → "1{.}234{,}56"
+      return s.replace(/\./g, "{.}").replace(",", "{,}");
+    };
 
-    // LaTeX: result → valor arredondado a 4 casas (sem float bruto), PI → pi p/ mathjs gerar \pi
+    // Substitui floats brutos no LaTeX por formato pt-BR
+    const fixLatexDecimals = (tex: string): string =>
+      tex.replace(/(\d+)\.(\d+)/g, (_, int, dec) => {
+        const num = parseFloat(`${int}.${dec}`);
+        return toLatexNum(num, dec.length > 2 ? 2 : dec.length);
+      });
+
+    // Valor do resultado com 2 casas decimais para injetar na expressão
+    const displayDecimals = Number.isInteger(computedValue) ? 0 : 2;
+    const roundedResult = parseFloat(computedValue.toFixed(displayDecimals));
+
+    // Gera os passos da prova step-by-step
+    const proofSteps: { latex: string }[] = [];
     let proofLatex: string | null = null;
+
     try {
-      const roundedResult = Math.round(computedValue * 10000) / 10000;
-      const exprForLatex = normalizeExpr(inverseExpression)
-        .replace(/\bresult\b/g, String(roundedResult));
-      const latexBody = parse(exprForLatex).toTex({ parenthesis: "auto" });
-      proofLatex = `${isolatedVar} = ${latexBody}`;
+      const norm = normalizeExpr(inverseExpression);
+      const exprWithResult = norm.replace(/\bresult\b/g, String(roundedResult));
+
+      // Passo 1: expressão com resultado substituído
+      const latexBody1 = fixLatexDecimals(
+        parse(exprWithResult).toTex({ parenthesis: "auto" })
+          .replace(/\bpi\b/g, "\\pi")
+      );
+      proofLatex = `${isolatedVar} = ${latexBody1}`;
+      proofSteps.push({ latex: proofLatex });
+
+      // Passo 2 (opcional): se a expressão tem função externa conhecida,
+      // computar o argumento interno e mostrar simplificado
+      const outerFnMatch = exprWithResult.match(/^(sqrt|log|log10|abs)\((.+)\)$/i);
+      if (outerFnMatch) {
+        const fn = outerFnMatch[1].toLowerCase();
+        const innerExpr = outerFnMatch[2];
+        try {
+          const innerVal = evaluate(innerExpr, {});
+          if (typeof innerVal === "number" && isFinite(innerVal)) {
+            const innerFmt = toLatexNum(innerVal, Number.isInteger(innerVal) ? 0 : 2);
+            const fnLatexMap: Record<string, string> = {
+              sqrt: `\\sqrt{${innerFmt}}`,
+              log: `\\ln\\left(${innerFmt}\\right)`,
+              log10: `\\log\\left(${innerFmt}\\right)`,
+              abs: `\\left|${innerFmt}\\right|`,
+            };
+            const step2Latex = `${isolatedVar} = ${fnLatexMap[fn] ?? `\\text{${fn}}(${innerFmt})`}`;
+            proofSteps.push({ latex: step2Latex });
+          }
+        } catch {
+          // ignora se não conseguir avaliar o interior
+        }
+      }
+
+      // Passo 3: resultado final com checkmark
+      const derivedLatexNum = toLatexNum(derivedValue, Number.isInteger(derivedValue) ? 0 : 2);
+      const checkmark = verified ? " \\checkmark" : " \\neq " + toLatexNum(expectedValue, Number.isInteger(expectedValue) ? 0 : 2);
+      proofSteps.push({ latex: `${isolatedVar} = ${derivedLatexNum}${checkmark}` });
     } catch {
       proofLatex = null;
     }
 
+    // Texto de detalhe (usado como fallback se não houver steps, e no tipo razoabilidade)
     const detail = verified
-      ? [
-          `Operação inversa aplicada: ${isolatedVar} = ${exprDisplay}`,
-          `Valor derivado: ${varName} = ${derivedFmt}`,
-          `Valor original fornecido: ${expectedFmt} — coincide ✓`,
-        ].join("\n")
-      : [
-          `Operação inversa aplicada: ${isolatedVar} = ${exprDisplay}`,
-          `Valor derivado: ${varName} = ${derivedFmt}`,
-          `Valor original fornecido: ${expectedFmt} — divergência de ${tolerancePct}%`,
-        ].join("\n");
+      ? `${varName} = ${derivedFmt} — coincide com o valor original ${expectedFmt} ✓`
+      : `${varName} = ${derivedFmt} — divergência de ${tolerancePct}% do valor original ${expectedFmt}`;
 
     logger.info(
       { isolatedVar, expectedValue, derivedValue, tolerance, verified },
@@ -198,6 +244,7 @@ async function runInverseProof(
       detail,
       tipo: "inversa" as const,
       latex: proofLatex,
+      steps: proofSteps.length > 0 ? proofSteps : null,
     };
   } catch (err) {
     logger.warn({ err }, "validationAgent: inverse proof failed");

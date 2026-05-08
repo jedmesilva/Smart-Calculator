@@ -623,12 +623,14 @@ export function buildResult(
         descricao: options.proof.detail,
         latex: options.proof.latex ?? null,
         valido: options.proof.valid,
+        steps: options.proof.steps ?? null,
       }
     : {
         tipo: "razoabilidade" as const,
         descricao: "Verificação não realizada.",
         latex: null as string | null,
         valido: true,
+        steps: null as { latex: string }[] | null,
       };
 
   return {

@@ -74,6 +74,7 @@ export type ValidationResult = {
   detail: string;
   tipo: ProofTipo;
   latex?: string | null;
+  steps?: { latex: string }[] | null;
 };
 
 /* ── Resultado da validação de fórmula (cadastro) ── */

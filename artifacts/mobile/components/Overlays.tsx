@@ -320,9 +320,24 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
                   </Text>
                 </View>
               </View>
-              <Text style={styles.proofDetail}>{prova.descricao}</Text>
-              {prova.latex && (
-                <MathView latex={prova.latex} color={proofValido ? "#2A7A4B" : "#B07D1A"} />
+              {/* Prova inversa: mostra só os passos LaTeX step-by-step */}
+              {prova.tipo === "inversa" && prova.steps && prova.steps.length > 0 ? (
+                <View style={styles.proofSteps}>
+                  {prova.steps.map((step, idx) => (
+                    <MathView
+                      key={idx}
+                      latex={step.latex}
+                      color={proofValido ? "#2A7A4B" : "#B07D1A"}
+                    />
+                  ))}
+                </View>
+              ) : (
+                <>
+                  <Text style={styles.proofDetail}>{prova.descricao}</Text>
+                  {prova.latex && (
+                    <MathView latex={prova.latex} color={proofValido ? "#2A7A4B" : "#B07D1A"} />
+                  )}
+                </>
               )}
             </View>
           </DocSection>
@@ -862,6 +877,10 @@ const styles = StyleSheet.create({
     color: c.mid,
     fontFamily: "Inter_400Regular",
     lineHeight: 18,
+  },
+  proofSteps: {
+    gap: 6,
+    paddingTop: 2,
   },
   resultBar: {
     paddingHorizontal: 28,

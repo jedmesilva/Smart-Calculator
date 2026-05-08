@@ -74,6 +74,7 @@ export type ResultData = {
     descricao: string;
     latex: string | null;
     valido: boolean;
+    steps?: { latex: string }[] | null;
   };
 };
 
