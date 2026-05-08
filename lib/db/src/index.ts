@@ -4,19 +4,19 @@ import * as schema from "./schema";
 
 const { Pool } = pg;
 
-/*
- * IMPORTANTE: O Replit injeta automaticamente as variáveis PGHOST/PGUSER/PGDATABASE
- * apontando para o PostgreSQL do Replit. Essas variáveis devem ser IGNORADAS.
- * Usamos SEMPRE o Supabase via DATABASE_URL, conforme documentado em replit.md.
- */
 function buildConnectionString(): string {
-  const rawUrl = process.env.DATABASE_URL ?? "";
-  if (!rawUrl) {
-    throw new Error(
-      "DATABASE_URL must be set (should point to Supabase PostgreSQL).",
-    );
+  if (process.env.PGHOST && process.env.PGUSER && process.env.PGDATABASE) {
+    const user = encodeURIComponent(process.env.PGUSER);
+    const password = process.env.PGPASSWORD ? `:${encodeURIComponent(process.env.PGPASSWORD)}` : "";
+    const port = process.env.PGPORT ?? "5432";
+    return `postgresql://${user}${password}@${process.env.PGHOST}:${port}/${process.env.PGDATABASE}`;
   }
-  return rawUrl;
+  if (process.env.DATABASE_URL) {
+    return process.env.DATABASE_URL;
+  }
+  throw new Error(
+    "Database connection not configured. Set PG* environment variables.",
+  );
 }
 
 export const pool = new Pool({ connectionString: buildConnectionString() });

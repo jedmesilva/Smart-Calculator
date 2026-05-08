@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { authStorage } from "@/lib/supabase";
 
 export type ConversationMessage = {
   role: "user" | "assistant";
@@ -71,8 +71,7 @@ const API_BASE = process.env.EXPO_PUBLIC_API_URL
   : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api`;
 
 async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
-  const { data: { session } } = await supabase.auth.getSession();
-  const token = session?.access_token ?? "";
+  const token = await authStorage.getToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
