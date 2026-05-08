@@ -158,6 +158,66 @@ function toLatexResultado(
 }
 
 /* ═══════════════════════════════════════════════════════
+   Helper: calcula sub-expressões intermediárias com mathjs
+   para fornecer ao LLM valores concretos em cada etapa
+   ═══════════════════════════════════════════════════════ */
+
+function buildSubExpressionHints(
+  expression: string,
+  extracted: Record<string, number>,
+  solveFor: string,
+): string {
+  try {
+    const { evaluate } = require("mathjs") as typeof import("mathjs");
+    const scope = { ...extracted };
+
+    // Remove a variável sendo calculada do scope
+    delete scope[solveFor];
+
+    const hints: string[] = [];
+
+    // Extrai sub-expressões candidatas via regex simples:
+    // parênteses, potências, raízes, divisões, etc.
+    const candidates = new Set<string>();
+
+    // Grupos entre parênteses (depth=1)
+    const parenRe = /\(([^()]+)\)/g;
+    let m: RegExpExecArray | null;
+    while ((m = parenRe.exec(expression)) !== null) {
+      candidates.add(m[1].trim());
+    }
+
+    // Também extrai partes antes de "^" (base da potência)
+    const powRe = /([a-zA-Z_][a-zA-Z0-9_]*|\([^)]+\)|\d+(?:\.\d+)?)\s*\^\s*([a-zA-Z_][a-zA-Z0-9_]*|\d+(?:\.\d+)?)/g;
+    while ((m = powRe.exec(expression)) !== null) {
+      candidates.add(`(${m[1].trim()})^(${m[2].trim()})`);
+      candidates.add(m[1].trim());
+    }
+
+    // Avalia cada sub-expressão candidata
+    for (const sub of candidates) {
+      try {
+        // Substitui símbolos de variáveis conhecidas
+        const raw = evaluate(sub, scope);
+        if (typeof raw === "number" && isFinite(raw)) {
+          const fmt = new Intl.NumberFormat("pt-BR", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 6,
+          }).format(raw);
+          hints.push(`  ${sub} = ${fmt}`);
+        }
+      } catch {
+        // ignora subexpressões que não conseguimos avaliar
+      }
+    }
+
+    return hints.length > 0 ? hints.join("\n") : "";
+  } catch {
+    return "";
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
    Prompt para geração de passos de desenvolvimento via LLM
    ═══════════════════════════════════════════════════════ */
 
@@ -173,86 +233,107 @@ function detectExpressionType(expression: string): string {
   return "algebra";
 }
 
-const DESENVOLV_SYSTEM = `Você é um motor matemático. Dado qualquer cálculo, retorne APENAS um objeto JSON válido, sem markdown.
+const DESENVOLV_SYSTEM = `Você é um professor de matemática que explica cálculos passo a passo para qualquer pessoa, incluindo leigos.
+Retorne APENAS um objeto JSON válido, sem markdown, sem texto fora do JSON.
 
-FORMATO DE RETORNO:
+MISSÃO: Decompor o cálculo em TODAS as operações intermediárias, mostrando cada etapa com valores concretos e uma explicação humana do que está sendo feito e por quê. Uma pessoa sem conhecimento matemático deve conseguir acompanhar e verificar cada passo.
+
+FORMATO:
 {
-  "interpretacao": "frase curta explicando o significado do resultado (ex: Área sob sin(x) de 0 a π)",
+  "interpretacao": "frase curta do significado prático do resultado (máx 15 palavras)",
   "passos": [
     {
       "ordem": 1,
       "tipo": "enunciado",
-      "descricao": "descrição em português do que este passo faz",
-      "latex": "expressão LaTeX KaTeX (ou null)",
-      "justificativa": "obrigatório quando tipo=teorema: citar o teorema ou regra usada"
+      "descricao": "Explicação em português do que este passo faz — sempre com os valores reais",
+      "latex": "LaTeX KaTeX válido (ou null se desnecessário)",
+      "justificativa": "obrigatório APENAS quando tipo=teorema: citar a regra/propriedade/teorema"
     }
   ]
 }
 
 TIPOS DE PASSO:
-- enunciado: escrever a expressão de partida (integral, derivada, fórmula, etc.)
-- teorema: invocar propriedade, identidade, regra ou teorema matemático — justificativa obrigatória
+- enunciado: fórmula simbólica de partida
+- substituicao: mostrar a fórmula com todos os símbolos trocados pelos valores numéricos reais
+- resolucao: calcular UMA subexpressão intermediária, mostrando o resultado parcial numérico
+- simplificacao: simplificar ou reorganizar sem novo cálculo
+- teorema: invocar propriedade/regra matemática — justificativa OBRIGATÓRIA
 - aplicacao: aplicar o teorema ao caso concreto
-- substituicao: substituir valores numéricos
-- simplificacao: simplificar ou reorganizar algebricamente
-- resolucao: calcular subexpressão intermediária
-- resultado: passo final com o valor numérico (SEMPRE o último, obrigatório)
+- resultado: passo final com o valor numérico completo — SEMPRE o último passo
 
 ══════════════════════════════════════
-ROTEIRO POR TIPO DE OPERAÇÃO
+ROTEIRO DETALHADO — ÁLGEBRA (tipo_operacao = "algebra")
 ══════════════════════════════════════
+Decomponha a expressão na ORDEM DE PRECEDÊNCIA MATEMÁTICA (parênteses → potências → multiplicação/divisão → adição/subtração).
+Cada operação intermediária é UM passo separado, com seu resultado numérico.
 
-INTEGRAL DEFINIDA (tipo_operacao = "integral"):
-1. Escrever \\int_a^b f(x)\\,dx  →  "enunciado"
-2. Identificar e enunciar a regra de integração  →  "teorema" + justificativa
-3. Calcular a primitiva F(x)  →  "aplicacao"
-4. Enunciar o Teorema Fundamental do Cálculo  →  "teorema" + justificativa: "TFC: \\int_a^b f = F(b)-F(a)"
-5. Substituir os limites  →  "substituicao"
-6. Calcular F(b) − F(a)  →  "resultado"
+EXEMPLO — Juros Compostos: M = C × (1 + i)^n, com C=5000, i=0,01, n=12:
+  Passo 1 [enunciado]: Escrever a fórmula simbólica
+    descricao: "Partimos da fórmula do montante em juros compostos"
+    latex: "M = C \\times (1 + i)^{n}"
+  Passo 2 [substituicao]: Substituir todos os valores
+    descricao: "Substituímos o capital C = R$ 5.000, a taxa i = 0,01 e o número de períodos n = 12"
+    latex: "M = 5000 \\times (1 + 0{,}01)^{12}"
+  Passo 3 [resolucao]: Resolver a soma dentro dos parênteses
+    descricao: "Calculamos a soma dentro dos parênteses: 1 + 0,01 = 1,01"
+    latex: "M = 5000 \\times (1{,}01)^{12}"
+  Passo 4 [resolucao]: Calcular a potência
+    descricao: "Elevamos 1,01 à décima segunda potência: (1,01)^12 ≈ 1,1268"
+    latex: "M = 5000 \\times 1{,}1268"
+  Passo 5 [resolucao]: Multiplicar o capital pelo fator
+    descricao: "Multiplicamos o capital inicial R$ 5.000 pelo fator de crescimento 1,1268"
+    latex: "M = 5000 \\times 1{,}1268 = 5634{,}13"
+  Passo 6 [resultado]: Resultado final
+    descricao: "O montante final após 12 meses é R$ 5.634,13"
+    latex: "M = 5{.}634{,}13\\;\\text{R\\$}"
 
-DERIVADA EM UM PONTO (tipo_operacao = "derivada"):
-1. Escrever \\frac{d}{dx}[f(x)]  →  "enunciado"
-2. Enunciar a regra de derivação  →  "teorema" + justificativa
-3. Calcular f'(x)  →  "aplicacao"
-4. Substituir x = a  →  "substituicao"
-5. Valor numérico  →  "resultado"
-
-SOMATÓRIO (tipo_operacao = "somatorio"):
-1. Escrever \\sum_{k=a}^{b} f(k)  →  "enunciado"
-2. Fórmula fechada (se existir) ou expandir termos  →  "teorema" + justificativa (ou "resolucao")
-3. Calcular cada termo / aplicar fórmula  →  "resolucao"
-4. Somar → "resultado"
-
-LIMITE (tipo_operacao = "limite"):
-1. Escrever \\lim_{x \\to a} f(x)  →  "enunciado"
-2. Substituição direta; se indeterminado, indicar forma (0/0, ∞/∞)  →  "resolucao"
-3. Técnica aplicada (L'Hôpital, fatoração, identidade)  →  "teorema" + justificativa
-4. Simplificar → "resultado"
-
-PRODUTO / FATORIAL (tipo_operacao = "produto"):
-1. Escrever \\prod_{k=a}^{b} f(k)  →  "enunciado"
-2. Expandir fatores  →  "resolucao"
-3. Calcular produto  →  "resultado"
-
-ÁLGEBRA / FÓRMULAS (tipo_operacao = "algebra"):
-1. Fórmula simbólica  →  "enunciado"
-2. Invocar propriedade relevante (se houver)  →  "teorema" + justificativa
-3. Substituir valores  →  "substituicao"
-4. Resolver intermediários (raiz, potência, divisão)  →  "resolucao"
-5. Resultado final  →  "resultado"
+EXEMPLO — Área do Círculo: A = π × r², com r=7:
+  Passo 1 [enunciado]: "A = \\pi \\times r^{2}"
+  Passo 2 [substituicao]: "A = \\pi \\times 7^{2}" (substituímos r=7)
+  Passo 3 [resolucao]: "Calculamos 7² = 49" → "A = \\pi \\times 49"
+  Passo 4 [resolucao]: "Multiplicamos π ≈ 3,1416 por 49" → "A = 3{,}1416 \\times 49 = 153{,}94"
+  Passo 5 [resultado]: "A = 153{,}94\\;\\text{cm}^{2}"
 
 ══════════════════════════════════════
-REGRAS CRÍTICAS
+ROTEIRO — INTEGRAL DEFINIDA (tipo_operacao = "integral")
 ══════════════════════════════════════
-- PROIBIDO escrever "Identificamos as variáveis" — isso não é um passo matemático
-- Nunca agrupe dois passos distintos em um
-- O passo "resultado" é obrigatório e sempre o último
-- Mínimo 3 passos, máximo 8
-- LaTeX compatível com KaTeX (sem \\begin{equation}, inline apenas)
-- Decimais pt-BR no LaTeX: {,} — ex: 1{,}5 (nunca 1.5)
-- Unidades: \\text{m}, \\text{kg}, \\text{R\\$}, \\text{cm}^2
-- justificativa é obrigatória quando tipo = "teorema"; null nos demais
-- interpretacao: frase curta e objetiva (max 15 palavras)`;
+  Passo 1 [enunciado]: Escrever \\int_a^b f(x)\\,dx
+  Passo 2 [teorema]: Regra de integração aplicada (justificativa obrigatória)
+  Passo 3 [aplicacao]: Calcular a primitiva F(x)
+  Passo 4 [teorema]: Teorema Fundamental do Cálculo — justificativa: "TFC: \\int_a^b f = F(b) - F(a)"
+  Passo 5 [substituicao]: Substituir os limites: F(b) - F(a) com valores reais
+  Passo 6 [resolucao]: Calcular F(b), depois F(a), depois a diferença
+  Passo 7 [resultado]: Valor final
+
+ROTEIRO — DERIVADA (tipo_operacao = "derivada")
+  Passo 1 [enunciado]: \\frac{d}{dx}[f(x)]
+  Passo 2 [teorema]: Regra de derivação (potência, produto, cadeia...) com justificativa
+  Passo 3 [aplicacao]: Aplicar a regra — calcular f'(x) simbolicamente
+  Passo 4 [substituicao]: Substituir x = valor real
+  Passo 5 [resolucao]: Calcular o valor numérico de f'(a)
+  Passo 6 [resultado]: f'(a) = valor
+
+ROTEIRO — SOMATÓRIO (tipo_operacao = "somatorio")
+  Passo 1 [enunciado]: \\sum_{k=a}^{b} f(k)
+  Passo 2 [teorema ou resolucao]: Fórmula fechada (se existir) ou expandir os primeiros termos
+  Passo 3 [resolucao]: Calcular o valor da soma
+  Passo 4 [resultado]: Valor final
+
+══════════════════════════════════════
+REGRAS OBRIGATÓRIAS
+══════════════════════════════════════
+1. NUNCA agrupe duas operações num só passo — cada operação matemática tem seu passo
+2. NUNCA escreva "Identificamos as variáveis" — isso não é passo matemático
+3. NUNCA salte da fórmula simbólica direto para o resultado — sempre mostre os intermediários
+4. A descrição de cada passo DEVE mencionar os valores numéricos concretos envolvidos
+5. O passo "resultado" é OBRIGATÓRIO e SEMPRE o último
+6. Mínimo 4 passos para qualquer cálculo, máximo 12
+7. LaTeX compatível com KaTeX (sem \\begin{equation}, sem align — apenas inline)
+8. Decimais pt-BR no LaTeX: vírgula com chaves — ex: 1{,}5 ou 5{.}634{,}13
+9. Separador de milhar: ponto com chaves — ex: 5{.}000 ou 1{.}126{,}83
+10. Unidades no LaTeX: \\text{m}, \\text{kg}, \\text{R\\$}, \\text{cm}^2, \\text{anos}
+11. justificativa: obrigatória quando tipo="teorema"; null em todos os outros tipos
+12. interpretacao: frase curta e objetiva sobre o significado prático do resultado`;
 
 export type DesenvolvimentoResult = {
   steps: DesenvolvimentoStep[];
@@ -302,22 +383,27 @@ export async function buildDesenvolvimento(opts: {
   }).format(displayValue);
   const resultWithUnit = `${formattedResult}${resultUnit && resultUnit !== "%" ? " " + resultUnit : resultUnit === "%" ? "%" : ""}`;
 
+  /* ── Monta dicas de sub-expressões para ajudar o LLM a decompor ── */
+  const subExpressionHints = buildSubExpressionHints(expression, extracted, solveFor);
+
   const userContent = [
     `Fórmula: ${formulaName}`,
     `tipo_operacao: ${tipoOperacao}`,
     formulaSymbolic ? `Expressão simbólica: ${formulaSymbolic}` : "",
-    formulaSubstituted ? `Notação matemática (com valores): ${formulaSubstituted}` : "",
-    `Expressão mathjs usada: ${expression}`,
-    `Variável calculada (solveFor): ${solveFor} = ${resultLabel}`,
-    varDesc ? `Variáveis numéricas extraídas: ${varDesc}` : "",
-    varValDesc ? `Valores fornecidos pelo usuário: ${varValDesc}` : "",
+    formulaSubstituted ? `Notação com valores substituídos: ${formulaSubstituted}` : "",
+    `Expressão mathjs completa: ${expression}`,
+    `Variável calculada: ${solveFor} (${resultLabel})`,
+    varDesc ? `Valores usados: ${varDesc}` : "",
+    varValDesc ? `Como o usuário forneceu: ${varValDesc}` : "",
+    subExpressionHints ? `Resultados intermediários calculados:\n${subExpressionHints}` : "",
     `Resultado final: ${solveFor} = ${resultWithUnit}`,
+    `\nIMPORTANTE: Gere NO MÍNIMO 4 passos, decompondo CADA operação intermediária em um passo separado com valores concretos. Não salte da substituição direto para o resultado.`,
   ].filter(Boolean).join("\n");
 
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      max_completion_tokens: 1800,
+      max_completion_tokens: 3000,
       messages: [
         { role: "system", content: DESENVOLV_SYSTEM },
         { role: "user", content: userContent },
