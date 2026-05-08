@@ -1013,9 +1013,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#1A1A18",
     fontFamily: "Inter_400Regular",
+    minHeight: 32,
     maxHeight: 120,
-    paddingTop: 4,
-    paddingBottom: 4,
+    paddingTop: 0,
+    paddingBottom: 0,
     textAlignVertical: "center",
   },
   sendBtn: {
