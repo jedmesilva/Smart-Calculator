@@ -44,9 +44,18 @@ function proofTipoLabel(tipo: string): string {
   }
 }
 
+const GENERIC_CATEGORIES = new Set(["outro", "outros", "cálculo", "calculo", "geral", "other", ""]);
+
+function formatCategoria(raw: string | null | undefined): string {
+  if (!raw) return "";
+  const lower = raw.toLowerCase().trim();
+  return GENERIC_CATEGORIES.has(lower) ? "" : raw;
+}
+
 function buildHTML(data: ResultData): string {
   const titulo = data.meta?.titulo ?? "Cálculo";
-  const categoria = data.meta?.categoria ?? "Cálculo";
+  const categoriaRaw = data.meta?.categoria ?? "";
+  const categoria = formatCategoria(categoriaRaw);
   const subcategoria = data.meta?.subcategoria ?? "";
   const resultValor = data.resultado?.valor ?? "";
   const resultUnidade = data.resultado?.unidade ?? "";
@@ -74,6 +83,7 @@ function buildHTML(data: ResultData): string {
         <span class="step-num">${String(step.ordem).padStart(2, "0")}</span>
         <div class="step-body">
           <span class="step-text">${step.descricao}</span>
+          ${step.latex ? `<div class="step-latex">$$${step.latex}$$</div>` : ""}
           ${step.tipo !== "resultado" ? `<span class="step-tipo">${step.tipo}</span>` : ""}
         </div>
       </div>`
@@ -96,10 +106,13 @@ function buildHTML(data: ResultData): string {
 
   let secIdx = secBase;
 
+  const formulaLatexDoc = data.formula?.latex;
   const formulaHTML = hasFormula
     ? `<div class="section-label">${String(++secIdx).padStart(2, "0")} — Fórmula</div>
        <div class="formula-box">
-         <div class="formula-symbolic">${formulaAbstrata}</div>
+         ${formulaLatexDoc
+           ? `<div class="step-latex" style="font-size:16px;">$$${formulaLatexDoc}$$</div>`
+           : `<div class="formula-symbolic">${formulaAbstrata}</div>`}
        </div>`
     : "";
 
@@ -266,6 +279,7 @@ function buildHTML(data: ResultData): string {
     }
     .proof-warn .proof-badge { background: #E8DCA8; color: #7A5010; }
     .proof-detail { font-size: 12px; color: #6B6B66; line-height: 1.5; }
+    .step-latex { text-align: center; padding: 6px 0; color: #1A1A18; }
     .proof-steps { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
     .proof-step { text-align: center; padding: 6px 0; }
     .warning { font-size: 11px; color: #B07D1A; margin-top: 20px; }
@@ -294,7 +308,7 @@ function buildHTML(data: ResultData): string {
       <div class="logo">Φ <span>Phormula</span></div>
       <div class="date">${dateStr}</div>
     </div>
-    <div class="date" style="text-align:right;">${categoria}</div>
+    ${categoria ? `<div class="date" style="text-align:right;">${categoria}</div>` : ""}
   </div>
 
   <div class="id-card">
