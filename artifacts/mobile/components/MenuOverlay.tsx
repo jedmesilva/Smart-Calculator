@@ -78,8 +78,6 @@ export function MenuOverlay({ onClose }: Props) {
   };
 
   const saldo = carteira?.saldo ?? null;
-  const totalConsultas = carteira?.totalConsultas ?? 0;
-  const totalGasto = carteira?.totalGastoBrl ?? 0;
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
@@ -111,32 +109,23 @@ export function MenuOverlay({ onClose }: Props) {
           </View>
         </View>
 
-        {/* Credits Card */}
+        {/* Plan / Credits Card */}
         <View style={styles.creditsCard}>
-          <View style={styles.creditsRow}>
-            <View style={styles.creditsBadge}>
-              <Text style={styles.creditsBadgeText}>cr</Text>
-            </View>
-            <Text style={styles.creditsLabel}>Créditos</Text>
+          <View style={styles.planRow}>
+            <Text style={styles.planBadge}>Gratuito</Text>
+          </View>
+          <View style={styles.creditsAmountRow}>
             {carteiraLoading ? (
-              <ActivityIndicator size="small" color={c.faint} style={{ marginLeft: "auto" }} />
+              <ActivityIndicator size="small" color={c.faint} />
             ) : (
-              <Text style={styles.creditsValue}>
-                {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"}
-              </Text>
+              <>
+                <Text style={styles.creditsAmount}>
+                  {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"}
+                </Text>
+                <Text style={styles.creditsAmountLabel}> créditos disponíveis</Text>
+              </>
             )}
           </View>
-          {!carteiraLoading && carteira && (
-            <View style={styles.creditsStats}>
-              <Text style={styles.creditsStat}>
-                {totalConsultas} {totalConsultas === 1 ? "consulta" : "consultas"}
-              </Text>
-              <View style={styles.creditsDot} />
-              <Text style={styles.creditsStat}>
-                R$ {totalGasto.toFixed(2).replace(".", ",")} gastos
-              </Text>
-            </View>
-          )}
         </View>
 
         {/* Divider */}
@@ -273,55 +262,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 10,
-    gap: 6,
+    gap: 5,
   },
-  creditsRow: {
+  planRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
   },
-  creditsBadge: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    backgroundColor: c.text,
-    alignItems: "center",
-    justifyContent: "center",
+  planBadge: {
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    color: c.faint,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
   },
-  creditsBadgeText: {
-    fontSize: 9,
-    fontFamily: "Inter_700Bold",
-    color: c.background,
-    letterSpacing: 0.3,
+  creditsAmountRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
   },
-  creditsLabel: {
-    fontSize: 13,
-    fontFamily: "Inter_500Medium",
-    color: c.mid,
-  },
-  creditsValue: {
-    marginLeft: "auto" as any,
-    fontSize: 16,
+  creditsAmount: {
+    fontSize: 22,
     fontFamily: "Inter_700Bold",
     color: c.text,
-    letterSpacing: -0.5,
+    letterSpacing: -0.8,
   },
-  creditsStats: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginLeft: 30,
-  },
-  creditsStat: {
-    fontSize: 11,
+  creditsAmountLabel: {
+    fontSize: 12,
     fontFamily: "Inter_400Regular",
     color: c.faint,
-  },
-  creditsDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: c.ghost,
   },
   divider: {
     height: 1,
