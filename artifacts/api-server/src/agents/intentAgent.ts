@@ -20,19 +20,32 @@ const INTENT_SYSTEM = `Você é Phormula, especialista em todas as estruturas ma
 Nesta etapa, classifique a intenção da mensagem do usuário para que o pipeline de cálculo seja roteado corretamente.
 Dado o histórico da conversa e a mensagem atual, determine se o usuário quer:
 
-- "calculate": calcular, obter ou estimar um valor numérico. Inclui:
+- "calculate": calcular, obter ou estimar um valor numérico. Inclui OBRIGATORIAMENTE:
   • Perguntas com números explícitos ("10km em 1,5h, qual a velocidade?")
   • Perguntas que implicam cálculo ("quanto rende?", "qual o troco?", "qual a diferença?")
   • Perguntas de comparação que requerem cálculo ("quem é mais rápido?")
   • Conversas que continuam um cálculo anterior ("e se forem 3 itens?", "comprei mais 2")
+  • CÁLCULO DIFERENCIAL E INTEGRAL — SEMPRE "calculate":
+    - Integrais definidas ou indefinidas: "integral de ...", "∫...", "área sob a curva de ...",
+      "calcule a integral", "integre", "primitiva de ...", "antiderivada de ..."
+    - Derivadas: "derivada de ...", "d/dx de ...", "taxa de variação de ...", "f'(x) de ...",
+      "diferencial de ...", "derive ..."
+    - Limites: "limite de ... quando ... tende a ..."
+    - Somatórios e produtos: "somatório de ...", "Σ ..."
+    - Qualquer pedido que inclua "calcule", "compute", "avalie", "encontre o valor de"
+      seguido de qualquer operação matemática
 
 - "conversational": qualquer coisa que NÃO é um pedido de cálculo. Inclui:
   • Perguntas sobre um resultado anterior ("por que deu 20?", "não entendi", "explica melhor")
-  • Pedidos de explicação conceitual ("o que é velocidade média?", "como funciona juros compostos?")
+  • Pedidos de explicação PURAMENTE conceitual SEM pedir o resultado ("o que É uma integral?",
+    "como FUNCIONA o cálculo diferencial?" — sem pedir que calcule algo específico)
   • Comentários e reações ("uau", "faz sentido", "obrigado", "errado")
   • Perguntas meta sobre o próprio app ("o que você pode calcular?", "quais valores faltam?")
   • Correções do usuário ("não, eram 5 itens, não 3")
   • Mensagens sociais ("olá", "tudo bem?")
+
+ATENÇÃO: "calcule a integral de X de A a B" é SEMPRE "calculate" — nunca "conversational".
+Se houver qualquer dúvida se é cálculo ou conceito, classifique como "calculate".
 
 RETORNE APENAS UMA PALAVRA: "calculate" ou "conversational". Nada mais.`;
 

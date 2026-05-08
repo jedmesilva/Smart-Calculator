@@ -54,7 +54,7 @@ Formato quando faltam valores:
 }
 
 Regras críticas:
-- "expression": RHS da igualdade em sintaxe mathjs (*, ^, sqrt, log, abs, PI, E)
+- "expression": RHS da igualdade em sintaxe mathjs (*, ^, sqrt, log, abs, pi, e)
 - Se a fórmula tem expressão armazenada, USE-A exatamente (não invente outra)
 - Mapeie valores da lista pelo SIGNIFICADO (label), não pela posição
 - Percentuais já devem estar em decimal (0.01 para 1%) — não converta novamente
@@ -72,7 +72,44 @@ Regras críticas:
   Exemplo inline: se o usuário disse "total R$50, 10 itens, comprou 3":
   variableValues: { "total": "R$ 50", "itens": "10", "comprados": "3" }
   variableNames: { "total": "Valor total", "itens": "Quantidade total", "comprados": "Itens comprados" }
-  Isso garante que o usuário veja as variáveis na visualização do cálculo.`;
+  Isso garante que o usuário veja as variáveis na visualização do cálculo.
+
+══════════════════════════════════════════════════════
+SUPORTE A CÁLCULO DIFERENCIAL E INTEGRAL
+══════════════════════════════════════════════════════
+O sistema suporta duas funções especiais de cálculo que você DEVE usar para integrais e derivadas:
+
+1. INTEGRAL DEFINIDA: integrate(f, x, a, b)
+   - f: expressão do integrando em sintaxe mathjs (use x como variável de integração)
+   - x: variável de integração (geralmente "x" ou "t")
+   - a: limite inferior (número ou "pi", "e")
+   - b: limite superior (número ou "pi", "e")
+   Exemplos:
+   • ∫sin(x)dx de 0 a π  → expression: "integrate(sin(x), x, 0, pi)"
+   • ∫x²dx de 1 a 3      → expression: "integrate(x^2, x, 1, 3)"
+   • ∫e^x dx de 0 a 1    → expression: "integrate(exp(x), x, 0, 1)"
+   • ∫(1/x)dx de 1 a e   → expression: "integrate(1/x, x, 1, e)"
+   Para integrais, "extracted" deve ser {} (vazio) e "allPresent": true.
+
+2. DERIVADA EM UM PONTO: derivative(f, x, a)
+   - f: expressão da função em sintaxe mathjs
+   - x: variável de diferenciação
+   - a: ponto onde calcular a derivada (número ou "pi", "e")
+   Exemplos:
+   • f'(x) de sin(x) em x=0   → expression: "derivative(sin(x), x, 0)"
+   • f'(x) de x³ em x=2       → expression: "derivative(x^3, x, 2)"
+   Para derivadas, "extracted" deve ser {} (vazio) e "allPresent": true.
+
+QUANDO USAR:
+- Qualquer pedido de "integral de ... de ... a ...", "∫...", "área sob a curva"   → use integrate()
+- Qualquer pedido de "derivada de ... em ...", "taxa de variação em ...", "inclinação em ..."  → use derivative()
+- NÃO tente converter integrais para antiderivadas manualmente — use sempre integrate()
+- NÃO use a palavra "integrate" ou "derivative" em expressões normais de álgebra
+
+IMPORTANT: Para esses casos especiais, "formulaSubstituted" deve mostrar a notação matemática pt-BR:
+   ∫sin(x)dx de 0 a π = 2 → "∫₀^π sin(x) dx"
+   f'(x³) em x=2 → "d/dx(x³) | x=2"
+══════════════════════════════════════════════════════`;
 
 const BUILD_DYNAMIC_PROMPT = `Você é um especialista em matemática. Dado uma fórmula identificada e os valores extraídos, 
 derive a expressão MathJS completa e mapeie os valores às variáveis.
@@ -106,8 +143,14 @@ function parseJson(raw: string, ctx: string): any {
 }
 
 function validateExpressionSyntax(expression: string, extracted: Record<string, number>): void {
+  // Expressões de cálculo especiais são validadas pelo formulaCompute — não pelo mathjs direto
+  const trimmed = expression.trim().toLowerCase();
+  if (trimmed.startsWith("integrate(") || trimmed.startsWith("derivative(")) {
+    return;
+  }
+
   try {
-    const result = evaluate(expression, extracted);
+    const result = evaluate(expression, { ...extracted, pi: Math.PI, e: Math.E });
     const num = typeof (result as any)?.toNumber === "function"
       ? (result as any).toNumber()
       : Number(result);

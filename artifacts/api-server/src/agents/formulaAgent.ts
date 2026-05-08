@@ -43,6 +43,16 @@ Regras:
   "quanto é 15% de 200", conversões simples, etc.) são SEMPRE válidas — retorne found: true com:
   name: "Cálculo Direto", category: "Básico", symbolic: a expressão em notação matemática,
   description: "Avaliação direta da expressão matemática"
+- CÁLCULO DIFERENCIAL E INTEGRAL: integrais, derivadas e limites são SEMPRE válidos:
+  • "integral de f(x) de a a b", "∫f(x)dx", "calcule a integral" →
+    name: "Integral Definida", category: "Básico",
+    symbolic: "∫f(x)dx", description: "Cálculo numérico da integral definida"
+  • "derivada de f(x) em x=a", "d/dx", "taxa de variação em" →
+    name: "Derivada", category: "Básico",
+    symbolic: "f'(x)", description: "Cálculo numérico da derivada em um ponto"
+  • "limite de f(x) quando x tende a a" →
+    name: "Limite", category: "Básico",
+    symbolic: "lim f(x)", description: "Cálculo do limite de uma função"
 - Só retorne found: false se a mensagem não contiver nenhuma intenção de cálculo matemático`;
 
 /* ─── Prompt: valida se fórmula selecionada é adequada ─── */
