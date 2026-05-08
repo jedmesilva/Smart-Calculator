@@ -621,7 +621,7 @@ export function buildResult(
     ? {
         tipo: options.proof.tipo,
         descricao: options.proof.detail,
-        latex: null as string | null,
+        latex: options.proof.latex ?? null,
         valido: options.proof.valid,
       }
     : {

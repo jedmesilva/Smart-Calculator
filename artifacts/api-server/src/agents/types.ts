@@ -73,6 +73,7 @@ export type ValidationResult = {
   method: string;
   detail: string;
   tipo: ProofTipo;
+  latex?: string | null;
 };
 
 /* ── Resultado da validação de fórmula (cadastro) ── */

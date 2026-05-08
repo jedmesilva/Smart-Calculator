@@ -12,7 +12,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { evaluate } from "mathjs";
+import { evaluate, parse } from "mathjs";
 import { logger } from "../lib/logger";
 import type { ExpressionResult, FormulaInfo, ValidationResult } from "./types";
 
@@ -149,12 +149,35 @@ async function runInverseProof(
     const verified = tolerance < 0.005; // tolerância de 0,5%
 
     const varName = variableNames[isolatedVar] ?? isolatedVar;
+    const resultFmt = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 6 }).format(computedValue);
     const derivedFmt = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 4 }).format(derivedValue);
     const expectedFmt = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 4 }).format(expectedValue);
+    const tolerancePct = (tolerance * 100).toFixed(2);
+
+    // Expressão inversa com "result" substituído pelo valor numérico real
+    const exprDisplay = inverseExpression.replace(/\bresult\b/g, resultFmt);
+
+    // Tenta gerar LaTeX da expressão inversa para renderização no overlay
+    let proofLatex: string | null = null;
+    try {
+      const exprForLatex = inverseExpression.replace(/\bresult\b/g, String(computedValue));
+      const latexBody = parse(exprForLatex).toTex({ parenthesis: "auto" });
+      proofLatex = `${isolatedVar} = ${latexBody}`;
+    } catch {
+      proofLatex = null;
+    }
 
     const detail = verified
-      ? description || `Derivado ${varName} = ${derivedFmt} — coincide com o valor original ${expectedFmt}. ✓`
-      : `Derivado ${varName} = ${derivedFmt}, mas o valor original era ${expectedFmt}. Possível inconsistência.`;
+      ? [
+          `Operação inversa aplicada: ${isolatedVar} = ${exprDisplay}`,
+          `Valor derivado: ${varName} = ${derivedFmt}`,
+          `Valor original fornecido: ${expectedFmt} — coincide ✓`,
+        ].join("\n")
+      : [
+          `Operação inversa aplicada: ${isolatedVar} = ${exprDisplay}`,
+          `Valor derivado: ${varName} = ${derivedFmt}`,
+          `Valor original fornecido: ${expectedFmt} — divergência de ${tolerancePct}%`,
+        ].join("\n");
 
     logger.info(
       { isolatedVar, expectedValue, derivedValue, tolerance, verified },
@@ -166,6 +189,7 @@ async function runInverseProof(
       method: "Prova real",
       detail,
       tipo: "inversa" as const,
+      latex: proofLatex,
     };
   } catch (err) {
     logger.warn({ err }, "validationAgent: inverse proof failed");
