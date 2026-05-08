@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -190,9 +190,41 @@ function ResultRow({
 
 /* ─── LOADING DOTS ─── */
 function LoadingDots() {
+  const d0 = useRef(new Animated.Value(0)).current;
+  const d1 = useRef(new Animated.Value(0)).current;
+  const d2 = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const makeAnim = (val: Animated.Value, delay: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(val, { toValue: 1, duration: 380, useNativeDriver: true }),
+          Animated.timing(val, { toValue: 0, duration: 380, useNativeDriver: true }),
+          Animated.delay(Math.max(0, 480 - delay)),
+        ])
+      );
+    const a0 = makeAnim(d0, 0);
+    const a1 = makeAnim(d1, 160);
+    const a2 = makeAnim(d2, 320);
+    a0.start(); a1.start(); a2.start();
+    return () => { a0.stop(); a1.stop(); a2.stop(); };
+  }, [d0, d1, d2]);
+
   return (
     <View style={styles.loadingBubble}>
-      <ActivityIndicator size="small" color={c.ghost} />
+      {([d0, d1, d2] as Animated.Value[]).map((val, i) => (
+        <Animated.View
+          key={i}
+          style={[
+            styles.loadingDot,
+            {
+              opacity: val.interpolate({ inputRange: [0, 1], outputRange: [0.2, 1] }),
+              transform: [{ translateY: val.interpolate({ inputRange: [0, 1], outputRange: [0, -4] }) }],
+            },
+          ]}
+        />
+      ))}
     </View>
   );
 }
@@ -772,12 +804,18 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   loadingBubble: {
-    backgroundColor: "#F0EFEB",
-    borderRadius: 14,
-    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 6,
     paddingHorizontal: 20,
-    minWidth: 60,
-    alignItems: "center",
+    paddingVertical: 16,
+    marginBottom: 4,
+  },
+  loadingDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: c.faint,
   },
   assistantBubble: {
     backgroundColor: "#F0EFEB",
