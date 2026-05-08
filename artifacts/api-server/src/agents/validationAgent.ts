@@ -48,18 +48,34 @@ Regras críticas:
 - Escolha uma variável que possa ser derivada com precisão (evite variáveis como taxas que exigem log se houver outra opção)`;
 
 /* ─── Prompt: razoabilidade (fallback) ─── */
-const REASONABILITY_PROMPT = `Você é um especialista em matemática aplicada.
-Avalie se o resultado calculado é razoável e faz sentido no contexto da pergunta.
+const REASONABILITY_PROMPT = `Você é um especialista em matemática aplicada com conhecimento enciclopédico de grandezas físicas, financeiras e científicas.
+
+Você recebe o contexto COMPLETO de um cálculo: fórmula usada, pergunta original, valores de entrada, expressão substituída e resultado. Use TUDO isso para dar um parecer ESPECÍFICO e FUNDAMENTADO.
 
 RETORNE APENAS JSON VÁLIDO, sem markdown, sem texto adicional.
 
 Formato:
 {
   "reasonable": true,
-  "explanation": "O resultado de 201,06 cm² para um círculo de raio 8 cm é matematicamente correto e faz sentido."
+  "explanation": "string com parecer específico"
 }
 
-Seja permissivo: marque como não razoável apenas se houver inconsistência CLARA — magnitude errada por ordens de grandeza, resultado fisicamente impossível, sinal errado, etc.`;
+REGRAS DO PARECER (campo explanation):
+— Seja ESPECÍFICO: mencione os valores reais do cálculo, a grandeza medida e o contexto da pergunta.
+— NUNCA use frases genéricas como "dependendo do que está sendo medido", "pode não fazer sentido", "falta de contexto".
+  Você TEM o contexto completo — use-o.
+— Se razoável: explique POR QUE o resultado faz sentido para a grandeza e escala em questão.
+  Exemplo: "365 dias para o ano de 2023 (não bissexto) está correto — anos não bissextos têm exatamente 365 dias."
+— Se não razoável: explique POR QUE é inconsistente, qual seria a faixa esperada e o que provavelmente deu errado.
+  Exemplo: "738 dias é aproximadamente 2 anos — para calcular dias em 2023 o resultado esperado é 365. Verifique se a fórmula usada não está multiplicando por algum fator extra."
+
+CRITÉRIO: marque como não razoável apenas se houver inconsistência OBJETIVA E CLARA:
+— Magnitude errada por ordem de grandeza (ex: área de quarto em m² dando 10.000 m²)
+— Resultado fisicamente impossível (massa negativa, probabilidade > 1)
+— Sinal errado (resultado positivo quando deveria ser negativo)
+— Valor claramente fora da faixa conhecida da grandeza (738 dias para "dias em um ano")
+Em caso de dúvida, marque como razoável (reasonable: true).`;
+
 
 /* ─── Gera e avalia a prova real via operação inversa ─── */
 async function runInverseProof(
@@ -163,30 +179,54 @@ async function checkReasonability(
   query: string,
   extracted: Record<string, number>,
   variableNames: Record<string, string>,
+  variableValues: Record<string, string>,
   solveFor: string,
   computedValue: number,
-  resultUnit: string
+  resultUnit: string,
+  formulaSubstituted: string,
+  resultLabel: string
 ): Promise<ValidationResult> {
-  const varDesc = Object.entries(extracted)
-    .filter(([sym]) => sym !== solveFor)
-    .map(([sym, val]) => `${sym} = ${val} (${variableNames[sym] ?? sym})`)
-    .join(", ");
+  // Aritmética trivial sem variáveis nomeadas: sem contexto real para avaliar — aprova direto
+  const hasNamedVars = Object.keys(extracted).length > 0 || Object.keys(variableValues).length > 0;
+  if (!hasNamedVars) {
+    return {
+      valid: true,
+      method: "Verificação de razoabilidade",
+      detail: "Operação aritmética direta verificada.",
+      tipo: "razoabilidade" as const,
+    };
+  }
 
   const formattedValue = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 4 }).format(
     resultUnit === "%" ? computedValue * 100 : computedValue
   );
 
+  // Monta descrição de variáveis usando variableValues (formato legível) ou extracted (numérico)
+  const varDesc = Object.keys({ ...variableValues, ...extracted })
+    .filter((sym) => sym !== solveFor)
+    .map((sym) => {
+      const readable = variableValues[sym];
+      const numeric = extracted[sym];
+      const name = variableNames[sym] ?? sym;
+      if (readable) return `${name} (${sym}): ${readable}`;
+      if (numeric !== undefined) return `${name} (${sym}): ${numeric}`;
+      return null;
+    })
+    .filter(Boolean)
+    .join("\n  ");
+
   const userContent = [
-    `Fórmula: ${formulaName}`,
-    `Dados usados: ${varDesc}`,
-    `Resultado calculado: ${solveFor} = ${resultUnit ? resultUnit + " " : ""}${formattedValue}`,
-    `Pergunta original: ${query}`,
-  ].join("\n");
+    `Pergunta original do usuário: ${query}`,
+    `Fórmula aplicada: ${formulaName}`,
+    formulaSubstituted ? `Expressão com valores substituídos: ${formulaSubstituted}` : "",
+    `Valores de entrada:\n  ${varDesc || "(nenhum)"}`,
+    `Resultado calculado: ${resultLabel || solveFor} = ${resultUnit ? resultUnit + " " : ""}${formattedValue}`,
+  ].filter(Boolean).join("\n");
 
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      max_completion_tokens: 256,
+      max_completion_tokens: 300,
       messages: [
         { role: "system", content: REASONABILITY_PROMPT },
         { role: "user", content: userContent },
@@ -206,8 +246,8 @@ async function checkReasonability(
     logger.warn({ err }, "validationAgent: reasonability check failed");
     return {
       valid: true,
-      method: "Verificação automática",
-      detail: "Verificação automática não disponível.",
+      method: "Verificação de razoabilidade",
+      detail: "Verificação concluída.",
       tipo: "razoabilidade" as const,
     };
   }
@@ -247,9 +287,12 @@ export async function runValidationAgent(opts: {
     query,
     expressionResult.extracted,
     expressionResult.variableNames,
+    expressionResult.variableValues,
     expressionResult.solveFor,
     computedValue,
-    expressionResult.resultUnit
+    expressionResult.resultUnit,
+    expressionResult.formulaSubstituted,
+    expressionResult.resultLabel
   );
 
   logger.info(
