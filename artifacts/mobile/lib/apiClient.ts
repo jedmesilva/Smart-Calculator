@@ -139,22 +139,9 @@ export async function calculateStream(
     throw new Error((body as any).error ?? `Erro ${res.status}`);
   }
 
-  const reader = res.body?.getReader();
-  if (!reader) throw new Error("Stream não suportado");
-
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
-
-    const events = buffer.split("\n\n");
-    buffer = events.pop() ?? "";
-
-    for (const block of events) {
+  function parseSSEBlocks(text: string): CalcResponse | null {
+    const blocks = text.split("\n\n");
+    for (const block of blocks) {
       for (const line of block.split("\n")) {
         if (!line.startsWith("data: ")) continue;
         const raw = line.slice(6).trim();
@@ -173,6 +160,33 @@ export async function calculateStream(
         }
       }
     }
+    return null;
+  }
+
+  const reader = res.body?.getReader();
+
+  // React Native (Hermes/Expo Go) não suporta ReadableStream — lê tudo de uma vez
+  if (!reader) {
+    const text = await res.text();
+    const result = parseSSEBlocks(text);
+    if (result) return result;
+    throw new Error("Stream encerrado sem resultado");
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+
+    const events = buffer.split("\n\n");
+    buffer = events.pop() ?? "";
+
+    const result = parseSSEBlocks(events.join("\n\n"));
+    if (result) return result;
   }
 
   throw new Error("Stream encerrado sem resultado");
