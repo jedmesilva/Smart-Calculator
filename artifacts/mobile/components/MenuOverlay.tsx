@@ -28,7 +28,8 @@ type Props = {
 
 export function MenuOverlay({ onClose }: Props) {
   const insets = useSafeAreaInsets();
-  const { userId, userName, signOut } = useAuth();
+  const { user, userId, userName, signOut } = useAuth();
+  const email = user?.email ?? "";
   const opacity = useSharedValue(0);
   const translateX = useSharedValue(-280);
 
