@@ -314,6 +314,7 @@ export async function runCalculationPipeline(opts: {
     buildDesenvolvimento({
       formulaName: formula.name,
       formulaSymbolic: formula.symbolic,
+      formulaSubstituted: expressionResult.formulaSubstituted,
       expression: expressionResult.expression,
       extracted: expressionResult.extracted,
       variableNames: expressionResult.variableNames,
