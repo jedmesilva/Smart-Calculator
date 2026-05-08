@@ -395,43 +395,131 @@ export async function exportAsPDF(data: ResultData): Promise<void> {
 
 export function buildTextSummary(data: ResultData): string {
   const titulo = data.meta?.titulo ?? "Cálculo";
+  const categoria = data.meta?.categoria ?? "";
   const subcategoria = data.meta?.subcategoria ?? "";
   const resultValor = data.resultado?.valor ?? "";
   const resultUnidade = data.resultado?.unidade ?? "";
+  const resultInterpretacao = data.resultado?.interpretacao ?? "";
   const formulaAbstrata = data.formula?.abstrata ?? "";
   const variaveis = data.variaveis ?? [];
   const desenvolvimento = data.desenvolvimento ?? [];
   const prova = data.prova ?? null;
+  const objetivo = data.objetivo ?? "";
+  const conversacional = data.conversationalResponse ?? "";
 
-  const lines: string[] = [
-    `Phormula — ${titulo}`,
-    ``,
-    `Resultado: ${resultUnidade ? resultUnidade + " " : ""}${resultValor}${subcategoria ? " (" + subcategoria + ")" : ""}`,
-  ];
+  const dateStr = new Date().toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-  if (formulaAbstrata) lines.push(`Fórmula: ${formulaAbstrata}`);
+  const sep = "─────────────────────────────";
 
+  const lines: string[] = [];
+
+  // Cabeçalho
+  lines.push(`Φ Phormula — Calculadora Inteligente`);
+  lines.push(sep);
+  lines.push(`Cálculo: ${titulo}`);
+  if (categoria) lines.push(`Categoria: ${categoria}`);
+  if (subcategoria) lines.push(`Tipo: ${subcategoria}`);
+  lines.push(`Data: ${dateStr}`);
+  lines.push(`Resultado: ${resultUnidade ? resultUnidade + " " : ""}${resultValor}`);
+  if (data.searchUsed) lines.push(`[pesquisa web utilizada]`);
+
+  // Objetivo / contextualização
+  if (objetivo) {
+    lines.push(``);
+    lines.push(`OBJETIVO`);
+    lines.push(sep);
+    lines.push(objetivo);
+  }
+
+  // Resposta conversacional
+  if (conversacional) {
+    lines.push(``);
+    lines.push(`CONTEXTO`);
+    lines.push(sep);
+    lines.push(conversacional);
+  }
+
+  let secIdx = 0;
+  const sec = (label: string) => {
+    secIdx++;
+    return `${String(secIdx).padStart(2, "0")} — ${label}`;
+  };
+
+  // Fórmula
+  if (formulaAbstrata) {
+    lines.push(``);
+    lines.push(sec("FÓRMULA"));
+    lines.push(sep);
+    lines.push(formulaAbstrata);
+  }
+
+  // Variáveis
   if (variaveis.length > 0) {
-    lines.push(``, `Variáveis:`);
-    variaveis.forEach((v) =>
-      lines.push(`  ${v.simbolo} = ${v.unidade ? v.unidade + " " : ""}${v.valor} (${v.descricao})`)
-    );
+    lines.push(``);
+    lines.push(sec("VARIÁVEIS"));
+    lines.push(sep);
+    variaveis.forEach((v) => {
+      const valor = `${v.unidade ? v.unidade + " " : ""}${v.valor}`;
+      const papel = v.papel && v.papel !== v.descricao ? ` — ${v.papel}` : "";
+      lines.push(`  ${v.simbolo} = ${valor}  (${v.descricao}${papel})`);
+    });
   }
 
+  // Desenvolvimento
   if (desenvolvimento.length > 0) {
-    lines.push(``, `Passo a passo:`);
-    desenvolvimento.forEach((step) => lines.push(`  ${step.ordem}. ${step.descricao}`));
+    lines.push(``);
+    lines.push(sec("DESENVOLVIMENTO"));
+    lines.push(sep);
+    desenvolvimento.forEach((step) => {
+      lines.push(`  ${String(step.ordem).padStart(2, "0")}. ${step.descricao}`);
+      if (step.justificativa) lines.push(`      → ${step.justificativa}`);
+    });
   }
 
+  // Resultado
+  lines.push(``);
+  lines.push(sec("RESULTADO"));
+  lines.push(sep);
+  if (subcategoria) lines.push(`Tipo: ${subcategoria}`);
+  if (resultUnidade) lines.push(`Unidade: ${resultUnidade}`);
+  lines.push(`Valor: ${resultValor}`);
+  if (resultInterpretacao) lines.push(`Interpretação: ${resultInterpretacao}`);
+
+  // Verificação
   if (prova) {
     const label = proofTipoLabel(prova.tipo);
-    lines.push(``, `Verificação: ${label} — ${prova.valido ? "aprovado" : "revisar"}`);
-    lines.push(`  ${prova.descricao}`);
+    const status = prova.valido ? "aprovado ✓" : "revisar ⚠";
+    lines.push(``);
+    lines.push(sec("VERIFICAÇÃO"));
+    lines.push(sep);
+    lines.push(`Método: ${label} — ${status}`);
+    // Prova inversa tem steps; demais têm descricao
+    if (prova.tipo === "inversa" && prova.steps && prova.steps.length > 0) {
+      lines.push(`Passos da prova reversa:`);
+      prova.steps.forEach((s, i) => lines.push(`  ${i + 1}. ${s.latex}`));
+    } else if (prova.descricao) {
+      lines.push(prova.descricao);
+    }
   }
 
-  if (data.warning) lines.push(``, `⚠ ${data.warning}`);
+  // Warning
+  if (data.warning) {
+    lines.push(``);
+    lines.push(`⚠ Atenção: ${data.warning}`);
+  }
 
-  lines.push(``, `Gerado pelo Phormula — calculadora inteligente`);
+  // Rodapé
+  lines.push(``);
+  lines.push(sep);
+  lines.push(`Gerado pelo Phormula — calculadora inteligente`);
+  lines.push(dateStr);
+
   return lines.join("\n");
 }
 
