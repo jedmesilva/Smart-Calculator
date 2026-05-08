@@ -122,6 +122,25 @@ function toLatexSymbolic(expression: string, solveFor: string): string | null {
   }
 }
 
+/* ── Fallback: tenta gerar LaTeX a partir do campo symbolic (texto legível) ──
+   Ex.: "resultado = a / b"  →  parseia o lado direito e converte para LaTeX  */
+function toLatexFromSymbolic(symbolic: string, solveFor: string): string | null {
+  try {
+    // Extrai o lado direito se houver " = "
+    const rhs = symbolic.includes("=")
+      ? symbolic.split("=").slice(1).join("=").trim()
+      : symbolic.trim();
+    if (!rhs) return null;
+    const tex = parse(rhs)
+      .toTex({ parenthesis: "auto" })
+      .replace(/\bPI\b/g, "\\pi")
+      .replace(/\bE\b(?=[^a-zA-Z])/g, "e");
+    return `${solveFor} = ${tex}`;
+  } catch {
+    return null;
+  }
+}
+
 /* ── Gera LaTeX com valores substituídos + resultado ── */
 function toLatexResultado(
   expression: string,
@@ -611,7 +630,7 @@ export function buildResult(
 
   const latexSym = options.formulaExpression
     ? toLatexSymbolic(options.formulaExpression, vars.solveFor)
-    : null;
+    : toLatexFromSymbolic(symbolic, vars.solveFor);
 
   const latexRes = options.formulaExpression
     ? toLatexResultado(options.formulaExpression, vars.extracted, vars.solveFor, computedValue, vars.resultUnit)
