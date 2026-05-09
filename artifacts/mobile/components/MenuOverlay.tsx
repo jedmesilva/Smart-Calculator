@@ -47,10 +47,14 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onFormulas }: 
     translateX.value = withTiming(0, { duration: 260, easing: Easing.out(Easing.cubic) });
   }, []);
 
-  const close = () => {
+  const close = (afterClose?: () => void) => {
+    const finish = () => {
+      onClose();
+      afterClose?.();
+    };
     opacity.value = withTiming(0, { duration: 180 });
     translateX.value = withTiming(-280, { duration: 220, easing: Easing.in(Easing.ease) }, (done) => {
-      if (done) runOnJS(onClose)();
+      if (done) runOnJS(finish)();
     });
   };
 
@@ -151,17 +155,17 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onFormulas }: 
           <MenuItem
             icon="hash"
             label="Cálculos"
-            onPress={() => { close(); setTimeout(() => onCalculations?.(), 260); }}
+            onPress={() => close(onCalculations)}
           />
           <MenuItem
             icon="clock"
             label="Histórico"
-            onPress={() => { close(); setTimeout(() => onHistory?.(), 260); }}
+            onPress={() => close(onHistory)}
           />
           <MenuItem
             icon="book-open"
             label="Fórmulas"
-            onPress={() => { close(); setTimeout(() => onFormulas?.(), 260); }}
+            onPress={() => close(onFormulas)}
           />
         </View>
 
