@@ -26,9 +26,12 @@ const c = colors.light;
 
 type Props = {
   onClose: () => void;
+  onCalculations?: () => void;
+  onHistory?: () => void;
+  onFormulas?: () => void;
 };
 
-export function MenuOverlay({ onClose }: Props) {
+export function MenuOverlay({ onClose, onCalculations, onHistory, onFormulas }: Props) {
   const insets = useSafeAreaInsets();
   const { user, userId, userName, signOut } = useAuth();
   const email = user?.email ?? "";
@@ -145,9 +148,21 @@ export function MenuOverlay({ onClose }: Props) {
 
         {/* Menu Items */}
         <View style={styles.menuItems}>
-          <MenuItem icon="clock" label="Histórico" onPress={close} />
-          <MenuItem icon="book-open" label="Fórmulas" onPress={close} />
-          <MenuItem icon="star" label="Favoritas" onPress={close} />
+          <MenuItem
+            icon="hash"
+            label="Cálculos"
+            onPress={() => { close(); setTimeout(() => onCalculations?.(), 260); }}
+          />
+          <MenuItem
+            icon="clock"
+            label="Histórico"
+            onPress={() => { close(); setTimeout(() => onHistory?.(), 260); }}
+          />
+          <MenuItem
+            icon="book-open"
+            label="Fórmulas"
+            onPress={() => { close(); setTimeout(() => onFormulas?.(), 260); }}
+          />
         </View>
 
         {/* Spacer */}

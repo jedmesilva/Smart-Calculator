@@ -22,8 +22,10 @@ import {
   useSavedFormulaIds,
   useSessions,
   useToggleSaveFormula,
+  useCalculations,
   type DbFormula,
   type DbSession,
+  type CalcRecord,
 } from "@/lib/queries";
 import { useAuth } from "@/contexts/AuthContext";
 import { FormulaDetailOverlay } from "@/components/FormulaDetailOverlay";
@@ -423,6 +425,110 @@ export function HistoryOverlay({
               <Feather name="chevron-right" size={13} color={c.ghost} />
             </Pressable>
           ))
+        )}
+      </ScrollView>
+    </View>
+  );
+}
+
+/* ─── CALCULATIONS SCREEN ─── */
+export function CalculationsScreen({
+  onClose,
+  onView,
+}: {
+  onClose: () => void;
+  onView: (result: ResultData) => void;
+}) {
+  const insets = useSafeAreaInsets();
+  const topPad = Platform.OS === "web" ? 0 : insets.top;
+  const { data: calcs, isLoading } = useCalculations();
+
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+
+  return (
+    <View style={[styles.overlay, { paddingTop: topPad }]}>
+      <View style={styles.overlayHeader}>
+        <Text style={styles.overlayTitle}>Cálculos</Text>
+        <Pressable onPress={onClose} style={styles.iconBtn} hitSlop={12}>
+          <Feather name="x" size={18} color={c.faint} />
+        </Pressable>
+      </View>
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[
+          styles.overlayBody,
+          { paddingBottom: 28 + insets.bottom },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {isLoading ? (
+          <View style={styles.centerLoader}>
+            <ActivityIndicator color={c.ghost} />
+          </View>
+        ) : !calcs || calcs.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>Nenhum cálculo ainda</Text>
+          </View>
+        ) : (
+          calcs.map((item: CalcRecord) => {
+            const r = item.result_data;
+            const titulo = r.meta?.titulo ?? "Cálculo";
+            const categoria = r.meta?.categoria ?? "";
+            const subcategoria = r.meta?.subcategoria ?? "";
+            const valor = r.resultado?.valor ?? "";
+            const unidade = r.resultado?.unidade ?? "";
+            return (
+              <Pressable
+                key={item.id}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  onView(r);
+                }}
+                style={({ pressed }) => [styles.calcCard, pressed && styles.rowPressed]}
+              >
+                {/* Result value */}
+                <View style={styles.calcCardResultRow}>
+                  {!!unidade && (
+                    <Text style={styles.calcCardUnit}>{unidade}</Text>
+                  )}
+                  <Text style={styles.calcCardVal} numberOfLines={1}>
+                    {valor}
+                  </Text>
+                </View>
+                {/* Divider */}
+                <View style={styles.calcCardDivider} />
+                {/* Meta */}
+                <View style={styles.calcCardMeta}>
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={styles.calcCardTitle} numberOfLines={1}>
+                      {titulo}
+                    </Text>
+                    {!!subcategoria && (
+                      <Text style={styles.calcCardSub} numberOfLines={1}>
+                        {subcategoria}
+                      </Text>
+                    )}
+                  </View>
+                  <View style={styles.calcCardRight}>
+                    {!!categoria && (
+                      <View style={styles.calcCardCatPill}>
+                        <Text style={styles.calcCardCatText} numberOfLines={1}>
+                          {categoria}
+                        </Text>
+                      </View>
+                    )}
+                    <Text style={styles.calcCardDate}>{formatDate(item.created_at)}</Text>
+                  </View>
+                </View>
+              </Pressable>
+            );
+          })
         )}
       </ScrollView>
     </View>
@@ -1442,5 +1548,71 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: "Inter_600SemiBold",
     color: "#3A6B9A",
+  },
+  calcCard: {
+    backgroundColor: c.panel,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 10,
+  },
+  calcCardResultRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 6,
+    marginBottom: 12,
+  },
+  calcCardVal: {
+    fontSize: 32,
+    fontFamily: "Inter_700Bold",
+    color: c.text,
+    letterSpacing: -1.5,
+    flex: 1,
+  },
+  calcCardUnit: {
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    color: c.faint,
+  },
+  calcCardDivider: {
+    height: 1,
+    backgroundColor: c.surface,
+    marginBottom: 10,
+  },
+  calcCardMeta: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  calcCardTitle: {
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+    color: c.mid,
+    marginBottom: 2,
+  },
+  calcCardSub: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    color: c.faint,
+  },
+  calcCardRight: {
+    alignItems: "flex-end",
+    gap: 4,
+    flexShrink: 0,
+  },
+  calcCardCatPill: {
+    backgroundColor: c.surface,
+    borderRadius: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  calcCardCatText: {
+    fontSize: 10,
+    fontFamily: "Inter_500Medium",
+    color: c.faint,
+  },
+  calcCardDate: {
+    fontSize: 10,
+    fontFamily: "Inter_400Regular",
+    color: c.ghost,
   },
 });

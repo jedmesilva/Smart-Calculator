@@ -20,8 +20,9 @@ import {
   addNote,
   deleteNote,
   fetchCarteira,
+  fetchCalculations,
 } from "@/lib/apiClient";
-import type { ResultData, CarteiraInfo } from "@/lib/apiClient";
+import type { ResultData, CarteiraInfo, CalcRecord } from "@/lib/apiClient";
 
 export type FormulaVariableDef = {
   symbol: string;
@@ -287,3 +288,16 @@ export function useInvalidateCarteira() {
   const qc = useQueryClient();
   return () => qc.invalidateQueries({ queryKey: ["carteira"], exact: false });
 }
+
+export function useCalculations() {
+  const { userId } = useAuth();
+  return useQuery<CalcRecord[]>({
+    queryKey: ["calculations", userId],
+    queryFn: fetchCalculations,
+    enabled: !!userId,
+    staleTime: 30_000,
+    retry: 2,
+  });
+}
+
+export type { CalcRecord };

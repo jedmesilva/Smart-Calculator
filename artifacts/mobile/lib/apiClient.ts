@@ -350,6 +350,23 @@ export async function deleteNote(noteId: string, formulaId: string): Promise<voi
   await apiFetch(`/formulas/${formulaId}/notes/${noteId}`, { method: "DELETE" });
 }
 
+export type CalcRecord = {
+  id: string;
+  result_data: ResultData;
+  created_at: string;
+  session_id: string;
+};
+
+export async function fetchCalculations(): Promise<CalcRecord[]> {
+  try {
+    const res = await apiFetch("/calculations");
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
 export type CarteiraInfo = {
   saldo: number;
   totalConsultas: number;
