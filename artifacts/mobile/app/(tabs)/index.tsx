@@ -274,6 +274,7 @@ export default function PhormulаScreen() {
   const [sessionSummary, setSessionSummary] = useState<string | null>(null);
   const [messageCount, setMessageCount] = useState(0);
   const [viewingResult, setViewingResult] = useState<ResultData | null>(null);
+  const [calcOrigin, setCalcOrigin] = useState<"main" | "calculations">("main");
   const [thinkingMessage, setThinkingMessage] = useState<string | null>(null);
   const inputRef = useRef<TextInput>(null);
 
@@ -428,6 +429,7 @@ export default function PhormulаScreen() {
             result={item.result}
             onView={() => {
               setViewingResult(item.result);
+              setCalcOrigin("main");
               setScreen("calc");
             }}
             isSaved={isSaved}
@@ -488,6 +490,7 @@ export default function PhormulаScreen() {
               onPress={() => {
                 if (hasResult) {
                   setViewingResult(current);
+                  setCalcOrigin("main");
                   setScreen("calc");
                 }
               }}
@@ -611,7 +614,7 @@ export default function PhormulаScreen() {
 
       {/* ── OVERLAYS ── */}
       {screen === "calc" && viewingResult && (
-        <CalcOverlay data={viewingResult} onClose={() => setScreen("main")} />
+        <CalcOverlay data={viewingResult} onClose={() => setScreen(calcOrigin)} />
       )}
       {screen === "history" && (
         <HistoryOverlay
@@ -633,6 +636,7 @@ export default function PhormulаScreen() {
           onClose={() => setScreen("main")}
           onView={(result) => {
             setViewingResult(result);
+            setCalcOrigin("calculations");
             setScreen("calc");
           }}
         />
