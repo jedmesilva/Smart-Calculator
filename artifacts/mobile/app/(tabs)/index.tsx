@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { useQueryClient } from "@tanstack/react-query";
 import colors from "@/constants/colors";
-import { CalcOverlay, HistoryOverlay, FormulasScreen, CalculationsScreen } from "@/components/Overlays";
+import { CalcOverlay, HistoryOverlay, FormulasScreen, CalculationsScreen, PlansScreen, PlanManagementScreen } from "@/components/Overlays";
 import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateStream, type ResultData, type MissingVariable } from "@/lib/apiClient";
@@ -265,7 +265,7 @@ export default function PhormulаScreen() {
   const { data: savedFormulaIds = new Set<string>() } = useSavedFormulaIds();
   const saveMutation = useSaveFormulaFromChat();
   const [query, setQuery] = useState("");
-  const [screen, setScreen] = useState<"main" | "calc" | "history" | "formulas" | "menu" | "calculations">("main");
+  const [screen, setScreen] = useState<"main" | "calc" | "history" | "formulas" | "menu" | "calculations" | "plans" | "plan-management">("main");
   const [activeFormula, setActiveFormula] = useState<DbFormula | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [chat, setChat] = useState<ChatItem[]>([]);
@@ -641,12 +641,22 @@ export default function PhormulаScreen() {
           }}
         />
       )}
+      {screen === "plan-management" && (
+        <PlanManagementScreen
+          onClose={() => setScreen("main")}
+          onViewPlans={() => setScreen("plans")}
+        />
+      )}
+      {screen === "plans" && (
+        <PlansScreen onClose={() => setScreen("plan-management")} />
+      )}
       {screen === "menu" && (
         <MenuOverlay
           onClose={() => setScreen("main")}
           onCalculations={() => setScreen("calculations")}
           onHistory={() => setScreen("history")}
           onFormulas={() => setScreen("formulas")}
+          onPlan={() => setScreen("plan-management")}
         />
       )}
     </View>

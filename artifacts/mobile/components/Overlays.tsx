@@ -10,6 +10,7 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  Linking,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -23,6 +24,7 @@ import {
   useSessions,
   useToggleSaveFormula,
   useCalculations,
+  useCarteira,
   type DbFormula,
   type DbSession,
   type CalcRecord,
@@ -530,6 +532,303 @@ export function CalculationsScreen({
             );
           })
         )}
+      </ScrollView>
+    </View>
+  );
+}
+
+/* ─── PLANS DATA ─── */
+const PLANS = [
+  {
+    id: "free",
+    name: "Gratuito",
+    price: null,
+    priceLabel: "Grátis",
+    credits: 100,
+    creditsLabel: "100 créditos",
+    creditsNote: "de boas-vindas, não renova",
+    calcsEstimate: "~33 cálculos",
+    features: [
+      "Acesso à biblioteca de fórmulas",
+      "Histórico de cálculos",
+      "Cálculo passo a passo",
+      "Verificação matemática",
+    ],
+    highlight: false,
+    cta: "Plano atual",
+    ctaDisabled: true,
+  },
+  {
+    id: "starter",
+    name: "Starter",
+    price: 19.90,
+    priceLabel: "R$\u202019,90",
+    credits: 500,
+    creditsLabel: "500 créditos",
+    creditsNote: "por mês, renovam todo mês",
+    calcsEstimate: "~165 cálculos/mês",
+    features: [
+      "Tudo do Gratuito",
+      "Créditos mensais recorrentes",
+      "Prioridade no processamento",
+      "Suporte por e-mail",
+    ],
+    highlight: false,
+    cta: "Assinar Starter",
+    ctaDisabled: false,
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    price: 59.90,
+    priceLabel: "R$\u202059,90",
+    credits: 2000,
+    creditsLabel: "2.000 créditos",
+    creditsNote: "por mês, renovam todo mês",
+    calcsEstimate: "~660 cálculos/mês",
+    features: [
+      "Tudo do Starter",
+      "4× mais créditos",
+      "Exportação PDF ilimitada",
+      "Suporte prioritário",
+    ],
+    highlight: true,
+    cta: "Assinar Pro",
+    ctaDisabled: false,
+  },
+];
+
+/* ─── PLANS SCREEN ─── */
+export function PlansScreen({ onClose }: { onClose: () => void }) {
+  const insets = useSafeAreaInsets();
+  const topPad = Platform.OS === "web" ? 0 : insets.top;
+
+  const handleCta = (plan: typeof PLANS[number]) => {
+    if (plan.ctaDisabled) return;
+    Alert.alert(
+      `Assinar ${plan.name}`,
+      `Em breve você poderá assinar o plano ${plan.name} por ${plan.priceLabel}/mês diretamente no app.\n\nEntre em contato: contato@phormula.app`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Enviar e-mail",
+          onPress: () => Linking.openURL("mailto:contato@phormula.app?subject=Interesse%20no%20plano%20" + plan.name),
+        },
+      ]
+    );
+  };
+
+  return (
+    <View style={[styles.overlay, { paddingTop: topPad }]}>
+      <View style={styles.overlayHeader}>
+        <Text style={styles.overlayTitle}>Planos</Text>
+        <Pressable onPress={onClose} style={styles.iconBtn} hitSlop={12}>
+          <Feather name="x" size={18} color={c.faint} />
+        </Pressable>
+      </View>
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 28 + insets.bottom, gap: 12 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.plansSubtitle}>
+          Cada cálculo consome créditos com base no custo real da IA — sem surpresas.
+        </Text>
+
+        {PLANS.map((plan) => (
+          <View
+            key={plan.id}
+            style={[styles.planCard, plan.highlight && styles.planCardHighlight]}
+          >
+            {plan.highlight && (
+              <View style={styles.planBadge}>
+                <Text style={styles.planBadgeText}>MAIS POPULAR</Text>
+              </View>
+            )}
+
+            {/* Header */}
+            <View style={styles.planHeader}>
+              <Text style={[styles.planName, plan.highlight && styles.planNameHighlight]}>
+                {plan.name}
+              </Text>
+              <View style={styles.planPriceRow}>
+                <Text style={[styles.planPrice, plan.highlight && styles.planPriceHighlight]}>
+                  {plan.priceLabel}
+                </Text>
+                {plan.price !== null && (
+                  <Text style={styles.planPricePeriod}>/mês</Text>
+                )}
+              </View>
+            </View>
+
+            {/* Credits */}
+            <View style={styles.planCreditsBox}>
+              <Text style={[styles.planCreditsNum, plan.highlight && styles.planCreditsNumHighlight]}>
+                {plan.creditsLabel}
+              </Text>
+              <Text style={styles.planCreditsNote}>{plan.creditsNote}</Text>
+              <Text style={styles.planCalcsEstimate}>{plan.calcsEstimate}</Text>
+            </View>
+
+            {/* Divider */}
+            <View style={styles.planDivider} />
+
+            {/* Features */}
+            <View style={styles.planFeatures}>
+              {plan.features.map((f, i) => (
+                <View key={i} style={styles.planFeatureRow}>
+                  <Feather name="check" size={13} color={plan.highlight ? "#2A7A4B" : c.mid} />
+                  <Text style={styles.planFeatureText}>{f}</Text>
+                </View>
+              ))}
+            </View>
+
+            {/* CTA */}
+            <Pressable
+              onPress={() => handleCta(plan)}
+              disabled={plan.ctaDisabled}
+              style={({ pressed }) => [
+                styles.planCta,
+                plan.highlight && styles.planCtaHighlight,
+                plan.ctaDisabled && styles.planCtaDisabled,
+                pressed && !plan.ctaDisabled && { opacity: 0.8 },
+              ]}
+            >
+              <Text style={[
+                styles.planCtaText,
+                plan.highlight && styles.planCtaTextHighlight,
+                plan.ctaDisabled && styles.planCtaTextDisabled,
+              ]}>
+                {plan.cta}
+              </Text>
+            </Pressable>
+          </View>
+        ))}
+
+        <Text style={styles.planDisclaimer}>
+          Pagamentos serão processados de forma segura. Cancele quando quiser.
+        </Text>
+      </ScrollView>
+    </View>
+  );
+}
+
+/* ─── PLAN MANAGEMENT SCREEN ─── */
+export function PlanManagementScreen({
+  onClose,
+  onViewPlans,
+}: {
+  onClose: () => void;
+  onViewPlans: () => void;
+}) {
+  const insets = useSafeAreaInsets();
+  const topPad = Platform.OS === "web" ? 0 : insets.top;
+  const { data: carteira, isLoading } = useCarteira();
+
+  const saldo = carteira?.saldo ?? null;
+  const totalConsultas = carteira?.totalConsultas ?? 0;
+  const totalGastoBrl = carteira?.totalGastoBrl ?? 0;
+
+  const usedCredits = 100 - (saldo ?? 100);
+  const usedPct = Math.min(100, Math.max(0, (usedCredits / 100) * 100));
+
+  const formatBrl = (v: number) =>
+    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  return (
+    <View style={[styles.overlay, { paddingTop: topPad }]}>
+      <View style={styles.overlayHeader}>
+        <Text style={styles.overlayTitle}>Meu Plano</Text>
+        <Pressable onPress={onClose} style={styles.iconBtn} hitSlop={12}>
+          <Feather name="x" size={18} color={c.faint} />
+        </Pressable>
+      </View>
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 28 + insets.bottom, gap: 16 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Plan badge */}
+        <View style={styles.mgmtPlanBadge}>
+          <View style={styles.mgmtPlanBadgeLeft}>
+            <Text style={styles.mgmtPlanLabel}>PLANO ATUAL</Text>
+            <Text style={styles.mgmtPlanName}>Gratuito</Text>
+          </View>
+          <Pressable
+            onPress={onViewPlans}
+            style={({ pressed }) => [styles.mgmtUpgradeBtn, pressed && { opacity: 0.8 }]}
+          >
+            <Text style={styles.mgmtUpgradeBtnText}>Ver planos</Text>
+            <Feather name="chevron-right" size={13} color={c.background} />
+          </Pressable>
+        </View>
+
+        {/* Credits card */}
+        <View style={styles.mgmtCard}>
+          <Text style={styles.mgmtCardLabel}>CRÉDITOS</Text>
+          {isLoading ? (
+            <ActivityIndicator color={c.ghost} style={{ marginVertical: 12 }} />
+          ) : (
+            <>
+              <View style={styles.mgmtCreditsRow}>
+                <Text style={styles.mgmtCreditsNum}>
+                  {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"}
+                </Text>
+                <Text style={styles.mgmtCreditsSuffix}> / 100</Text>
+              </View>
+              <Text style={styles.mgmtCreditsNote}>créditos de boas-vindas disponíveis</Text>
+
+              {/* Progress bar */}
+              <View style={styles.mgmtProgressBg}>
+                <View style={[styles.mgmtProgressFill, { width: `${100 - usedPct}%` as any }]} />
+              </View>
+
+              <Text style={styles.mgmtProgressLabel}>
+                {usedCredits > 0 ? `${usedCredits} créditos utilizados` : "Nenhum crédito utilizado ainda"}
+              </Text>
+            </>
+          )}
+        </View>
+
+        {/* Stats card */}
+        <View style={styles.mgmtCard}>
+          <Text style={styles.mgmtCardLabel}>USO ACUMULADO</Text>
+          <View style={styles.mgmtStatsRow}>
+            <View style={styles.mgmtStat}>
+              <Text style={styles.mgmtStatNum}>{totalConsultas.toLocaleString("pt-BR")}</Text>
+              <Text style={styles.mgmtStatLabel}>cálculos realizados</Text>
+            </View>
+            <View style={styles.mgmtStatDivider} />
+            <View style={styles.mgmtStat}>
+              <Text style={styles.mgmtStatNum}>{formatBrl(totalGastoBrl)}</Text>
+              <Text style={styles.mgmtStatLabel}>custo total de IA</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Credit cost info */}
+        <View style={styles.mgmtInfoBox}>
+          <Feather name="info" size={13} color={c.ghost} style={{ marginTop: 1 }} />
+          <Text style={styles.mgmtInfoText}>
+            Cada cálculo consome em média 3 créditos, com base no custo real da IA (USD → BRL com margem de plataforma). 1 crédito = R$0,10.
+          </Text>
+        </View>
+
+        {/* Upgrade prompt */}
+        <Pressable
+          onPress={onViewPlans}
+          style={({ pressed }) => [styles.mgmtUpgradeCard, pressed && { opacity: 0.9 }]}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={styles.mgmtUpgradeCardTitle}>Precisa de mais créditos?</Text>
+            <Text style={styles.mgmtUpgradeCardSub}>
+              Starter: 500 cr/mês por R$19,90 · Pro: 2.000 cr/mês por R$59,90
+            </Text>
+          </View>
+          <Feather name="arrow-right" size={16} color={c.text} />
+        </Pressable>
       </ScrollView>
     </View>
   );
@@ -1237,7 +1536,7 @@ const styles = StyleSheet.create({
   docStepLine: {
     flex: 1,
     width: 1,
-    backgroundColor: c.line,
+    backgroundColor: c.surface,
     marginTop: 4,
     marginBottom: 0,
     minHeight: 12,
@@ -1549,6 +1848,297 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_600SemiBold",
     color: "#3A6B9A",
   },
+  /* ── Plans Screen ── */
+  plansSubtitle: {
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    color: c.faint,
+    lineHeight: 20,
+    marginBottom: 4,
+  },
+  planCard: {
+    backgroundColor: c.panel,
+    borderRadius: 20,
+    padding: 20,
+  },
+  planCardHighlight: {
+    backgroundColor: c.text,
+  },
+  planBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: "#2A7A4B",
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginBottom: 14,
+  },
+  planBadgeText: {
+    fontSize: 9,
+    fontFamily: "Inter_700Bold",
+    color: "#fff",
+    letterSpacing: 0.8,
+  },
+  planHeader: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    marginBottom: 14,
+  },
+  planName: {
+    fontSize: 18,
+    fontFamily: "Inter_700Bold",
+    color: c.text,
+    letterSpacing: -0.3,
+  },
+  planNameHighlight: {
+    color: c.background,
+  },
+  planPriceRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 2,
+  },
+  planPrice: {
+    fontSize: 20,
+    fontFamily: "Inter_700Bold",
+    color: c.text,
+    letterSpacing: -0.5,
+  },
+  planPriceHighlight: {
+    color: c.background,
+  },
+  planPricePeriod: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    color: c.faint,
+  },
+  planCreditsBox: {
+    backgroundColor: "rgba(0,0,0,0.04)",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+    gap: 2,
+  },
+  planCreditsNum: {
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
+    color: c.text,
+    letterSpacing: -0.3,
+  },
+  planCreditsNumHighlight: {
+    color: c.background,
+  },
+  planCreditsNote: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    color: c.faint,
+  },
+  planCalcsEstimate: {
+    fontSize: 11,
+    fontFamily: "Inter_500Medium",
+    color: c.mid,
+    marginTop: 4,
+  },
+  planDivider: {
+    height: 1,
+    backgroundColor: "rgba(0,0,0,0.06)",
+    marginBottom: 16,
+  },
+  planFeatures: {
+    gap: 10,
+    marginBottom: 20,
+  },
+  planFeatureRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  planFeatureText: {
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    color: c.mid,
+  },
+  planCta: {
+    backgroundColor: c.surface,
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  planCtaHighlight: {
+    backgroundColor: c.background,
+  },
+  planCtaDisabled: {
+    backgroundColor: "rgba(0,0,0,0.06)",
+  },
+  planCtaText: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    color: c.text,
+  },
+  planCtaTextHighlight: {
+    color: c.text,
+  },
+  planCtaTextDisabled: {
+    color: c.ghost,
+  },
+  planDisclaimer: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    color: c.ghost,
+    textAlign: "center",
+    marginTop: 4,
+  },
+  /* ── Plan Management Screen ── */
+  mgmtPlanBadge: {
+    backgroundColor: c.panel,
+    borderRadius: 16,
+    padding: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  mgmtPlanBadgeLeft: {
+    gap: 4,
+  },
+  mgmtPlanLabel: {
+    fontSize: 9,
+    fontFamily: "Inter_600SemiBold",
+    color: c.ghost,
+    letterSpacing: 0.8,
+  },
+  mgmtPlanName: {
+    fontSize: 20,
+    fontFamily: "Inter_700Bold",
+    color: c.text,
+    letterSpacing: -0.4,
+  },
+  mgmtUpgradeBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: c.text,
+    borderRadius: 20,
+    paddingVertical: 9,
+    paddingLeft: 14,
+    paddingRight: 10,
+  },
+  mgmtUpgradeBtnText: {
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+    color: c.background,
+  },
+  mgmtCard: {
+    backgroundColor: c.panel,
+    borderRadius: 16,
+    padding: 18,
+    gap: 6,
+  },
+  mgmtCardLabel: {
+    fontSize: 9,
+    fontFamily: "Inter_600SemiBold",
+    color: c.ghost,
+    letterSpacing: 0.8,
+    marginBottom: 4,
+  },
+  mgmtCreditsRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 2,
+  },
+  mgmtCreditsNum: {
+    fontSize: 36,
+    fontFamily: "Inter_700Bold",
+    color: c.text,
+    letterSpacing: -1,
+  },
+  mgmtCreditsSuffix: {
+    fontSize: 16,
+    fontFamily: "Inter_400Regular",
+    color: c.faint,
+  },
+  mgmtCreditsNote: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    color: c.faint,
+  },
+  mgmtProgressBg: {
+    height: 6,
+    backgroundColor: c.surface,
+    borderRadius: 3,
+    marginTop: 10,
+    overflow: "hidden",
+  },
+  mgmtProgressFill: {
+    height: "100%",
+    backgroundColor: c.text,
+    borderRadius: 3,
+  },
+  mgmtProgressLabel: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    color: c.ghost,
+    marginTop: 4,
+  },
+  mgmtStatsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  mgmtStat: {
+    flex: 1,
+    gap: 3,
+  },
+  mgmtStatDivider: {
+    width: 1,
+    height: 36,
+    backgroundColor: c.surface,
+    marginHorizontal: 16,
+  },
+  mgmtStatNum: {
+    fontSize: 20,
+    fontFamily: "Inter_700Bold",
+    color: c.text,
+    letterSpacing: -0.5,
+  },
+  mgmtStatLabel: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    color: c.faint,
+  },
+  mgmtInfoBox: {
+    flexDirection: "row",
+    gap: 10,
+    backgroundColor: c.panel,
+    borderRadius: 12,
+    padding: 14,
+  },
+  mgmtInfoText: {
+    flex: 1,
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    color: c.faint,
+    lineHeight: 18,
+  },
+  mgmtUpgradeCard: {
+    backgroundColor: c.panel,
+    borderRadius: 16,
+    padding: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  mgmtUpgradeCardTitle: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    color: c.text,
+    marginBottom: 3,
+  },
+  mgmtUpgradeCardSub: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    color: c.faint,
+  },
+  /* ── Calc Cards ── */
   calcCard: {
     backgroundColor: c.panel,
     borderRadius: 16,

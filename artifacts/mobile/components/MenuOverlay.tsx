@@ -29,9 +29,10 @@ type Props = {
   onCalculations?: () => void;
   onHistory?: () => void;
   onFormulas?: () => void;
+  onPlan?: () => void;
 };
 
-export function MenuOverlay({ onClose, onCalculations, onHistory, onFormulas }: Props) {
+export function MenuOverlay({ onClose, onCalculations, onHistory, onFormulas, onPlan }: Props) {
   const insets = useSafeAreaInsets();
   const { user, userId, userName, signOut } = useAuth();
   const email = user?.email ?? "";
@@ -90,7 +91,7 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onFormulas }: 
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       {/* Backdrop */}
       <Animated.View style={[StyleSheet.absoluteFill, styles.backdrop, backdropStyle]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={close} />
+        <Pressable style={StyleSheet.absoluteFill} onPress={() => close()} />
       </Animated.View>
 
       {/* Drawer */}
@@ -98,7 +99,7 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onFormulas }: 
         {/* Header */}
         <View style={styles.drawerHeader}>
           <Text style={styles.drawerLogo}>Phormula</Text>
-          <Pressable onPress={close} style={styles.closeBtn} hitSlop={12}>
+          <Pressable onPress={() => close()} style={styles.closeBtn} hitSlop={12}>
             <Feather name="x" size={18} color={c.faint} />
           </Pressable>
         </View>
@@ -119,13 +120,13 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onFormulas }: 
         {/* Plan Card */}
         <Pressable
           style={({ pressed }) => [styles.planCard, pressed && { opacity: 0.85 }]}
-          onPress={() => {}}
+          onPress={() => close(onPlan)}
         >
           <View style={styles.planCardTop}>
             <Text style={styles.planCardLabel}>GRATUITO</Text>
             <Pressable
               style={({ pressed }) => [styles.upgradeBtn, pressed && { opacity: 0.8 }]}
-              onPress={() => {}}
+              onPress={(e) => { e.stopPropagation(); close(onPlan); }}
               hitSlop={8}
             >
               <Text style={styles.upgradeBtnText}>Upgrade</Text>
