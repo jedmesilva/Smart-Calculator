@@ -149,9 +149,9 @@ const SUGGESTIONS = [
 ];
 
 /* ─── EMPTY STATE ─── */
-function EmptyChat({ onSuggest }: { onSuggest: (text: string) => void }) {
+function EmptyChat({ onSuggest, bottomOffset }: { onSuggest: (text: string) => void; bottomOffset: number }) {
   return (
-    <View style={[styles.emptyWrap, { transform: [{ scaleY: -1 }] }]}>
+    <View style={[styles.emptyWrap, { transform: [{ scaleY: -1 }], paddingTop: bottomOffset }]}>
       <Text style={styles.emptyσ}>σ</Text>
       <Text style={styles.emptyTitle}>Nova sessão</Text>
       <Text style={styles.emptySubtitle}>Descreva qualquer cálculo em português</Text>
@@ -453,6 +453,7 @@ export default function PhormulаScreen() {
                 setQuery(text);
                 inputRef.current?.focus();
               }}
+              bottomOffset={botPad + 80}
             />
           }
         />
@@ -635,7 +636,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 32,
     paddingBottom: 24,
-    paddingTop: 100,
     gap: 6,
   },
   emptyσ: {
