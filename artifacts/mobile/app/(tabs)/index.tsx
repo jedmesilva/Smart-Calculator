@@ -468,8 +468,14 @@ export default function PhormulаScreen() {
               multiline
               style={styles.textInput}
               returnKeyType="send"
-              onSubmitEditing={handleSend}
+              onSubmitEditing={Platform.OS !== "web" ? handleSend : undefined}
               blurOnSubmit={false}
+              onKeyPress={Platform.OS === "web" ? (e: any) => {
+                if (e.nativeEvent.key === "Enter" && !e.nativeEvent.shiftKey) {
+                  e.preventDefault?.();
+                  handleSend();
+                }
+              } : undefined}
             />
             <Pressable
               onPress={handleSend}
