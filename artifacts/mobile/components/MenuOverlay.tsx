@@ -28,11 +28,10 @@ type Props = {
   onClose: () => void;
   onCalculations?: () => void;
   onHistory?: () => void;
-  onFormulas?: () => void;
   onPlan?: () => void;
 };
 
-export function MenuOverlay({ onClose, onCalculations, onHistory, onFormulas, onPlan }: Props) {
+export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan }: Props) {
   const insets = useSafeAreaInsets();
   const { user, userId, userName, signOut } = useAuth();
   const email = user?.email ?? "";
@@ -162,11 +161,6 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onFormulas, on
             icon="clock"
             label="Histórico"
             onPress={() => close(onHistory)}
-          />
-          <MenuItem
-            icon="book-open"
-            label="Fórmulas"
-            onPress={() => close(onFormulas)}
           />
         </View>
 
