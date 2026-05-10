@@ -186,12 +186,7 @@ if (Platform.OS === "web" && typeof document !== "undefined") {
         background: transparent !important;
         padding: 6px 0 !important;
         line-height: 1.5 !important;
-        min-height: unset !important;
-        max-height: 120px !important;
         overflow-y: auto !important;
-        box-sizing: content-box !important;
-        font-size: 14px !important;
-        color: #1A1A18 !important;
       }
     `;
     document.head.appendChild(el);
@@ -889,10 +884,13 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#1A1A18",
     fontFamily: "Inter_400Regular",
-    ...(Platform.OS === "web"
-      ? {}
-      : { fontSize: 14, lineHeight: 20, color: "#1A1A18", minHeight: 32, maxHeight: 120, paddingTop: 0, paddingBottom: 0, textAlignVertical: "center" }),
+    minHeight: 32,
+    maxHeight: 120,
+    ...(Platform.OS !== "web" ? { paddingTop: 0, paddingBottom: 0, textAlignVertical: "center" } : {}),
   },
   sendBtn: {
     width: 32,
