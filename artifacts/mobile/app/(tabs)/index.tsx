@@ -864,13 +864,12 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: 14,
+    lineHeight: 20,
     color: "#1A1A18",
     fontFamily: "Inter_400Regular",
-    minHeight: 32,
-    maxHeight: 120,
-    paddingTop: Platform.OS === "web" ? 6 : 0,
-    paddingBottom: Platform.OS === "web" ? 6 : 0,
-    textAlignVertical: Platform.OS === "web" ? "auto" : "center",
+    ...(Platform.OS === "web"
+      ? { maxHeight: 120, paddingTop: 6, paddingBottom: 6 }
+      : { minHeight: 32, maxHeight: 120, paddingTop: 0, paddingBottom: 0, textAlignVertical: "center" }),
   },
   sendBtn: {
     width: 32,
