@@ -1,8 +1,13 @@
 import { type Request, type Response, type NextFunction } from "express";
 import { createClient } from "@supabase/supabase-js";
 
+const supabaseUrl = process.env.SUPABASE_URL ?? process.env.EXPO_PUBLIC_SUPABASE_URL;
+if (!supabaseUrl) {
+  throw new Error("SUPABASE_URL or EXPO_PUBLIC_SUPABASE_URL must be set");
+}
+
 const supabase = createClient(
-  process.env.SUPABASE_URL!,
+  supabaseUrl,
   process.env.SUPABASE_ANON_KEY!
 );
 
