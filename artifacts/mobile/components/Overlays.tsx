@@ -247,20 +247,24 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
         {/* ── 04 Resultado ── */}
         <DocSection numero={nextSec()} titulo="Resultado">
           <View style={styles.resultDocCard}>
-            <View>
+            {!!resultUnidade && (
+              <Text style={styles.resultDocUnit}>{resultUnidade}</Text>
+            )}
+            <Text
+              style={[
+                styles.resultDocNum,
+                resultValor.length > 10 ? { fontSize: 22 } : resultValor.length > 6 ? { fontSize: 28 } : {},
+              ]}
+            >
+              {resultValor}
+            </Text>
+            {!!subcategoria && (
               <Text style={styles.resultDocLabel}>{subcategoria}</Text>
-              {!!resultUnidade && (
-                <Text style={styles.resultDocUnit}>{resultUnidade}</Text>
-              )}
-            </View>
-            <Text style={styles.resultDocNum}>{resultValor}</Text>
-          </View>
-          {!!data.resultado?.interpretacao && (
-            <View style={styles.interpretacaoRow}>
-              <Feather name="info" size={10} color={c.ghost} />
+            )}
+            {!!data.resultado?.interpretacao && (
               <Text style={styles.interpretacaoText}>{data.resultado.interpretacao}</Text>
-            </View>
-          )}
+            )}
+          </View>
         </DocSection>
 
 
@@ -1430,45 +1434,40 @@ const styles = StyleSheet.create({
   },
   /* ── Resultado doc ── */
   resultDocCard: {
-    backgroundColor: c.text,
-    borderRadius: 12,
-    padding: 18,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    backgroundColor: "#F0EFEB",
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    gap: 2,
   },
   resultDocLabel: {
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Inter_500Medium",
     fontSize: 11,
-    color: "#6B6B66",
-    marginBottom: 2,
+    color: c.mid,
+    letterSpacing: 0.2,
+    textTransform: "uppercase",
+    marginTop: 4,
   },
   resultDocUnit: {
     fontFamily: "Inter_500Medium",
-    fontSize: 12,
-    color: "#AEADA8",
-    marginTop: 2,
+    fontSize: 11,
+    color: c.ghost,
+    letterSpacing: 0.2,
+    lineHeight: 15,
   },
   resultDocNum: {
     fontFamily: "Inter_700Bold",
     fontSize: 36,
-    color: c.background,
-    letterSpacing: -1.5,
+    color: c.text,
+    letterSpacing: -1.2,
     lineHeight: 42,
-  },
-  interpretacaoRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 6,
-    marginTop: 10,
-    paddingHorizontal: 2,
   },
   interpretacaoText: {
     fontFamily: "Inter_400Regular",
     fontSize: 11,
     color: c.ghost,
     lineHeight: 16,
-    flex: 1,
+    marginTop: 2,
     fontStyle: "italic",
   },
   /* ── Notes & warnings ── */
