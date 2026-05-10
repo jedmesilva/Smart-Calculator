@@ -6,6 +6,7 @@ import sessionsRouter from "./sessions";
 import usersRouter from "./users";
 import creditsRouter from "./credits";
 import calculationsRouter from "./calculations";
+import exportRouter from "./export";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use("/sessions", sessionsRouter);
 router.use("/users", usersRouter);
 router.use(creditsRouter);
 router.use(calculationsRouter);
+router.use(exportRouter);
 
 export default router;

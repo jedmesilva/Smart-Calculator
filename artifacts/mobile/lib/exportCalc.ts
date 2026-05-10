@@ -325,26 +325,36 @@ export async function exportAsPDF(data: ResultData): Promise<void> {
   const fileName = buildFileName(data);
 
   if (Platform.OS === "web") {
-    const win = window.open("", "_blank");
-    if (win) {
-      win.document.write(html);
-      win.document.close();
-      win.focus();
-      setTimeout(() => {
-        win.print();
-      }, 600);
-    } else {
-      // Fallback se popup bloqueado: baixa como HTML
-      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName.replace(".pdf", ".html");
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token ?? "";
+
+    const apiBase = process.env.EXPO_PUBLIC_API_URL
+      ? process.env.EXPO_PUBLIC_API_URL
+      : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api`;
+
+    const response = await fetch(`${apiBase}/export/pdf`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err?.error ?? "Erro ao gerar PDF no servidor");
     }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     return;
   }
 

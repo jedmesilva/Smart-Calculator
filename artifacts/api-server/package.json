@@ -18,10 +18,12 @@
     "cors": "^2",
     "drizzle-orm": "catalog:",
     "express": "^5",
+    "katex": "^0.16.45",
     "mathjax-full": "^3.2.2",
     "mathjs": "^15.2.0",
     "pino": "^9",
     "pino-http": "^10",
+    "puppeteer-core": "^24.43.0",
     "zod": "catalog:"
   },
   "devDependencies": {
