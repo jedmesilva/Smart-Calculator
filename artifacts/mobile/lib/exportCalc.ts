@@ -34,35 +34,15 @@ function buildFileName(data: ResultData): string {
   return `phormula_${name}_${dd}${mm}${yyyy}.pdf`;
 }
 
-function proofTipoLabel(tipo: string): string {
-  switch (tipo) {
-    case "inversa": return "Prova real";
-    case "derivacao": return "Derivação analítica";
-    case "substituicao": return "Verificação por substituição";
-    case "razoabilidade": return "Verificação de razoabilidade";
-    default: return "Verificação";
-  }
-}
-
-const GENERIC_CATEGORIES = new Set(["outro", "outros", "cálculo", "calculo", "geral", "other", ""]);
-
-function formatCategoria(raw: string | null | undefined): string {
-  if (!raw) return "";
-  const lower = raw.toLowerCase().trim();
-  return GENERIC_CATEGORIES.has(lower) ? "" : raw;
-}
-
 function buildHTML(data: ResultData): string {
-  const titulo = data.meta?.titulo ?? "Cálculo";
-  const categoriaRaw = data.meta?.categoria ?? "";
-  const categoria = formatCategoria(categoriaRaw);
+  const objetivo = data.objetivo ?? "";
   const subcategoria = data.meta?.subcategoria ?? "";
   const resultValor = data.resultado?.valor ?? "";
   const resultUnidade = data.resultado?.unidade ?? "";
+  const resultInterpretacao = data.resultado?.interpretacao ?? "";
   const formulaAbstrata = data.formula?.abstrata ?? "";
   const variaveis = data.variaveis ?? [];
   const desenvolvimento = data.desenvolvimento ?? [];
-  const prova = data.prova ?? null;
   const dateStr = formatDate();
 
   const varsRows = variaveis
@@ -90,21 +70,11 @@ function buildHTML(data: ResultData): string {
     )
     .join("");
 
-  const warningHTML = data.warning
-    ? `<p class="warning">⚠ ${data.warning}</p>`
-    : "";
-
-  const contextoHTML = data.conversationalResponse
-    ? `<div class="section-label">01 — Contexto</div>
-       <p class="contexto-text">${data.conversationalResponse}</p>`
-    : "";
-
-  const secBase = data.conversationalResponse ? 1 : 0;
   const hasFormula = !!formulaAbstrata;
   const hasVars = varsRows.length > 0;
   const hasSteps = stepsHTML.length > 0;
 
-  let secIdx = secBase;
+  let secIdx = 0;
 
   const formulaLatexDoc = data.formula?.latex;
   const formulaHTML = hasFormula
@@ -127,25 +97,6 @@ function buildHTML(data: ResultData): string {
     : "";
 
   const resSecNum = ++secIdx;
-  const proofSecNum = resSecNum + 1;
-
-  const proofStepsHTML = prova?.steps?.length
-    ? `<div class="proof-steps">${prova.steps.map((s) => `<div class="proof-step">$$${s.latex}$$</div>`).join("")}</div>`
-    : prova?.latex
-      ? `<div class="proof-steps"><div class="proof-step">$$${prova.latex}$$</div></div>`
-      : "";
-
-  const proofHTML = prova
-    ? `<div class="section-label">${String(proofSecNum).padStart(2, "0")} — Verificação</div>
-       <div class="proof-box ${prova.valido ? "proof-ok" : "proof-warn"}">
-         <div class="proof-header">
-           <span class="proof-icon">${prova.valido ? "✓" : "⚠"}</span>
-           <span class="proof-method">${proofTipoLabel(prova.tipo)}</span>
-           <span class="proof-badge">${prova.valido ? "aprovado" : "revisar"}</span>
-         </div>
-         ${proofStepsHTML || `<p class="proof-detail">${prova.descricao}</p>`}
-       </div>`
-    : "";
 
   const searchBadge = data.searchUsed
     ? `<span class="badge">pesquisa web</span>`
@@ -156,10 +107,9 @@ function buildHTML(data: ResultData): string {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${titulo}</title>
+  <title>${objetivo || "Cálculo"}</title>
   <meta name="author" content="Phormula — Calculadora Inteligente" />
-  <meta name="subject" content="${categoria}" />
-  <meta name="description" content="${titulo} — ${subcategoria}: ${resultUnidade} ${resultValor}" />
+  <meta name="description" content="${objetivo}" />
   <meta name="creator" content="Phormula" />
   <meta name="created" content="${new Date().toISOString()}" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
@@ -186,20 +136,6 @@ function buildHTML(data: ResultData): string {
     .logo { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #1A1A18; }
     .logo span { color: #AEADA8; font-weight: 400; }
     .date { font-size: 11px; color: #AEADA8; margin-top: 4px; }
-    .id-card {
-      background: #EFEFEC;
-      border-radius: 14px;
-      padding: 20px 24px;
-      margin-bottom: 32px;
-    }
-    .id-card-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 14px;
-      gap: 12px;
-    }
-    .id-title { font-size: 20px; font-weight: 700; color: #1A1A18; letter-spacing: -0.3px; }
     .badge {
       font-size: 10px;
       font-weight: 500;
@@ -209,9 +145,30 @@ function buildHTML(data: ResultData): string {
       border-radius: 6px;
       white-space: nowrap;
     }
-    .id-meta { display: flex; gap: 24px; flex-wrap: wrap; }
-    .id-meta-label { font-size: 9px; color: #C8C7C2; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-    .id-meta-value { font-size: 12px; font-weight: 600; color: #6B6B66; }
+    .objetivo-hero {
+      margin-bottom: 32px;
+    }
+    .objetivo-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: #C8C7C2;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .objetivo-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .objetivo-text {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1A1A18;
+      letter-spacing: -0.4px;
+      line-height: 1.3;
+    }
     .section-label {
       font-size: 10px;
       font-weight: 600;
@@ -223,7 +180,6 @@ function buildHTML(data: ResultData): string {
       padding-bottom: 6px;
       border-bottom: 1px solid #E8E7E3;
     }
-    .contexto-text { font-size: 13px; color: #6B6B66; line-height: 1.7; margin-top: 8px; }
     .formula-box {
       background: #EFEFEC;
       border-radius: 12px;
@@ -251,38 +207,16 @@ function buildHTML(data: ResultData): string {
     .step-text { font-size: 13px; color: #6B6B66; line-height: 1.6; }
     .step-tipo { font-size: 9px; color: #C8C7C2; text-transform: uppercase; letter-spacing: 0.5px; }
     .result-card {
-      background: #1A1A18;
-      border-radius: 12px;
-      padding: 18px 22px;
-      margin-top: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .result-label { font-size: 11px; color: #6B6B66; margin-bottom: 3px; }
-    .result-unit { font-size: 13px; color: #AEADA8; }
-    .result-num { font-size: 40px; font-weight: 700; color: #F7F6F3; letter-spacing: -2px; line-height: 1; }
-    .proof-box {
-      border-radius: 12px;
-      padding: 14px 18px;
+      background: #F0EFEB;
+      border-radius: 16px;
+      padding: 16px 22px;
       margin-top: 8px;
     }
-    .proof-ok { background: #F0FAF4; border: 1px solid #C0E8CE; }
-    .proof-warn { background: #FBF8ED; border: 1px solid #E8DCA8; }
-    .proof-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-    .proof-icon { font-size: 14px; }
-    .proof-method { font-size: 12px; font-weight: 600; color: #1A1A18; flex: 1; }
-    .proof-badge {
-      font-size: 10px; font-weight: 600;
-      padding: 2px 7px; border-radius: 5px;
-      background: #C0E8CE; color: #1A5C38;
-    }
-    .proof-warn .proof-badge { background: #E8DCA8; color: #7A5010; }
-    .proof-detail { font-size: 12px; color: #6B6B66; line-height: 1.5; }
+    .result-unit { font-size: 11px; font-weight: 500; color: #AEADA8; letter-spacing: 0.2px; margin-bottom: 2px; }
+    .result-num { font-size: 40px; font-weight: 700; color: #1A1A18; letter-spacing: -2px; line-height: 1.1; }
+    .result-label { font-size: 11px; font-weight: 500; color: #6B6B66; text-transform: uppercase; letter-spacing: 0.2px; margin-top: 6px; }
+    .result-interpretacao { font-size: 11px; color: #AEADA8; margin-top: 4px; font-style: italic; }
     .step-latex { text-align: center; padding: 6px 0; color: #1A1A18; }
-    .proof-steps { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-    .proof-step { text-align: center; padding: 6px 0; }
-    .warning { font-size: 11px; color: #B07D1A; margin-top: 20px; }
     .footer {
       margin-top: 48px;
       padding-top: 16px;
@@ -295,10 +229,7 @@ function buildHTML(data: ResultData): string {
     @media print {
       @page { margin: 1.5cm; size: A4; }
       body { background: white; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .id-card { background: #EFEFEC !important; }
-      .result-card { background: #1A1A18 !important; }
-      .proof-ok { background: #F0FAF4 !important; }
-      .proof-warn { background: #FBF8ED !important; }
+      .result-card { background: #F0EFEB !important; }
     }
   </style>
 </head>
@@ -308,37 +239,28 @@ function buildHTML(data: ResultData): string {
       <div class="logo">Φ <span>Phormula</span></div>
       <div class="date">${dateStr}</div>
     </div>
-    ${categoria ? `<div class="date" style="text-align:right;">${categoria}</div>` : ""}
   </div>
 
-  <div class="id-card">
-    <div class="id-card-top">
-      <div class="id-title">${titulo}</div>
+  ${objetivo ? `
+  <div class="objetivo-hero">
+    <div class="objetivo-meta">
+      <div class="objetivo-label">Objetivo</div>
       ${searchBadge}
     </div>
-    <div class="id-meta">
-      ${categoria ? `<div class="id-meta-item"><div class="id-meta-label">Categoria</div><div class="id-meta-value">${categoria}</div></div>` : ""}
-      <div class="id-meta-item"><div class="id-meta-label">Data</div><div class="id-meta-value">${dateStr}</div></div>
-      <div class="id-meta-item"><div class="id-meta-label">Resultado</div><div class="id-meta-value">${resultUnidade ? resultUnidade + " " : ""}${resultValor}</div></div>
-    </div>
-  </div>
+    <div class="objetivo-text">${objetivo}</div>
+  </div>` : ""}
 
-  ${contextoHTML}
   ${formulaHTML}
   ${varsHTML}
   ${desenvolHTML}
 
   <div class="section-label">${String(resSecNum).padStart(2, "0")} — Resultado</div>
   <div class="result-card">
-    <div>
-      <div class="result-label">${subcategoria}</div>
-      ${resultUnidade ? `<div class="result-unit">${resultUnidade}</div>` : ""}
-    </div>
+    ${resultUnidade ? `<div class="result-unit">${resultUnidade}</div>` : ""}
     <div class="result-num">${resultValor}</div>
+    ${subcategoria ? `<div class="result-label">${subcategoria}</div>` : ""}
+    ${resultInterpretacao ? `<div class="result-interpretacao">${resultInterpretacao}</div>` : ""}
   </div>
-
-  ${proofHTML}
-  ${warningHTML}
 
   <div class="footer">
     <span>Gerado pelo Phormula — calculadora inteligente</span>
@@ -394,8 +316,7 @@ export async function exportAsPDF(data: ResultData): Promise<void> {
 }
 
 export function buildTextSummary(data: ResultData): string {
-  const titulo = data.meta?.titulo ?? "Cálculo";
-  const categoria = data.meta?.categoria ?? "";
+  const objetivo = data.objetivo ?? "";
   const subcategoria = data.meta?.subcategoria ?? "";
   const resultValor = data.resultado?.valor ?? "";
   const resultUnidade = data.resultado?.unidade ?? "";
@@ -403,8 +324,6 @@ export function buildTextSummary(data: ResultData): string {
   const formulaAbstrata = data.formula?.abstrata ?? "";
   const variaveis = data.variaveis ?? [];
   const desenvolvimento = data.desenvolvimento ?? [];
-  const prova = data.prova ?? null;
-  const objetivo = data.objetivo ?? "";
 
   const dateStr = new Date().toLocaleDateString("pt-BR", {
     day: "2-digit",
@@ -415,20 +334,15 @@ export function buildTextSummary(data: ResultData): string {
   });
 
   const sep = "─────────────────────────────";
-
   const lines: string[] = [];
 
   // Cabeçalho
   lines.push(`Φ Phormula — Calculadora Inteligente`);
   lines.push(sep);
-  lines.push(`Cálculo: ${titulo}`);
-  if (categoria) lines.push(`Categoria: ${categoria}`);
-  if (subcategoria) lines.push(`Tipo: ${subcategoria}`);
   lines.push(`Data: ${dateStr}`);
-  lines.push(`Resultado: ${resultUnidade ? resultUnidade + " " : ""}${resultValor}`);
   if (data.searchUsed) lines.push(`[pesquisa web utilizada]`);
 
-  // Objetivo / contextualização
+  // Objetivo
   if (objetivo) {
     lines.push(``);
     lines.push(`OBJETIVO`);
@@ -477,33 +391,10 @@ export function buildTextSummary(data: ResultData): string {
   lines.push(``);
   lines.push(sec("RESULTADO"));
   lines.push(sep);
-  if (subcategoria) lines.push(`Tipo: ${subcategoria}`);
   if (resultUnidade) lines.push(`Unidade: ${resultUnidade}`);
   lines.push(`Valor: ${resultValor}`);
+  if (subcategoria) lines.push(`Tipo: ${subcategoria}`);
   if (resultInterpretacao) lines.push(`Interpretação: ${resultInterpretacao}`);
-
-  // Verificação
-  if (prova) {
-    const label = proofTipoLabel(prova.tipo);
-    const status = prova.valido ? "aprovado ✓" : "revisar ⚠";
-    lines.push(``);
-    lines.push(sec("VERIFICAÇÃO"));
-    lines.push(sep);
-    lines.push(`Método: ${label} — ${status}`);
-    // Prova inversa tem steps; demais têm descricao
-    if (prova.tipo === "inversa" && prova.steps && prova.steps.length > 0) {
-      lines.push(`Passos da prova reversa:`);
-      prova.steps.forEach((s, i) => lines.push(`  ${i + 1}. ${s.latex}`));
-    } else if (prova.descricao) {
-      lines.push(prova.descricao);
-    }
-  }
-
-  // Warning
-  if (data.warning) {
-    lines.push(``);
-    lines.push(`⚠ Atenção: ${data.warning}`);
-  }
 
   // Rodapé
   lines.push(``);
