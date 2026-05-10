@@ -183,7 +183,6 @@ export default function PhormulаScreen() {
   const queryClient = useQueryClient();
 
   const [query, setQuery] = useState("");
-  const [inputHeight, setInputHeight] = useState(32);
   const [screen, setScreen] = useState<"main" | "calc" | "history" | "menu" | "calculations" | "plans" | "plan-management">("main");
   const [isLoading, setIsLoading] = useState(false);
   const [chat, setChat] = useState<ChatItem[]>([]);
@@ -220,7 +219,10 @@ export default function PhormulаScreen() {
     if (!query.trim() || isLoading) return;
     const text = query.trim();
     setQuery("");
-    setInputHeight(32);
+    if (Platform.OS === "web") {
+      const el = document.getElementById("phormula-chat-input") as HTMLTextAreaElement | null;
+      if (el) el.style.height = "auto";
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     const msgId = Date.now().toString() + Math.random().toString(36).slice(2, 6);
@@ -464,15 +466,21 @@ export default function PhormulаScreen() {
             <TextInput
               ref={inputRef}
               value={query}
-              onChangeText={setQuery}
+              onChangeText={(text) => {
+                setQuery(text);
+                if (Platform.OS === "web") {
+                  const el = document.getElementById("phormula-chat-input") as HTMLTextAreaElement | null;
+                  if (el) {
+                    el.style.height = "auto";
+                    el.style.height = Math.min(el.scrollHeight, 120) + "px";
+                  }
+                }
+              }}
+              nativeID={Platform.OS === "web" ? "phormula-chat-input" : undefined}
               placeholder="Descreva o cálculo…"
               placeholderTextColor={c.ghost}
               multiline
-              style={[styles.textInput, { height: inputHeight }]}
-              onContentSizeChange={(e) => {
-                const h = e.nativeEvent.contentSize.height;
-                setInputHeight(Math.min(Math.max(h, 32), 120));
-              }}
+              style={styles.textInput}
               returnKeyType={Platform.OS === "web" ? "default" : "send"}
               onSubmitEditing={Platform.OS !== "web" ? handleSend : undefined}
               blurOnSubmit={false}
