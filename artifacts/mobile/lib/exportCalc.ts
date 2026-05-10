@@ -325,16 +325,26 @@ export async function exportAsPDF(data: ResultData): Promise<void> {
   const fileName = buildFileName(data);
 
   if (Platform.OS === "web") {
-    // Download direto — sem popup, sem diálogo de impressão
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName.replace(".pdf", ".html");
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const win = window.open("", "_blank");
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+      win.focus();
+      setTimeout(() => {
+        win.print();
+      }, 600);
+    } else {
+      // Fallback se popup bloqueado: baixa como HTML
+      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName.replace(".pdf", ".html");
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
     return;
   }
 
