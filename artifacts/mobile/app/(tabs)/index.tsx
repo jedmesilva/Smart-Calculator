@@ -17,6 +17,7 @@ import * as Haptics from "expo-haptics";
 import { useQueryClient } from "@tanstack/react-query";
 import colors from "@/constants/colors";
 import { CalcOverlay, HistoryOverlay, FormulasScreen, CalculationsScreen, PlansScreen, PlanManagementScreen } from "@/components/Overlays";
+import { QuickActionsBar, SessionCalcsSheet, SessionNotesSheet } from "@/components/QuickActionSheets";
 import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateStream, type ResultData, type MissingVariable } from "@/lib/apiClient";
@@ -266,7 +267,6 @@ export default function PhormulаScreen() {
   const saveMutation = useSaveFormulaFromChat();
   const [query, setQuery] = useState("");
   const [screen, setScreen] = useState<"main" | "calc" | "history" | "formulas" | "menu" | "calculations" | "plans" | "plan-management">("main");
-  const [activeFormula, setActiveFormula] = useState<DbFormula | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [chat, setChat] = useState<ChatItem[]>([]);
   const [savedResultIds, setSavedResultIds] = useState<Set<string>>(new Set());
@@ -276,6 +276,9 @@ export default function PhormulаScreen() {
   const [viewingResult, setViewingResult] = useState<ResultData | null>(null);
   const [calcOrigin, setCalcOrigin] = useState<"main" | "calculations">("main");
   const [thinkingMessage, setThinkingMessage] = useState<string | null>(null);
+  const [showSessionCalcs, setShowSessionCalcs] = useState(false);
+  const [showSessionNotes, setShowSessionNotes] = useState(false);
+  const [sessionNote, setSessionNote] = useState("");
   const inputRef = useRef<TextInput>(null);
 
   const lastResult = [...chat].reverse().find((x) => x.kind === "result");
@@ -293,10 +296,10 @@ export default function PhormulаScreen() {
     setChat([]);
     setQuery("");
     setSavedResultIds(new Set());
-    setActiveFormula(null);
     setCurrentSessionId(null);
     setSessionSummary(null);
     setMessageCount(0);
+    setSessionNote("");
     setScreen("main");
   }, []);
 
@@ -318,7 +321,6 @@ export default function PhormulаScreen() {
       const response = await calculateStream(
         {
           query: text,
-          formulaId: activeFormula?.id,
           context,
           sessionId: currentSessionId ?? undefined,
           sessionSummary: sessionSummary ?? undefined,
@@ -408,7 +410,7 @@ export default function PhormulаScreen() {
       setIsLoading(false);
       setThinkingMessage(null);
     }
-  }, [query, isLoading, activeFormula, currentSessionId, sessionSummary, messageCount, queryClient, chat, userName, setUserName]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [query, isLoading, currentSessionId, sessionSummary, messageCount, queryClient, chat, userName, setUserName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const canSend = query.trim().length > 0 && !isLoading;
   const invertedData = [...chat].reverse();
@@ -511,39 +513,23 @@ export default function PhormulаScreen() {
         </View>
       </View>
 
-      {/* ── FORMULA ROW ── */}
-      <View style={styles.formulaRow}>
-        <Pressable
-          onPress={() => setScreen("formulas")}
-          style={({ pressed }) => [styles.formulaRowHeader, pressed && { opacity: 0.6 }]}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Feather name="book-open" size={11} color={c.ghost} />
-            <Text style={styles.formulaRowLabel}>fórmula</Text>
-          </View>
-          <Feather name="chevron-right" size={11} color={c.ghost} />
-        </Pressable>
-
-        <View style={styles.formulaRowState}>
-          <Text
-            style={[styles.formulaRowName, activeFormula ? styles.formulaRowNameActive : {}]}
-            numberOfLines={1}
-          >
-            {activeFormula ? activeFormula.name : "Modo dinâmico"}
-          </Text>
-          <View style={styles.formulaRowActions}>
-            <Pressable onPress={() => setScreen("formulas")} style={styles.alterBtn} hitSlop={8}>
-              <Text style={styles.alterBtnText}>alterar</Text>
-            </Pressable>
-            {activeFormula && (
-              <Pressable onPress={() => setActiveFormula(null)} style={styles.removeBtn} hitSlop={8}>
-                <Feather name="x" size={11} color={c.faint} />
-                <Text style={styles.removeBtnText}>remover</Text>
-              </Pressable>
-            )}
-          </View>
-        </View>
-      </View>
+      {/* ── QUICK ACTIONS ── */}
+      <QuickActionsBar
+        actions={[
+          {
+            id: "calcs",
+            icon: "hash",
+            label: "Cálculos",
+            onPress: () => setShowSessionCalcs(true),
+          },
+          {
+            id: "notes",
+            icon: "edit-3",
+            label: "Notas",
+            onPress: () => setShowSessionNotes(true),
+          },
+        ]}
+      />
 
       {/* ── CHAT + INPUT ── */}
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={kbOffset}>
@@ -622,15 +608,6 @@ export default function PhormulаScreen() {
           onSelect={() => setScreen("main")}
         />
       )}
-      {screen === "formulas" && (
-        <FormulasScreen
-          onSelect={(f) => {
-            setActiveFormula(f);
-            setScreen("main");
-          }}
-          onClose={() => setScreen("main")}
-        />
-      )}
       {screen === "calculations" && (
         <CalculationsScreen
           onClose={() => setScreen("main")}
@@ -659,6 +636,24 @@ export default function PhormulаScreen() {
           onPlan={() => setScreen("plan-management")}
         />
       )}
+      {/* ── BOTTOM SHEETS ── */}
+      <SessionCalcsSheet
+        visible={showSessionCalcs}
+        onClose={() => setShowSessionCalcs(false)}
+        results={chat.filter((x) => x.kind === "result").map((x) => (x as any).result as ResultData)}
+        onView={(result) => {
+          setShowSessionCalcs(false);
+          setViewingResult(result);
+          setCalcOrigin("main");
+          setScreen("calc");
+        }}
+      />
+      <SessionNotesSheet
+        visible={showSessionNotes}
+        onClose={() => setShowSessionNotes(false)}
+        note={sessionNote}
+        onChangeNote={setSessionNote}
+      />
     </View>
   );
 }
@@ -738,46 +733,6 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
   },
   verCalcText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
-  formulaRow: {
-    flexShrink: 0,
-    paddingHorizontal: 28,
-    paddingVertical: 10,
-    gap: 5,
-  },
-  formulaRowHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  formulaRowState: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  formulaRowLabel: {
-    fontSize: 9,
-    fontFamily: "Inter_500Medium",
-    color: "#AEADA8",
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-  },
-  formulaRowName: {
-    fontSize: 12,
-    color: "#AEADA8",
-    fontFamily: "Inter_400Regular",
-    flex: 1,
-  },
-  formulaRowNameActive: { color: "#1A1A18", fontFamily: "Inter_600SemiBold" },
-  formulaRowActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    flexShrink: 0,
-  },
-  alterBtn: { paddingVertical: 4 },
-  alterBtnText: { fontSize: 11, color: "#AEADA8", fontFamily: "Inter_400Regular" },
-  removeBtn: { flexDirection: "row", alignItems: "center", gap: 3, paddingVertical: 4 },
-  removeBtnText: { fontSize: 11, color: "#AEADA8", fontFamily: "Inter_400Regular" },
   chatContent: {
     paddingHorizontal: 28,
     paddingVertical: 16,
