@@ -49,8 +49,13 @@ export function SessionCalcsSheet({
   const insets = useSafeAreaInsets();
   const sheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["64%"], []);
+  const mounted = useRef(false);
 
   useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
     if (visible) {
       sheetRef.current?.present();
     } else {
@@ -147,8 +152,13 @@ export function SessionNotesSheet({
   const insets = useSafeAreaInsets();
   const sheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["50%"], []);
+  const mounted = useRef(false);
 
   useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
     if (visible) {
       sheetRef.current?.present();
     } else {
