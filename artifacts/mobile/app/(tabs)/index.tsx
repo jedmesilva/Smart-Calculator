@@ -471,7 +471,7 @@ export default function PhormulаScreen() {
               onSubmitEditing={Platform.OS !== "web" ? handleSend : undefined}
               blurOnSubmit={false}
               onKeyPress={Platform.OS === "web" ? (e: any) => {
-                if (e.nativeEvent.key === "Enter" && !e.nativeEvent.shiftKey) {
+                if (e.nativeEvent.key === "Enter" && (e.nativeEvent.ctrlKey || e.nativeEvent.metaKey)) {
                   e.preventDefault?.();
                   handleSend();
                 }
