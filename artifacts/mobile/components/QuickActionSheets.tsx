@@ -61,60 +61,62 @@ export function SessionCalcsSheet({
       handleIndicatorStyle={styles.handle}
       enablePanDownToClose
     >
-      <View style={styles.sheetHeader}>
-        <Text style={styles.sheetTitle}>Cálculos da sessão</Text>
-        <Pressable onPress={onClose} hitSlop={12} style={styles.sheetCloseBtn}>
-          <Feather name="x" size={17} color={c.faint} />
-        </Pressable>
-      </View>
+      <BottomSheetView style={{ flex: 1 }}>
+        <View style={styles.sheetHeader}>
+          <Text style={styles.sheetTitle}>Cálculos da sessão</Text>
+          <Pressable onPress={onClose} hitSlop={12} style={styles.sheetCloseBtn}>
+            <Feather name="x" size={17} color={c.faint} />
+          </Pressable>
+        </View>
 
-      {results.length === 0 ? (
-        <BottomSheetView style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>Φ</Text>
-          <Text style={styles.emptyTitle}>Nenhum cálculo ainda</Text>
-          <Text style={styles.emptySubtitle}>
-            Os cálculos feitos nesta sessão aparecerão aqui
-          </Text>
-        </BottomSheetView>
-      ) : (
-        <BottomSheetScrollView
-          contentContainerStyle={[styles.calcsList, { paddingBottom: insets.bottom + 16 }]}
-          showsVerticalScrollIndicator={false}
-        >
-          {[...results].reverse().map((r, i) => {
-            const titulo = r.meta?.titulo ?? "Cálculo";
-            const subcategoria = r.meta?.subcategoria ?? "";
-            const valor = r.resultado?.valor ?? "";
-            const unidade = r.resultado?.unidade ?? "";
-            const abstrata = r.formula?.abstrata ?? "";
-            return (
-              <Pressable
-                key={i}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  onView(r);
-                }}
-                style={({ pressed }) => [styles.calcItem, pressed && styles.calcItemPressed]}
-              >
-                <View style={styles.calcItemLeft}>
-                  <Text style={styles.calcItemTitle} numberOfLines={1}>{titulo}</Text>
-                  {!!subcategoria && (
-                    <Text style={styles.calcItemSub} numberOfLines={1}>{subcategoria}</Text>
-                  )}
-                  {!!abstrata && (
-                    <Text style={styles.calcItemFormula} numberOfLines={1}>{abstrata}</Text>
-                  )}
-                </View>
-                <View style={styles.calcItemRight}>
-                  {!!unidade && <Text style={styles.calcItemUnit}>{unidade}</Text>}
-                  <Text style={styles.calcItemVal} numberOfLines={1}>{valor}</Text>
-                  <Feather name="chevron-right" size={13} color={c.ghost} />
-                </View>
-              </Pressable>
-            );
-          })}
-        </BottomSheetScrollView>
-      )}
+        {results.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyIcon}>Φ</Text>
+            <Text style={styles.emptyTitle}>Nenhum cálculo ainda</Text>
+            <Text style={styles.emptySubtitle}>
+              Os cálculos feitos nesta sessão aparecerão aqui
+            </Text>
+          </View>
+        ) : (
+          <BottomSheetScrollView
+            contentContainerStyle={[styles.calcsList, { paddingBottom: insets.bottom + 16 }]}
+            showsVerticalScrollIndicator={false}
+          >
+            {[...results].reverse().map((r, i) => {
+              const titulo = r.meta?.titulo ?? "Cálculo";
+              const subcategoria = r.meta?.subcategoria ?? "";
+              const valor = r.resultado?.valor ?? "";
+              const unidade = r.resultado?.unidade ?? "";
+              const abstrata = r.formula?.abstrata ?? "";
+              return (
+                <Pressable
+                  key={i}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    onView(r);
+                  }}
+                  style={({ pressed }) => [styles.calcItem, pressed && styles.calcItemPressed]}
+                >
+                  <View style={styles.calcItemLeft}>
+                    <Text style={styles.calcItemTitle} numberOfLines={1}>{titulo}</Text>
+                    {!!subcategoria && (
+                      <Text style={styles.calcItemSub} numberOfLines={1}>{subcategoria}</Text>
+                    )}
+                    {!!abstrata && (
+                      <Text style={styles.calcItemFormula} numberOfLines={1}>{abstrata}</Text>
+                    )}
+                  </View>
+                  <View style={styles.calcItemRight}>
+                    {!!unidade && <Text style={styles.calcItemUnit}>{unidade}</Text>}
+                    <Text style={styles.calcItemVal} numberOfLines={1}>{valor}</Text>
+                    <Feather name="chevron-right" size={13} color={c.ghost} />
+                  </View>
+                </Pressable>
+              );
+            })}
+          </BottomSheetScrollView>
+        )}
+      </BottomSheetView>
     </BottomSheet>
   );
 }
@@ -149,14 +151,13 @@ export function SessionNotesSheet({
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
     >
-      <View style={styles.sheetHeader}>
-        <Text style={styles.sheetTitle}>Notas</Text>
-        <Pressable onPress={onClose} hitSlop={12} style={styles.sheetCloseBtn}>
-          <Feather name="x" size={17} color={c.faint} />
-        </Pressable>
-      </View>
-
       <BottomSheetView style={[styles.notesBody, { paddingBottom: insets.bottom + 16 }]}>
+        <View style={styles.sheetHeader}>
+          <Text style={styles.sheetTitle}>Notas</Text>
+          <Pressable onPress={onClose} hitSlop={12} style={styles.sheetCloseBtn}>
+            <Feather name="x" size={17} color={c.faint} />
+          </Pressable>
+        </View>
         <TextInput
           value={note}
           onChangeText={onChangeNote}
@@ -244,8 +245,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 22,
     paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: c.border,
   },
   sheetTitle: {
     fontSize: 15,
