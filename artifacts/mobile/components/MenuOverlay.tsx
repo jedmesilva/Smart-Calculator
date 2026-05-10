@@ -29,9 +29,10 @@ type Props = {
   onCalculations?: () => void;
   onHistory?: () => void;
   onPlan?: () => void;
+  onUpgrade?: () => void;
 };
 
-export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan }: Props) {
+export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgrade }: Props) {
   const insets = useSafeAreaInsets();
   const { user, userId, userName, signOut } = useAuth();
   const email = user?.email ?? "";
@@ -125,7 +126,7 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan }: Prop
             <Text style={styles.planCardLabel}>GRATUITO</Text>
             <Pressable
               style={({ pressed }) => [styles.upgradeBtn, pressed && { opacity: 0.8 }]}
-              onPress={(e) => { e.stopPropagation(); close(onPlan); }}
+              onPress={(e) => { e.stopPropagation(); close(onUpgrade); }}
               hitSlop={8}
             >
               <Text style={styles.upgradeBtnText}>Upgrade</Text>

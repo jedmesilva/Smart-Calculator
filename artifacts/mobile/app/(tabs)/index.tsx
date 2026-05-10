@@ -529,6 +529,7 @@ export default function PhormulаScreen() {
           onCalculations={() => setScreen("calculations")}
           onHistory={() => setScreen("history")}
           onPlan={() => setScreen("plan-management")}
+          onUpgrade={() => setScreen("plans")}
         />
       )}
       {/* ── BOTTOM SHEETS ── */}
