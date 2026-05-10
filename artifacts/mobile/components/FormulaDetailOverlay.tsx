@@ -116,8 +116,8 @@ export function FormulaDetailOverlay({
   currentUserId: string | null;
 }) {
   const insets = useSafeAreaInsets();
-  const topPad = Platform.OS === "web" ? 0 : insets.top;
-  const botPad = Platform.OS === "web" ? 0 : insets.bottom;
+  const topPad = insets.top;
+  const botPad = insets.bottom;
   const { userId } = useAuth();
 
   const isOwner = !!currentUserId && formula.user_id === currentUserId;

@@ -201,8 +201,8 @@ export default function PhormulаScreen() {
   const displayNum = current?.resultado?.valor ?? "0";
   const numFontSize = displayNum.length > 12 ? 38 : displayNum.length > 8 ? 50 : 64;
 
-  const topPad = Platform.OS === "web" ? 0 : insets.top;
-  const botPad = Platform.OS === "web" ? 0 : insets.bottom;
+  const topPad = insets.top;
+  const botPad = insets.bottom;
   const kbOffset = Platform.OS === "ios" ? 0 : 0;
 
   const handleNewSession = useCallback(() => {

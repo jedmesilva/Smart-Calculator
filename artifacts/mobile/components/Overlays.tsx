@@ -62,8 +62,8 @@ function DocSection({
 /* ─── CALC OVERLAY ─── */
 export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () => void }) {
   const insets = useSafeAreaInsets();
-  const topPad = Platform.OS === "web" ? 0 : insets.top;
-  const botPad = Platform.OS === "web" ? 0 : insets.bottom;
+  const topPad = insets.top;
+  const botPad = insets.bottom;
   const [exporting, setExporting] = useState(false);
   const [exportStatus, setExportStatus] = useState<"idle" | "ok" | "err">("idle");
   const [copied, setCopied] = useState(false);
@@ -81,12 +81,7 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
       setTimeout(() => setExportStatus("idle"), 3000);
     } catch (err: any) {
       console.error("[exportAsPDF]", err);
-      if (Platform.OS === "web") {
-        setExportStatus("err");
-        setTimeout(() => setExportStatus("idle"), 4000);
-      } else {
-        Alert.alert("Erro ao exportar", err?.message ?? "Tente novamente.");
-      }
+      Alert.alert("Erro ao exportar", err?.message ?? "Tente novamente.");
     } finally {
       setExporting(false);
     }
@@ -310,7 +305,7 @@ export function HistoryOverlay({
   onSelect: (s: DbSession) => void;
 }) {
   const insets = useSafeAreaInsets();
-  const topPad = Platform.OS === "web" ? 0 : insets.top;
+  const topPad = insets.top;
   const { data: sessions, isLoading } = useSessions();
 
   return (
@@ -376,7 +371,7 @@ export function CalculationsScreen({
   onView: (result: ResultData) => void;
 }) {
   const insets = useSafeAreaInsets();
-  const topPad = Platform.OS === "web" ? 0 : insets.top;
+  const topPad = insets.top;
   const { data: calcs, isLoading } = useCalculations();
 
   const formatDate = (iso: string) =>
@@ -495,7 +490,7 @@ const PLANS = [
 /* ─── PLANS SCREEN ─── */
 export function PlansScreen({ onClose }: { onClose: () => void }) {
   const insets = useSafeAreaInsets();
-  const topPad = Platform.OS === "web" ? 0 : insets.top;
+  const topPad = insets.top;
 
   const handleCta = (plan: typeof PLANS[number]) => {
     if (plan.ctaDisabled) return;
@@ -617,7 +612,7 @@ export function PlanManagementScreen({
   onViewPlans: () => void;
 }) {
   const insets = useSafeAreaInsets();
-  const topPad = Platform.OS === "web" ? 0 : insets.top;
+  const topPad = insets.top;
   const { data: carteira, isLoading } = useCarteira();
 
   const saldo = carteira?.saldo ?? null;
@@ -823,7 +818,7 @@ export function FormulasScreen({
   onClose: () => void;
 }) {
   const insets = useSafeAreaInsets();
-  const topPad = Platform.OS === "web" ? 0 : insets.top;
+  const topPad = insets.top;
 
   type Tab = "oficiais" | "comunidade" | "minhas";
   const [tab, setTab] = useState<Tab>("oficiais");

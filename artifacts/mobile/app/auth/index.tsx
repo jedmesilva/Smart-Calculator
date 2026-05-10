@@ -4,7 +4,6 @@ import {
   Text,
   Pressable,
   StyleSheet,
-  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -16,8 +15,8 @@ export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const topPad = Platform.OS === "web" ? 64 : insets.top;
-  const botPad = Platform.OS === "web" ? 40 : insets.bottom;
+  const topPad = insets.top;
+  const botPad = insets.bottom;
 
   return (
     <View style={[styles.root, { paddingTop: topPad, paddingBottom: botPad + 24 }]}>

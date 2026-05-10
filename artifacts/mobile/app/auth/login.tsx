@@ -122,8 +122,8 @@ export default function LoginScreen() {
 
   const passwordRef = useRef<TextInput>(null);
 
-  const topPad = Platform.OS === "web" ? 60 : insets.top;
-  const botPad = Platform.OS === "web" ? 32 : insets.bottom;
+  const topPad = insets.top;
+  const botPad = insets.bottom;
 
   function validateFields(): boolean {
     let valid = true;
