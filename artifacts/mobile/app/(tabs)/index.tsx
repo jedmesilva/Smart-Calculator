@@ -183,6 +183,7 @@ export default function PhormulаScreen() {
   const queryClient = useQueryClient();
 
   const [query, setQuery] = useState("");
+  const [inputHeight, setInputHeight] = useState(32);
   const [screen, setScreen] = useState<"main" | "calc" | "history" | "menu" | "calculations" | "plans" | "plan-management">("main");
   const [isLoading, setIsLoading] = useState(false);
   const [chat, setChat] = useState<ChatItem[]>([]);
@@ -219,6 +220,7 @@ export default function PhormulаScreen() {
     if (!query.trim() || isLoading) return;
     const text = query.trim();
     setQuery("");
+    setInputHeight(32);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     const msgId = Date.now().toString() + Math.random().toString(36).slice(2, 6);
@@ -466,7 +468,11 @@ export default function PhormulаScreen() {
               placeholder="Descreva o cálculo…"
               placeholderTextColor={c.ghost}
               multiline
-              style={styles.textInput}
+              style={[styles.textInput, { height: inputHeight }]}
+              onContentSizeChange={(e) => {
+                const h = e.nativeEvent.contentSize.height;
+                setInputHeight(Math.min(Math.max(h, 32), 120));
+              }}
               returnKeyType={Platform.OS === "web" ? "default" : "send"}
               onSubmitEditing={Platform.OS !== "web" ? handleSend : undefined}
               blurOnSubmit={false}
