@@ -6,6 +6,7 @@ import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import katex from "katex";
 import type { ResultData } from "@/lib/apiClient";
+import { supabase } from "@/lib/supabase";
 
 const SAF_DIR_KEY = "@phormula/saf_dir";
 
