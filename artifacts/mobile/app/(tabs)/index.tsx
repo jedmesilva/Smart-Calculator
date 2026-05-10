@@ -868,9 +868,9 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     minHeight: 32,
     maxHeight: 120,
-    paddingTop: 0,
-    paddingBottom: 0,
-    textAlignVertical: "center",
+    paddingTop: Platform.OS === "web" ? 6 : 0,
+    paddingBottom: Platform.OS === "web" ? 6 : 0,
+    textAlignVertical: Platform.OS === "web" ? "auto" : "center",
   },
   sendBtn: {
     width: 32,
