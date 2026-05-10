@@ -155,12 +155,15 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
         {/* ── Objetivo (destaque principal) ── */}
         {!!objetivo && (
           <View style={styles.objetivoHero}>
-            {data.searchUsed && (
-              <View style={[styles.idBadge, { marginBottom: 6 }]}>
-                <Feather name="globe" size={9} color={c.mid} />
-                <Text style={styles.idBadgeText}>pesquisa web</Text>
-              </View>
-            )}
+            <View style={styles.objetivoHeroMeta}>
+              <Text style={styles.objetivoHeroLabel}>Objetivo</Text>
+              {data.searchUsed && (
+                <View style={styles.idBadge}>
+                  <Feather name="globe" size={9} color={c.mid} />
+                  <Text style={styles.idBadgeText}>pesquisa web</Text>
+                </View>
+              )}
+            </View>
             <Text style={styles.objetivoHeroText}>{objetivo}</Text>
           </View>
         )}
@@ -1271,6 +1274,19 @@ const styles = StyleSheet.create({
   /* ── Objetivo / Contextualização ── */
   objetivoHero: {
     marginBottom: 24,
+    gap: 6,
+  },
+  objetivoHeroMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  objetivoHeroLabel: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 9,
+    color: c.ghost,
+    letterSpacing: 1,
+    textTransform: "uppercase",
   },
   objetivoHeroText: {
     fontFamily: "Inter_600SemiBold",
