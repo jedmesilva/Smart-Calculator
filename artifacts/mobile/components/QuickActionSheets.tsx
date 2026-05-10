@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     paddingTop: 6,
     paddingBottom: 16,
     borderBottomWidth: 1,
@@ -225,14 +225,14 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: c.border,
-    marginHorizontal: 24,
+    marginHorizontal: 16,
   },
   bar: {
     flexShrink: 0,
     flexGrow: 0,
   },
   barContent: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     paddingVertical: 4,
     gap: 10,
     flexDirection: "row",

@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   listRow: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     paddingVertical: 14,
   },
   listRowPressed: {

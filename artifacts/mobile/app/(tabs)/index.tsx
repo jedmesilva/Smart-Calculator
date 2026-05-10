@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   displayPanel: {
     flexShrink: 0,
-    paddingHorizontal: 28,
+    paddingHorizontal: 20,
     paddingBottom: 36,
     justifyContent: "space-between",
     minHeight: 300,
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
   },
   verCalcText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
   chatContent: {
-    paddingHorizontal: 28,
+    paddingHorizontal: 16,
     paddingVertical: 16,
     gap: 10,
   },
@@ -827,7 +827,7 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   inputWrap: {
-    paddingHorizontal: 28,
+    paddingHorizontal: 16,
     paddingTop: 8,
   },
   inputBox: {
