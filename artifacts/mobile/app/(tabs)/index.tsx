@@ -23,8 +23,7 @@ import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateStream, type ResultData, type MissingVariable } from "@/lib/apiClient";
 import { buildContext } from "@/lib/contextBuilder";
-import { createSession, saveMessages, touchSession, fetchSessionSummary, useSavedFormulaIds, useSaveFormulaFromChat } from "@/lib/queries";
-import type { DbFormula } from "@/lib/queries";
+import { createSession, saveMessages, touchSession, fetchSessionSummary } from "@/lib/queries";
 
 const c = colors.light;
 
@@ -102,38 +101,13 @@ function ErrorBubble({ message }: { message: string }) {
 function ResultRow({
   result,
   onView,
-  isSaved,
-  onSave,
 }: {
   result: ResultData;
   onView: () => void;
-  isSaved: boolean;
-  onSave: () => void;
 }) {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-
-  const handleSave = () => {
-    if (isSaved) return;
-    Animated.sequence([
-      Animated.spring(scaleAnim, {
-        toValue: 1.04,
-        useNativeDriver: true,
-        speed: 50,
-        bounciness: 6,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        useNativeDriver: true,
-        speed: 50,
-        bounciness: 4,
-      }),
-    ]).start();
-    onSave();
-  };
-
   return (
     <View style={{ gap: 8 }}>
-      <Animated.View style={[styles.resultCard, { transform: [{ scale: scaleAnim }] }]}>
+      <View style={styles.resultCard}>
         <View style={styles.resultCardTop}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>
@@ -165,27 +139,7 @@ function ResultRow({
             </Pressable>
           </View>
         </View>
-        {!isSaved ? (
-          <Pressable
-            onPress={handleSave}
-            style={({ pressed }) => [
-              styles.saveRow,
-              pressed && styles.saveRowPressed,
-            ]}
-          >
-            <Feather name="bookmark" size={11} color={c.mid} />
-            <Text style={styles.saveText}>Salvar como minha fórmula</Text>
-          </Pressable>
-        ) : (
-          <View style={[styles.saveRow, styles.saveRowSaved]}>
-            <Feather name="bookmark" size={11} color={c.text} />
-            <Text style={[styles.saveText, styles.saveTextSaved]}>
-              Salvo em Minhas fórmulas
-            </Text>
-          </View>
-        )}
-      </Animated.View>
-
+      </View>
     </View>
   );
 }
@@ -264,13 +218,10 @@ export default function PhormulаScreen() {
   const { userId, userName, setUserName } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: savedFormulaIds = new Set<string>() } = useSavedFormulaIds();
-  const saveMutation = useSaveFormulaFromChat();
   const [query, setQuery] = useState("");
   const [screen, setScreen] = useState<"main" | "calc" | "history" | "menu" | "calculations" | "plans" | "plan-management">("main");
   const [isLoading, setIsLoading] = useState(false);
   const [chat, setChat] = useState<ChatItem[]>([]);
-  const [savedResultIds, setSavedResultIds] = useState<Set<string>>(new Set());
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [sessionSummary, setSessionSummary] = useState<string | null>(null);
   const [messageCount, setMessageCount] = useState(0);
@@ -296,7 +247,6 @@ export default function PhormulаScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setChat([]);
     setQuery("");
-    setSavedResultIds(new Set());
     setCurrentSessionId(null);
     setSessionSummary(null);
     setMessageCount(0);
@@ -424,9 +374,6 @@ export default function PhormulаScreen() {
       if (item.kind === "question") return <QuestionBubble message={item.message} missing={item.missing} />;
       if (item.kind === "error") return <ErrorBubble message={item.message} />;
       if (item.kind === "result") {
-        const isSavedByFormulaId = !!item.result.formulaId && savedFormulaIds.has(item.result.formulaId);
-        const isSavedLocally = savedResultIds.has(item.id);
-        const isSaved = isSavedByFormulaId || isSavedLocally;
         return (
           <ResultRow
             result={item.result}
@@ -435,19 +382,12 @@ export default function PhormulаScreen() {
               setCalcOrigin("main");
               setScreen("calc");
             }}
-            isSaved={isSaved}
-            onSave={() => {
-              if (isSaved) return;
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              setSavedResultIds((prev) => new Set([...prev, item.id]));
-              saveMutation.mutate(item.result);
-            }}
           />
         );
       }
       return null;
     },
-    [chat, savedResultIds, savedFormulaIds, saveMutation]
+    [chat]
   );
 
   return (
@@ -957,26 +897,6 @@ const styles = StyleSheet.create({
   viewBtnText: {
     fontSize: 11,
     color: "#6B6B66",
-    fontFamily: "Inter_600SemiBold",
-  },
-  saveRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#E8E7E2",
-  },
-  saveRowPressed: { backgroundColor: "#E8E7E2" },
-  saveRowSaved: { opacity: 0.5 },
-  saveText: {
-    fontSize: 11,
-    color: "#9A9991",
-    fontFamily: "Inter_400Regular",
-  },
-  saveTextSaved: {
-    color: "#1A1A18",
     fontFamily: "Inter_600SemiBold",
   },
   searchUsedTag: {
