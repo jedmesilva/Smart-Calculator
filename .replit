@@ -28,13 +28,12 @@ args = "Start API server"
 name = "Start mobile"
 author = "agent"
 
+[workflows.workflow.metadata]
+outputType = "console"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "pnpm --filter @workspace/mobile run dev"
-waitForPort = 18115
-
-[workflows.workflow.metadata]
-outputType = "webview"
+args = "EXPO_PUBLIC_SUPABASE_URL=$SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY EXPO_PUBLIC_DOMAIN=$REPLIT_DEV_DOMAIN pnpm --filter @workspace/mobile run dev"
 
 [[workflows.workflow]]
 name = "Start API server"
