@@ -640,7 +640,6 @@ export default function PhormulаScreen() {
       {/* ── BOTTOM SHEETS ── */}
       <SessionCalcsSheet
         ref={sessionCalcsRef}
-        onClose={() => sessionCalcsRef.current?.close()}
         results={chat.filter((x) => x.kind === "result").map((x) => (x as any).result as ResultData)}
         onView={(result) => {
           sessionCalcsRef.current?.close();
@@ -651,7 +650,6 @@ export default function PhormulаScreen() {
       />
       <SessionNotesSheet
         ref={sessionNotesRef}
-        onClose={() => sessionNotesRef.current?.close()}
         note={sessionNote}
         onChangeNote={setSessionNote}
       />

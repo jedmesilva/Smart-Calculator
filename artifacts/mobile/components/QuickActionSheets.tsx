@@ -7,8 +7,7 @@ import {
   StyleSheet,
   TextInput,
 } from "react-native";
-import {
-  BottomSheetModal,
+import BottomSheet, {
   BottomSheetView,
   BottomSheetScrollView,
   BottomSheetBackdrop,
@@ -43,38 +42,43 @@ export interface SessionCalcsSheetHandle {
 export const SessionCalcsSheet = forwardRef<
   SessionCalcsSheetHandle,
   {
-    onClose: () => void;
+    onClose?: () => void;
     results: ResultData[];
     onView: (r: ResultData) => void;
   }
 >(function SessionCalcsSheet({ onClose, results, onView }, ref) {
   const insets = useSafeAreaInsets();
-  const sheetRef = useRef<BottomSheetModal>(null);
+  const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["64%"], []);
 
   useImperativeHandle(ref, () => ({
-    open: () => sheetRef.current?.present(),
-    close: () => sheetRef.current?.dismiss(),
+    open: () => sheetRef.current?.expand(),
+    close: () => sheetRef.current?.close(),
   }));
 
-  const handleDismiss = useCallback(() => {
-    onClose();
+  const handleChange = useCallback((index: number) => {
+    if (index === -1) onClose?.();
   }, [onClose]);
 
   return (
-    <BottomSheetModal
+    <BottomSheet
       ref={sheetRef}
+      index={-1}
       snapPoints={snapPoints}
-      onDismiss={handleDismiss}
+      enablePanDownToClose
       backdropComponent={Backdrop}
       backgroundStyle={styles.sheet}
       handleIndicatorStyle={styles.handle}
-      enablePanDownToClose
+      onChange={handleChange}
     >
       <BottomSheetView style={{ flex: 1 }}>
         <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>Cálculos da sessão</Text>
-          <Pressable onPress={() => sheetRef.current?.dismiss()} hitSlop={12} style={styles.sheetCloseBtn}>
+          <Pressable
+            onPress={() => sheetRef.current?.close()}
+            hitSlop={12}
+            style={styles.sheetCloseBtn}
+          >
             <Feather name="x" size={17} color={c.faint} />
           </Pressable>
         </View>
@@ -127,7 +131,7 @@ export const SessionCalcsSheet = forwardRef<
           </BottomSheetScrollView>
         )}
       </BottomSheetView>
-    </BottomSheetModal>
+    </BottomSheet>
   );
 });
 
@@ -140,40 +144,45 @@ export interface SessionNotesSheetHandle {
 export const SessionNotesSheet = forwardRef<
   SessionNotesSheetHandle,
   {
-    onClose: () => void;
+    onClose?: () => void;
     note: string;
     onChangeNote: (text: string) => void;
   }
 >(function SessionNotesSheet({ onClose, note, onChangeNote }, ref) {
   const insets = useSafeAreaInsets();
-  const sheetRef = useRef<BottomSheetModal>(null);
+  const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["50%"], []);
 
   useImperativeHandle(ref, () => ({
-    open: () => sheetRef.current?.present(),
-    close: () => sheetRef.current?.dismiss(),
+    open: () => sheetRef.current?.expand(),
+    close: () => sheetRef.current?.close(),
   }));
 
-  const handleDismiss = useCallback(() => {
-    onClose();
+  const handleChange = useCallback((index: number) => {
+    if (index === -1) onClose?.();
   }, [onClose]);
 
   return (
-    <BottomSheetModal
+    <BottomSheet
       ref={sheetRef}
+      index={-1}
       snapPoints={snapPoints}
-      onDismiss={handleDismiss}
+      enablePanDownToClose
       backdropComponent={Backdrop}
       backgroundStyle={styles.sheet}
       handleIndicatorStyle={styles.handle}
-      enablePanDownToClose
+      onChange={handleChange}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
     >
       <BottomSheetView style={[styles.notesBody, { paddingBottom: insets.bottom + 16 }]}>
         <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>Notas</Text>
-          <Pressable onPress={() => sheetRef.current?.dismiss()} hitSlop={12} style={styles.sheetCloseBtn}>
+          <Pressable
+            onPress={() => sheetRef.current?.close()}
+            hitSlop={12}
+            style={styles.sheetCloseBtn}
+          >
             <Feather name="x" size={17} color={c.faint} />
           </Pressable>
         </View>
@@ -203,7 +212,7 @@ export const SessionNotesSheet = forwardRef<
           )}
         </View>
       </BottomSheetView>
-    </BottomSheetModal>
+    </BottomSheet>
   );
 });
 
