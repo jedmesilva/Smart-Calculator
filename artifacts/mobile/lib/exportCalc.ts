@@ -282,47 +282,39 @@ function buildHTML(data: ResultData): string {
 
 export async function exportAsPDF(data: ResultData): Promise<void> {
   const html = buildHTML(data);
+  const fileName = buildFileName(data);
 
   if (Platform.OS === "web") {
-    const popup = window.open("", "_blank");
-    if (!popup) {
-      throw new Error("Pop-up bloqueado. Habilite pop-ups para este site e tente novamente.");
-    }
-    popup.document.open();
-    popup.document.write(html);
-    popup.document.close();
-    popup.addEventListener("load", () => {
-      popup.focus();
-      popup.print();
-    });
-    setTimeout(() => {
-      try { popup.focus(); popup.print(); } catch {}
-    }, 800);
+    // Download direto — sem popup, sem diálogo de impressão
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName.replace(".pdf", ".html");
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     return;
   }
 
+  // Mobile: gera PDF e abre share sheet nativa (padrão iOS/Android)
   const { uri: tmpUri } = await Print.printToFileAsync({ html, base64: false });
 
-  const fileName = buildFileName(data);
   const destUri = (FileSystem.cacheDirectory ?? "") + fileName;
   await FileSystem.copyAsync({ from: tmpUri, to: destUri });
+  await FileSystem.deleteAsync(tmpUri, { idempotent: true });
 
   const canShare = await Sharing.isAvailableAsync();
   if (!canShare) {
     throw new Error("Compartilhamento não disponível neste dispositivo");
   }
 
-  const titulo = data.meta?.titulo ?? "Cálculo";
-  const resultUnidade = data.resultado?.unidade ?? "";
-  const resultValor = data.resultado?.valor ?? "";
-
   await Sharing.shareAsync(destUri, {
     mimeType: "application/pdf",
-    dialogTitle: `${titulo} — ${resultUnidade} ${resultValor}`,
+    dialogTitle: "Salvar cálculo",
     UTI: "com.adobe.pdf",
   });
-
-  await FileSystem.deleteAsync(tmpUri, { idempotent: true });
 }
 
 export function buildTextSummary(data: ResultData): string {
