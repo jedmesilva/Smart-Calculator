@@ -50,236 +50,295 @@ function buildFileName(titulo: string): string {
   return `phormula_${name}_${dd}${mm}${yyyy}.pdf`;
 }
 
+function esc(s: any): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 function buildHTML(data: any): string {
-  const objetivo = data.objetivo ?? "";
-  const subcategoria = data.meta?.subcategoria ?? "";
-  const resultValor = data.resultado?.valor ?? "";
-  const resultUnidade = data.resultado?.unidade ?? "";
-  const resultInterpretacao = data.resultado?.interpretacao ?? "";
+  // ── cores idênticas ao app (constants/colors.ts) ──
+  const C = {
+    bg:      "#F7F6F3",
+    panel:   "#EFEFEC",
+    surface: "#E8E7E3",
+    text:    "#1A1A18",
+    mid:     "#6B6B66",
+    faint:   "#AEADA8",
+    ghost:   "#C8C7C2",
+    result:  "#F0EFEB",
+  };
+
+  const objetivo       = data.objetivo ?? "";
+  const subcategoria   = data.meta?.subcategoria ?? "";
+  const resultValor    = data.resultado?.valor ?? "";
+  const resultUnidade  = data.resultado?.unidade ?? "";
+  const resultInterp   = data.resultado?.interpretacao ?? "";
   const formulaAbstrata = data.formula?.abstrata ?? "";
-  const variaveis: any[] = data.variaveis ?? [];
+  const formulaLatex   = data.formula?.latex ?? null;
+  const variaveis: any[]    = data.variaveis ?? [];
   const desenvolvimento: any[] = data.desenvolvimento ?? [];
-  const dateStr = formatDate();
 
-  const katexCSS = `
-    .katex { font-size: 1.1em; }
-    .katex-display { display: block; text-align: center; margin: 0.5em 0; }
-  `;
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("pt-BR", {
+    day: "2-digit", month: "short", year: "numeric",
+  });
+  const timeStr = now.toLocaleTimeString("pt-BR", {
+    hour: "2-digit", minute: "2-digit",
+  });
 
-  const varsRows = variaveis
-    .map(
-      (v) => `
-      <tr>
-        <td class="var-symbol">${v.simbolo}</td>
-        <td class="var-name">${v.descricao}</td>
-        <td class="var-value">${v.unidade ? v.unidade + " " : ""}${v.valor}</td>
-      </tr>`
-    )
-    .join("");
-
-  const stepsHTML = desenvolvimento
-    .map(
-      (step) => `
-      <div class="step">
-        <span class="step-num">${String(step.ordem).padStart(2, "0")}</span>
-        <div class="step-body">
-          <span class="step-text">${step.descricao}</span>
-          ${step.latex ? `<div class="step-latex">${renderLatex(step.latex)}</div>` : ""}
-          ${step.tipo !== "resultado" ? `<span class="step-tipo">${step.tipo}</span>` : ""}
-        </div>
-      </div>`
-    )
-    .join("");
-
-  const hasFormula = !!formulaAbstrata;
-  const hasVars = varsRows.length > 0;
-  const hasSteps = stepsHTML.length > 0;
+  const hasFormula = !!(formulaLatex || formulaAbstrata);
+  const hasVars    = variaveis.length > 0;
+  const hasSteps   = desenvolvimento.length > 0;
 
   let secIdx = 0;
+  const nextSec = () => String(++secIdx).padStart(2, "0");
 
-  const formulaLatexDoc = data.formula?.latex;
-  const formulaHTML = hasFormula
-    ? `<div class="section-block">
-         <div class="section-label">${String(++secIdx).padStart(2, "0")} — Fórmula</div>
-         <div class="formula-box">
-           ${formulaLatexDoc
-             ? `<div class="step-latex">${renderLatex(formulaLatexDoc)}</div>`
-             : `<div class="formula-symbolic">${formulaAbstrata}</div>`}
-         </div>
-       </div>`
-    : "";
+  // ── seção genérica (replica DocSection) ──
+  function section(num: string, titulo: string, body: string): string {
+    return `
+    <div class="doc-section">
+      <div class="doc-sec-header">
+        <span class="doc-sec-num">${num}</span>
+        <span class="doc-sec-title">${titulo}</span>
+      </div>
+      <div class="doc-sec-divider"></div>
+      ${body}
+    </div>`;
+  }
 
-  const varsHTML = hasVars
-    ? `<div class="section-block">
-         <div class="section-label">${String(++secIdx).padStart(2, "0")} — Variáveis</div>
-         <table>${varsRows}</table>
-       </div>`
-    : "";
+  // ── Fórmula ──
+  const formulaBody = hasFormula ? section(nextSec(), "Fórmula", `
+    <div class="formula-box">
+      ${formulaLatex
+        ? `<div class="formula-latex">${renderLatex(formulaLatex)}</div>`
+        : `<div class="formula-symbolic">${esc(formulaAbstrata)}</div>`}
+    </div>`) : "";
 
-  const desenvolHTML = hasSteps
-    ? `<div class="section-label">${String(++secIdx).padStart(2, "0")} — Desenvolvimento</div>
-       <div class="steps">${stepsHTML}</div>`
-    : "";
+  // ── Variáveis ──
+  const varsBody = hasVars ? section(nextSec(), "Variáveis", `
+    <div class="vars">
+      ${variaveis.map((v, i) => `
+        <div class="var-row${i < variaveis.length - 1 ? " var-border" : ""}">
+          <div class="var-top">
+            <span class="var-symbol">${esc(v.simbolo)}</span>
+            <span class="var-name">${esc(v.descricao)}</span>
+            <span class="var-value">${v.unidade ? esc(v.unidade) + " " : ""}${esc(v.valor)}</span>
+          </div>
+          ${v.papel && v.papel !== v.descricao
+            ? `<div class="var-bottom"><span class="var-papel">${esc(v.papel)}</span></div>`
+            : ""}
+        </div>`).join("")}
+    </div>`) : "";
 
-  const resSecNum = ++secIdx;
+  // ── Desenvolvimento ──
+  const stepsBody = hasSteps ? `
+    <div class="doc-section">
+      <div class="doc-sec-header">
+        <span class="doc-sec-num">${nextSec()}</span>
+        <span class="doc-sec-title">Desenvolvimento</span>
+      </div>
+      <div class="doc-sec-divider"></div>
+      <div class="steps">
+        ${desenvolvimento.map((step, i) => {
+          const isLast = i === desenvolvimento.length - 1;
+          const isResult = step.tipo === "resultado";
+          return `
+          <div class="step-row">
+            <div class="step-track">
+              <div class="step-dot${isResult ? " step-dot-result" : ""}"></div>
+              ${!isLast ? `<div class="step-line"></div>` : ""}
+            </div>
+            <div class="step-content">
+              <span class="step-text">${esc(step.descricao)}</span>
+              ${step.justificativa ? `<span class="step-just">${esc(step.justificativa)}</span>` : ""}
+              ${step.latex ? `<div class="step-latex">${renderLatex(step.latex)}</div>` : ""}
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>` : "";
+
+  // ── Resultado ──
+  const valorLen = String(resultValor).length;
+  const numFontSize = valorLen > 10 ? 22 : valorLen > 6 ? 28 : 36;
+  const resultBody = section(nextSec(), "Resultado", `
+    <div class="result-card">
+      ${resultUnidade ? `<span class="result-unit">${esc(resultUnidade)}</span>` : ""}
+      <div class="result-num" style="font-size:${numFontSize}px;line-height:${numFontSize + 6}px">${esc(resultValor)}</div>
+      ${subcategoria ? `<span class="result-label">${esc(subcategoria)}</span>` : ""}
+      ${resultInterp ? `<span class="result-interp">${esc(resultInterp)}</span>` : ""}
+    </div>`);
 
   const searchBadge = data.searchUsed
-    ? `<span class="badge">pesquisa web</span>`
+    ? `<span class="badge">🌐 pesquisa web</span>`
     : "";
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>${objetivo || "Cálculo"}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <meta charset="UTF-8"/>
+  <title>${esc(objetivo) || "Cálculo"}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"/>
   <style>
-    ${katexCSS}
-    @page {
-      size: A4;
-      margin: 0;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    @page { size: A4; margin: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif;
-      background: #F7F6F3;
-      color: #1A1A18;
-      font-size: 11px;
+      font-family: 'Inter', -apple-system, 'Helvetica Neue', sans-serif;
+      background: ${C.bg};
+      color: ${C.text};
+      font-size: 13px;
       line-height: 1.5;
-      padding: 40px 44px 36px 44px;
+      padding: 44px 44px 40px 44px;
       width: 210mm;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
+
+    /* ── Header ── */
     .header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 24px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid #E0DFD9;
-      break-inside: avoid;
-      page-break-inside: avoid;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid ${C.surface};
+      break-inside: avoid; page-break-inside: avoid;
     }
-    .logo { font-size: 14px; font-weight: 700; color: #1A1A18; }
-    .logo span { color: #AEADA8; font-weight: 400; }
-    .date { font-size: 9px; color: #AEADA8; margin-top: 3px; }
+    .logo { font-size: 15px; font-weight: 700; color: ${C.text}; }
+    .logo-sub { font-weight: 400; color: ${C.faint}; }
+    .header-date { font-size: 10px; color: ${C.faint}; margin-top: 3px; }
     .badge {
-      font-size: 9px; font-weight: 500; color: #6B6B66;
-      background: #E8E7E3; padding: 2px 7px; border-radius: 5px; white-space: nowrap;
+      font-size: 10px; font-weight: 500; color: ${C.mid};
+      background: ${C.surface}; padding: 3px 8px; border-radius: 7px;
     }
-    .objetivo-hero {
-      margin-bottom: 24px;
-      break-inside: avoid;
-      page-break-inside: avoid;
-    }
+
+    /* ── Objetivo hero ── */
+    .objetivo-hero { margin-bottom: 24px; display: flex; flex-direction: column; gap: 6px; }
     .objetivo-label {
-      font-size: 8px; font-weight: 600; color: #C8C7C2;
-      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;
+      font-size: 9px; font-weight: 600; color: ${C.ghost};
+      text-transform: uppercase; letter-spacing: 1px;
     }
-    .objetivo-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-    .objetivo-text {
-      font-size: 18px; font-weight: 700; color: #1A1A18;
-      line-height: 1.25;
+    .objetivo-meta { display: flex; align-items: center; gap: 8px; }
+    .objetivo-text { font-size: 20px; font-weight: 600; color: ${C.text}; line-height: 28px; }
+
+    /* ── DocSection ── */
+    .doc-section { margin-bottom: 28px; break-inside: avoid; page-break-inside: avoid; }
+    .doc-sec-header {
+      display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px;
     }
-    .section-block {
-      break-inside: avoid;
-      page-break-inside: avoid;
+    .doc-sec-num {
+      font-size: 10px; font-weight: 600; color: ${C.ghost}; letter-spacing: 0.5px;
     }
-    .section-label {
-      font-size: 8px; font-weight: 600; color: #AEADA8;
-      text-transform: uppercase; letter-spacing: 1.2px;
-      margin-bottom: 6px; margin-top: 22px;
-      padding-bottom: 5px; border-bottom: 1px solid #E0DFD9;
-      break-after: avoid;
-      page-break-after: avoid;
+    .doc-sec-title {
+      font-size: 10px; font-weight: 600; color: ${C.faint};
+      letter-spacing: 1px; text-transform: uppercase;
     }
+    .doc-sec-divider {
+      height: 1px; background: ${C.surface}; margin-bottom: 14px;
+    }
+
+    /* ── Fórmula ── */
     .formula-box {
-      background: #EFEFEC; border-radius: 10px; padding: 12px 16px; margin-top: 6px;
+      background: ${C.panel}; border-radius: 12px; padding: 16px;
+      display: flex; justify-content: center; align-items: center;
+    }
+    .formula-symbolic { font-size: 14px; color: ${C.text}; text-align: center; }
+    .formula-latex { text-align: center; }
+
+    /* ── Variáveis ── */
+    .vars { display: flex; flex-direction: column; }
+    .var-row {
+      padding: 12px 0; display: flex; flex-direction: column; gap: 3px;
       break-inside: avoid; page-break-inside: avoid;
     }
-    .formula-symbolic { font-size: 11px; color: #1A1A18; font-family: monospace; }
-    table { width: 100%; border-collapse: collapse; margin-top: 6px; }
-    tr {
-      border-bottom: 1px solid #E0DFD9;
-      break-inside: avoid;
-      page-break-inside: avoid;
+    .var-border { border-bottom: 1px solid ${C.surface}; }
+    .var-top { display: flex; align-items: center; gap: 10px; }
+    .var-symbol { font-size: 13px; font-weight: 700; color: ${C.text}; min-width: 22px; }
+    .var-name   { font-size: 13px; color: ${C.faint}; flex: 1; }
+    .var-value  { font-size: 13px; font-weight: 600; color: ${C.text}; text-align: right; }
+    .var-bottom { padding-left: 32px; }
+    .var-papel  { font-size: 11px; color: ${C.ghost}; font-style: normal; line-height: 16px; }
+
+    /* ── Desenvolvimento ── */
+    .steps { display: flex; flex-direction: column; }
+    .step-row {
+      display: flex; gap: 14px; align-items: stretch; padding: 2px 0;
+      break-inside: avoid; page-break-inside: avoid;
     }
-    tr:last-child { border-bottom: none; }
-    td { padding: 7px 4px; vertical-align: middle; }
-    .var-symbol { font-weight: 700; color: #1A1A18; width: 36px; font-size: 11px; }
-    .var-name { color: #AEADA8; font-size: 11px; }
-    .var-value { font-weight: 600; text-align: right; font-size: 11px; color: #1A1A18; }
-    .steps { margin-top: 6px; }
-    .step {
-      display: flex; gap: 14px; padding: 8px 0;
-      border-bottom: 1px solid #E0DFD9; align-items: flex-start;
-      break-inside: avoid;
-      page-break-inside: avoid;
+    .step-track {
+      display: flex; flex-direction: column; align-items: center; width: 10px; padding-top: 5px;
     }
-    .step:last-child { border-bottom: none; }
-    .step-num { font-weight: 700; font-size: 9px; color: #C8C7C2; min-width: 18px; padding-top: 2px; }
-    .step-body { display: flex; flex-direction: column; gap: 3px; flex: 1; }
-    .step-text { font-size: 11px; color: #6B6B66; line-height: 1.55; }
-    .step-tipo { font-size: 8px; color: #C8C7C2; text-transform: uppercase; letter-spacing: 0.5px; }
-    .result-section {
-      break-before: avoid;
-      page-break-before: avoid;
-      break-inside: avoid;
-      page-break-inside: avoid;
+    .step-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: ${C.ghost}; flex-shrink: 0;
     }
+    .step-dot-result { background: ${C.text}; }
+    .step-line {
+      flex: 1; width: 1px; background: ${C.surface}; margin-top: 4px; min-height: 12px;
+    }
+    .step-content {
+      flex: 1; display: flex; flex-direction: column; gap: 6px; padding-bottom: 16px;
+    }
+    .step-text { font-size: 13px; color: ${C.mid}; line-height: 20px; }
+    .step-just { font-size: 11px; color: ${C.ghost}; font-style: italic; line-height: 17px; }
+    .step-latex { text-align: center; padding: 4px 0; }
+
+    /* ── Resultado ── */
     .result-card {
-      background: #EFEFEC; border-radius: 12px; padding: 14px 18px; margin-top: 6px;
-      break-inside: avoid; page-break-inside: avoid;
+      background: ${C.result}; border-radius: 16px;
+      padding: 16px 18px; display: flex; flex-direction: column; gap: 2px;
     }
-    .result-unit { font-size: 9px; font-weight: 500; color: #AEADA8; letter-spacing: 0.2px; margin-bottom: 2px; }
-    .result-num { font-size: 34px; font-weight: 700; color: #1A1A18; letter-spacing: -1px; line-height: 1.1; }
-    .result-label { font-size: 9px; font-weight: 500; color: #6B6B66; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 5px; }
-    .result-interpretacao { font-size: 10px; color: #AEADA8; margin-top: 3px; font-style: italic; }
+    .result-unit  { font-size: 11px; font-weight: 500; color: ${C.ghost}; line-height: 15px; }
+    .result-num   { font-weight: 700; color: ${C.text}; letter-spacing: -1.2px; }
+    .result-label { font-size: 11px; font-weight: 500; color: ${C.mid}; text-transform: uppercase; letter-spacing: 0.2px; margin-top: 4px; }
+    .result-interp { font-size: 11px; color: ${C.ghost}; font-style: italic; line-height: 16px; margin-top: 2px; }
+
+    /* ── KaTeX ── */
     .katex { font-size: 1em; }
     .katex-display { display: block; text-align: center; margin: 0.4em 0; }
-    .step-latex { text-align: center; padding: 4px 0; color: #1A1A18; }
-    .footer {
-      margin-top: 36px; padding-top: 12px; border-top: 1px solid #E0DFD9;
-      font-size: 9px; color: #C8C7C2;
-      display: flex; justify-content: space-between;
+
+    /* ── Footer ── */
+    .doc-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 20px; border-top: 1px solid ${C.surface}; margin-top: 4px;
       break-inside: avoid; page-break-inside: avoid;
     }
+    .doc-footer-text { font-size: 10px; color: ${C.ghost}; }
   </style>
 </head>
 <body>
+
   <div class="header">
     <div>
-      <div class="logo">Φ <span>Phormula</span></div>
-      <div class="date">${dateStr}</div>
+      <div class="logo">Φ <span class="logo-sub">Phormula</span></div>
+      <div class="header-date">${dateStr} · ${timeStr}</div>
     </div>
   </div>
 
   ${objetivo ? `
   <div class="objetivo-hero">
     <div class="objetivo-meta">
-      <div class="objetivo-label">Objetivo</div>
+      <span class="objetivo-label">Objetivo</span>
       ${searchBadge}
     </div>
-    <div class="objetivo-text">${objetivo}</div>
+    <div class="objetivo-text">${esc(objetivo)}</div>
   </div>` : ""}
 
-  ${formulaHTML}
-  ${varsHTML}
-  ${desenvolHTML}
+  ${formulaBody}
+  ${varsBody}
+  ${stepsBody}
+  ${resultBody}
 
-  <div class="result-section">
-    <div class="section-label">${String(resSecNum).padStart(2, "0")} — Resultado</div>
-    <div class="result-card">
-      ${resultUnidade ? `<div class="result-unit">${resultUnidade}</div>` : ""}
-      <div class="result-num">${resultValor}</div>
-      ${subcategoria ? `<div class="result-label">${subcategoria}</div>` : ""}
-      ${resultInterpretacao ? `<div class="result-interpretacao">${resultInterpretacao}</div>` : ""}
-    </div>
+  <div class="doc-footer">
+    <span class="doc-footer-text">Φ Phormula</span>
+    <span class="doc-footer-text">${dateStr} · ${timeStr}</span>
   </div>
 
-  <div class="footer">
-    <span>Gerado pelo Phormula — calculadora inteligente</span>
-    <span>${dateStr}</span>
-  </div>
 </body>
 </html>`;
 }
