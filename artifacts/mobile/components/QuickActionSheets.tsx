@@ -86,7 +86,7 @@ export const SessionCalcsSheet = forwardRef<
         </View>
 
         {results.length === 0 ? (
-          <View style={styles.emptyState}>
+          <View style={[styles.emptyState, { paddingBottom: insets.bottom + 24 }]}>
             <Text style={styles.emptyIcon}>Φ</Text>
             <Text style={styles.emptyTitle}>Nenhum cálculo ainda</Text>
             <Text style={styles.emptySubtitle}>
@@ -366,7 +366,6 @@ const styles = StyleSheet.create({
   },
   notesBody: {
     flex: 1,
-    paddingHorizontal: 20,
     paddingTop: 16,
     gap: 10,
   },
@@ -376,12 +375,14 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     color: c.text,
     lineHeight: 22,
+    paddingHorizontal: 22,
   },
   notesFooter: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingTop: 8,
+    paddingHorizontal: 22,
     borderTopWidth: 1,
     borderTopColor: c.border,
   },
