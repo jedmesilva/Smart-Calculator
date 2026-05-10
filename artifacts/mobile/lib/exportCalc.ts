@@ -3,7 +3,20 @@ import * as Sharing from "expo-sharing";
 import * as Clipboard from "expo-clipboard";
 import * as FileSystem from "expo-file-system/legacy";
 import { Platform } from "react-native";
+import katex from "katex";
 import type { ResultData } from "@/lib/apiClient";
+
+function renderLatex(latex: string): string {
+  try {
+    return katex.renderToString(latex, {
+      displayMode: true,
+      throwOnError: false,
+      output: "html",
+    });
+  } catch {
+    return `<span style="font-family:monospace;color:#888">${latex}</span>`;
+  }
+}
 
 function formatDate() {
   return new Date().toLocaleDateString("pt-BR", {
@@ -63,7 +76,7 @@ function buildHTML(data: ResultData): string {
         <span class="step-num">${String(step.ordem).padStart(2, "0")}</span>
         <div class="step-body">
           <span class="step-text">${step.descricao}</span>
-          ${step.latex ? `<div class="step-latex">$$${step.latex}$$</div>` : ""}
+          ${step.latex ? `<div class="step-latex">${renderLatex(step.latex)}</div>` : ""}
           ${step.tipo !== "resultado" ? `<span class="step-tipo">${step.tipo}</span>` : ""}
         </div>
       </div>`
@@ -81,7 +94,7 @@ function buildHTML(data: ResultData): string {
     ? `<div class="section-label">${String(++secIdx).padStart(2, "0")} — Fórmula</div>
        <div class="formula-box">
          ${formulaLatexDoc
-           ? `<div class="step-latex" style="font-size:16px;">$$${formulaLatexDoc}$$</div>`
+           ? `<div class="step-latex">${renderLatex(formulaLatexDoc)}</div>`
            : `<div class="formula-symbolic">${formulaAbstrata}</div>`}
        </div>`
     : "";
@@ -113,9 +126,6 @@ function buildHTML(data: ResultData): string {
   <meta name="creator" content="Phormula" />
   <meta name="created" content="${new Date().toISOString()}" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
-    onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false})"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
