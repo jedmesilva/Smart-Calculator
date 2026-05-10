@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -46,14 +46,25 @@ export function SessionCalcsSheet({
   onView: (r: ResultData) => void;
 }) {
   const insets = useSafeAreaInsets();
+  const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["64%"], []);
+
+  useEffect(() => {
+    if (visible) {
+      sheetRef.current?.expand();
+    } else {
+      sheetRef.current?.close();
+    }
+  }, [visible]);
+
   const handleChange = useCallback((index: number) => {
     if (index === -1) onClose();
   }, [onClose]);
 
   return (
     <BottomSheet
-      index={visible ? 0 : -1}
+      ref={sheetRef}
+      index={-1}
       snapPoints={snapPoints}
       onChange={handleChange}
       backdropComponent={Backdrop}
@@ -134,14 +145,25 @@ export function SessionNotesSheet({
   onChangeNote: (text: string) => void;
 }) {
   const insets = useSafeAreaInsets();
+  const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["50%"], []);
+
+  useEffect(() => {
+    if (visible) {
+      sheetRef.current?.expand();
+    } else {
+      sheetRef.current?.close();
+    }
+  }, [visible]);
+
   const handleChange = useCallback((index: number) => {
     if (index === -1) onClose();
   }, [onClose]);
 
   return (
     <BottomSheet
-      index={visible ? 0 : -1}
+      ref={sheetRef}
+      index={-1}
       snapPoints={snapPoints}
       onChange={handleChange}
       backdropComponent={Backdrop}
