@@ -635,6 +635,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 32,
     paddingBottom: 24,
+    paddingTop: 100,
     gap: 6,
   },
   emptyσ: {
