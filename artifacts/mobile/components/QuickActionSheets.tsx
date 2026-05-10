@@ -72,7 +72,7 @@ export const SessionCalcsSheet = forwardRef<
       handleIndicatorStyle={styles.handle}
       enablePanDownToClose
     >
-      <BottomSheetView style={{ flex: 1, paddingBottom: bottomInset }}>
+      <BottomSheetView style={{ flex: 1 }}>
         <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>Cálculos da sessão</Text>
           {/* dismiss directly on the internal ref — never through the forwarded handle */}
@@ -86,7 +86,7 @@ export const SessionCalcsSheet = forwardRef<
         </View>
 
         {results.length === 0 ? (
-          <View style={[styles.emptyState, { paddingBottom: 24 }]}>
+          <View style={[styles.emptyState, { paddingBottom: bottomInset + 24 }]}>
             <Text style={styles.emptyIcon}>Φ</Text>
             <Text style={styles.emptyTitle}>Nenhum cálculo ainda</Text>
             <Text style={styles.emptySubtitle}>
@@ -95,7 +95,7 @@ export const SessionCalcsSheet = forwardRef<
           </View>
         ) : (
           <BottomSheetScrollView
-            contentContainerStyle={[styles.calcsList, { paddingBottom: 16 }]}
+            contentContainerStyle={[styles.calcsList, { paddingBottom: bottomInset + 16 }]}
             showsVerticalScrollIndicator={false}
           >
             {[...results].reverse().map((r, i) => {
