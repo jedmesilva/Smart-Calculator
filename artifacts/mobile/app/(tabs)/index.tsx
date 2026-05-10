@@ -18,6 +18,7 @@ import * as Haptics from "expo-haptics";
 import { useQueryClient } from "@tanstack/react-query";
 import colors from "@/constants/colors";
 import { CalcOverlay, HistoryOverlay, CalculationsScreen, PlansScreen, PlanManagementScreen } from "@/components/Overlays";
+import { CalcSummaryCard } from "@/components/CalcSummaryCard";
 import { QuickActionsBar, SessionCalcsSheet, SessionNotesSheet } from "@/components/QuickActionSheets";
 import type { SessionCalcsSheetHandle, SessionNotesSheetHandle } from "@/components/QuickActionSheets";
 import { MenuOverlay } from "@/components/MenuOverlay";
@@ -99,50 +100,8 @@ function ErrorBubble({ message }: { message: string }) {
 }
 
 /* ─── RESULT ROW ─── */
-function ResultRow({
-  result,
-  onView,
-}: {
-  result: ResultData;
-  onView: () => void;
-}) {
-  return (
-    <View style={{ gap: 8 }}>
-      <View style={styles.resultCard}>
-        <View style={styles.resultCardTop}>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>
-              <Text style={styles.resultFormula}>{result.meta?.titulo ?? ""}</Text>
-              {result.searchUsed && (
-                <View style={styles.searchUsedTag}>
-                  <Feather name="globe" size={8} color={c.mid} />
-                  <Text style={styles.searchUsedText}>verificado</Text>
-                </View>
-              )}
-            </View>
-            <Text style={styles.resultSubstituted} numberOfLines={1}>
-              {result.formula?.abstrata ?? ""}
-            </Text>
-          </View>
-          <View style={styles.resultRight}>
-            <View style={{ alignItems: "flex-end" }}>
-              {!!result.resultado?.unidade && (
-                <Text style={styles.resultUnit}>{result.resultado.unidade}</Text>
-              )}
-              <Text style={styles.resultNum}>{result.resultado?.valor ?? ""}</Text>
-            </View>
-            <Pressable
-              onPress={onView}
-              style={({ pressed }) => [styles.viewBtn, pressed && { backgroundColor: c.ghost }]}
-            >
-              <Text style={styles.sigmaSmall}>Φ</Text>
-              <Text style={styles.viewBtnText}>ver</Text>
-            </Pressable>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
+function ResultRow({ result, onView }: { result: ResultData; onView: () => void }) {
+  return <CalcSummaryCard result={result} onPress={onView} variant="chat" />;
 }
 
 /* ─── THINKING BAR ─── */
@@ -850,88 +809,6 @@ const styles = StyleSheet.create({
     color: "#7A2020",
     fontFamily: "Inter_400Regular",
     lineHeight: 20,
-  },
-  resultCard: {
-    backgroundColor: "#F0EFEB",
-    borderRadius: 16,
-    overflow: "hidden",
-  },
-  resultCardTop: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 12,
-    padding: 16,
-  },
-  resultFormula: {
-    fontSize: 11,
-    color: "#6B6B66",
-    fontFamily: "Inter_600SemiBold",
-    letterSpacing: 0.3,
-    textTransform: "uppercase",
-  },
-  resultSubstituted: {
-    fontSize: 12,
-    color: "#9A9991",
-    fontFamily: "Inter_400Regular",
-  },
-  resultRight: {
-    alignItems: "flex-end",
-    gap: 8,
-    flexShrink: 0,
-  },
-  resultUnit: {
-    fontSize: 11,
-    color: "#9A9991",
-    fontFamily: "Inter_500Medium",
-  },
-  resultNum: {
-    fontSize: 26,
-    fontFamily: "Inter_700Bold",
-    color: "#1A1A18",
-    letterSpacing: -1,
-    lineHeight: 30,
-  },
-  viewBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    backgroundColor: "#E8E7E2",
-  },
-  viewBtnText: {
-    fontSize: 11,
-    color: "#6B6B66",
-    fontFamily: "Inter_600SemiBold",
-  },
-  searchUsedTag: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-    paddingVertical: 2,
-    paddingHorizontal: 5,
-    borderRadius: 5,
-    backgroundColor: "#E8E7E2",
-  },
-  searchUsedText: {
-    fontSize: 9,
-    color: "#6B6B66",
-    fontFamily: "Inter_500Medium",
-  },
-  proofWarningTag: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-    paddingVertical: 2,
-    paddingHorizontal: 5,
-    borderRadius: 5,
-    backgroundColor: "#FBF3E0",
-  },
-  proofWarningText: {
-    fontSize: 9,
-    color: "#B07D1A",
-    fontFamily: "Inter_500Medium",
   },
   warningRow: {
     flexDirection: "row",

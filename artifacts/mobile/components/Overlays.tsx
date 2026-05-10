@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { MathView } from "@/components/MathView";
+import { CalcSummaryCard } from "@/components/CalcSummaryCard";
 import {
   View,
   Text,
@@ -478,59 +479,19 @@ export function CalculationsScreen({
             <Text style={styles.emptyText}>Nenhum cálculo ainda</Text>
           </View>
         ) : (
-          calcs.map((item: CalcRecord) => {
-            const r = item.result_data;
-            const titulo = r.meta?.titulo ?? "Cálculo";
-            const categoria = r.meta?.categoria ?? "";
-            const subcategoria = r.meta?.subcategoria ?? "";
-            const valor = r.resultado?.valor ?? "";
-            const unidade = r.resultado?.unidade ?? "";
-            return (
-              <Pressable
-                key={item.id}
+          calcs.map((item: CalcRecord) => (
+            <View key={item.id}>
+              <CalcSummaryCard
+                result={item.result_data}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  onView(r);
+                  onView(item.result_data);
                 }}
-                style={({ pressed }) => [styles.calcCard, pressed && styles.rowPressed]}
-              >
-                {/* Result value */}
-                <View style={styles.calcCardResultRow}>
-                  {!!unidade && (
-                    <Text style={styles.calcCardUnit}>{unidade}</Text>
-                  )}
-                  <Text style={styles.calcCardVal} numberOfLines={1}>
-                    {valor}
-                  </Text>
-                </View>
-                {/* Divider */}
-                <View style={styles.calcCardDivider} />
-                {/* Meta */}
-                <View style={styles.calcCardMeta}>
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={styles.calcCardTitle} numberOfLines={1}>
-                      {titulo}
-                    </Text>
-                    {!!subcategoria && (
-                      <Text style={styles.calcCardSub} numberOfLines={1}>
-                        {subcategoria}
-                      </Text>
-                    )}
-                  </View>
-                  <View style={styles.calcCardRight}>
-                    {!!categoria && (
-                      <View style={styles.calcCardCatPill}>
-                        <Text style={styles.calcCardCatText} numberOfLines={1}>
-                          {categoria}
-                        </Text>
-                      </View>
-                    )}
-                    <Text style={styles.calcCardDate}>{formatDate(item.created_at)}</Text>
-                  </View>
-                </View>
-              </Pressable>
-            );
-          })
+                variant="list"
+              />
+              <View style={styles.listDivider} />
+            </View>
+          ))
         )}
       </ScrollView>
     </View>
@@ -2138,71 +2099,9 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     color: c.faint,
   },
-  /* ── Calc Cards ── */
-  calcCard: {
-    backgroundColor: c.panel,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 10,
-  },
-  calcCardResultRow: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    gap: 6,
-    marginBottom: 12,
-  },
-  calcCardVal: {
-    fontSize: 32,
-    fontFamily: "Inter_700Bold",
-    color: c.text,
-    letterSpacing: -1.5,
-    flex: 1,
-  },
-  calcCardUnit: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-    color: c.faint,
-  },
-  calcCardDivider: {
+  listDivider: {
     height: 1,
-    backgroundColor: c.surface,
-    marginBottom: 10,
-  },
-  calcCardMeta: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-  },
-  calcCardTitle: {
-    fontSize: 13,
-    fontFamily: "Inter_600SemiBold",
-    color: c.mid,
-    marginBottom: 2,
-  },
-  calcCardSub: {
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
-    color: c.faint,
-  },
-  calcCardRight: {
-    alignItems: "flex-end",
-    gap: 4,
-    flexShrink: 0,
-  },
-  calcCardCatPill: {
-    backgroundColor: c.surface,
-    borderRadius: 6,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-  },
-  calcCardCatText: {
-    fontSize: 10,
-    fontFamily: "Inter_500Medium",
-    color: c.faint,
-  },
-  calcCardDate: {
-    fontSize: 10,
-    fontFamily: "Inter_400Regular",
-    color: c.ghost,
+    backgroundColor: c.border,
+    marginHorizontal: 20,
   },
 });

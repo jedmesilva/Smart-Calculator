@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import colors from "@/constants/colors";
 import type { ResultData } from "@/lib/apiClient";
+import { CalcSummaryCard } from "@/components/CalcSummaryCard";
 
 const c = colors.light;
 
@@ -98,38 +99,19 @@ export const SessionCalcsSheet = forwardRef<
             contentContainerStyle={[styles.calcsList, { paddingBottom: bottomInset + 16 }]}
             showsVerticalScrollIndicator={false}
           >
-            {[...results].reverse().map((r, i) => {
-              const titulo = r.meta?.titulo ?? "Cálculo";
-              const subcategoria = r.meta?.subcategoria ?? "";
-              const valor = r.resultado?.valor ?? "";
-              const unidade = r.resultado?.unidade ?? "";
-              const abstrata = r.formula?.abstrata ?? "";
-              return (
-                <Pressable
-                  key={i}
+            {[...results].reverse().map((r, i) => (
+              <View key={i}>
+                <CalcSummaryCard
+                  result={r}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     onView(r);
                   }}
-                  style={({ pressed }) => [styles.calcItem, pressed && styles.calcItemPressed]}
-                >
-                  <View style={styles.calcItemLeft}>
-                    <Text style={styles.calcItemTitle} numberOfLines={1}>{titulo}</Text>
-                    {!!subcategoria && (
-                      <Text style={styles.calcItemSub} numberOfLines={1}>{subcategoria}</Text>
-                    )}
-                    {!!abstrata && (
-                      <Text style={styles.calcItemFormula} numberOfLines={1}>{abstrata}</Text>
-                    )}
-                  </View>
-                  <View style={styles.calcItemRight}>
-                    {!!unidade && <Text style={styles.calcItemUnit}>{unidade}</Text>}
-                    <Text style={styles.calcItemVal} numberOfLines={1}>{valor}</Text>
-                    <Feather name="chevron-right" size={13} color={c.ghost} />
-                  </View>
-                </Pressable>
-              );
-            })}
+                  variant="list"
+                />
+                {i < results.length - 1 && <View style={styles.divider} />}
+              </View>
+            ))}
           </BottomSheetScrollView>
         )}
       </BottomSheetView>
@@ -318,51 +300,12 @@ const styles = StyleSheet.create({
   },
   calcsList: {
     paddingVertical: 8,
-    paddingHorizontal: 16,
-    gap: 4,
+    paddingHorizontal: 0,
   },
-  calcItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 13,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-  },
-  calcItemPressed: { backgroundColor: c.surface },
-  calcItemLeft: { flex: 1, minWidth: 0, gap: 2 },
-  calcItemTitle: {
-    fontSize: 13,
-    fontFamily: "Inter_600SemiBold",
-    color: c.text,
-    letterSpacing: -0.1,
-  },
-  calcItemSub: {
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
-    color: c.mid,
-  },
-  calcItemFormula: {
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
-    color: c.ghost,
-  },
-  calcItemRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    flexShrink: 0,
-  },
-  calcItemUnit: {
-    fontSize: 10,
-    fontFamily: "Inter_500Medium",
-    color: c.ghost,
-  },
-  calcItemVal: {
-    fontSize: 17,
-    fontFamily: "Inter_700Bold",
-    color: c.text,
-    letterSpacing: -0.8,
+  divider: {
+    height: 1,
+    backgroundColor: c.border,
+    marginHorizontal: 20,
   },
   notesBody: {
     flex: 1,
