@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,6 @@ import {
   TextInput,
 } from "react-native";
 import BottomSheet, {
-  BottomSheetModal,
   BottomSheetView,
   BottomSheetScrollView,
   BottomSheetBackdrop,
@@ -46,20 +45,17 @@ export function SessionCalcsSheet({
   results: ResultData[];
   onView: (r: ResultData) => void;
 }) {
-  const ref = useRef<BottomSheetModal>(null);
   const insets = useSafeAreaInsets();
   const snapPoints = useMemo(() => ["64%"], []);
-
-  useEffect(() => {
-    if (visible) ref.current?.present();
-    else ref.current?.dismiss();
-  }, [visible]);
+  const handleChange = useCallback((index: number) => {
+    if (index === -1) onClose();
+  }, [onClose]);
 
   return (
-    <BottomSheetModal
-      ref={ref}
+    <BottomSheet
+      index={visible ? 0 : -1}
       snapPoints={snapPoints}
-      onDismiss={onClose}
+      onChange={handleChange}
       backdropComponent={Backdrop}
       backgroundStyle={styles.sheet}
       handleIndicatorStyle={styles.handle}
@@ -67,7 +63,7 @@ export function SessionCalcsSheet({
     >
       <View style={styles.sheetHeader}>
         <Text style={styles.sheetTitle}>Cálculos da sessão</Text>
-        <Pressable onPress={() => ref.current?.dismiss()} hitSlop={12} style={styles.sheetCloseBtn}>
+        <Pressable onPress={onClose} hitSlop={12} style={styles.sheetCloseBtn}>
           <Feather name="x" size={17} color={c.faint} />
         </Pressable>
       </View>
@@ -119,7 +115,7 @@ export function SessionCalcsSheet({
           })}
         </BottomSheetScrollView>
       )}
-    </BottomSheetModal>
+    </BottomSheet>
   );
 }
 
@@ -135,20 +131,17 @@ export function SessionNotesSheet({
   note: string;
   onChangeNote: (text: string) => void;
 }) {
-  const ref = useRef<BottomSheetModal>(null);
   const insets = useSafeAreaInsets();
   const snapPoints = useMemo(() => ["50%"], []);
-
-  useEffect(() => {
-    if (visible) ref.current?.present();
-    else ref.current?.dismiss();
-  }, [visible]);
+  const handleChange = useCallback((index: number) => {
+    if (index === -1) onClose();
+  }, [onClose]);
 
   return (
-    <BottomSheetModal
-      ref={ref}
+    <BottomSheet
+      index={visible ? 0 : -1}
       snapPoints={snapPoints}
-      onDismiss={onClose}
+      onChange={handleChange}
       backdropComponent={Backdrop}
       backgroundStyle={styles.sheet}
       handleIndicatorStyle={styles.handle}
@@ -158,7 +151,7 @@ export function SessionNotesSheet({
     >
       <View style={styles.sheetHeader}>
         <Text style={styles.sheetTitle}>Notas</Text>
-        <Pressable onPress={() => ref.current?.dismiss()} hitSlop={12} style={styles.sheetCloseBtn}>
+        <Pressable onPress={onClose} hitSlop={12} style={styles.sheetCloseBtn}>
           <Feather name="x" size={17} color={c.faint} />
         </Pressable>
       </View>
@@ -172,7 +165,7 @@ export function SessionNotesSheet({
           multiline
           style={styles.notesInput}
           textAlignVertical="top"
-          autoFocus
+          autoFocus={visible}
         />
         <View style={styles.notesFooter}>
           <Text style={styles.charCount}>{note.length > 0 ? `${note.length} caracteres` : ""}</Text>
@@ -191,7 +184,7 @@ export function SessionNotesSheet({
           )}
         </View>
       </BottomSheetView>
-    </BottomSheetModal>
+    </BottomSheet>
   );
 }
 
