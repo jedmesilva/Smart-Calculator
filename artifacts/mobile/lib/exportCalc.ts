@@ -358,30 +358,57 @@ export async function exportAsPDF(data: ResultData): Promise<void> {
     return;
   }
 
-  const html = buildHTML(data);
-  const { uri: tmpUri } = await Print.printToFileAsync({ html, base64: false });
+  // ── Nativo: também usa o servidor para PDF idêntico ao web ──
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token ?? "";
+
+  const apiBase = process.env.EXPO_PUBLIC_API_URL
+    ? process.env.EXPO_PUBLIC_API_URL
+    : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api`;
+
+  const response = await fetch(`${apiBase}/export/pdf`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err?.error ?? "Erro ao gerar PDF no servidor");
+  }
+
+  // Converte a resposta para base64 e salva no filesystem
+  const arrayBuffer = await response.arrayBuffer();
+  const base64 = btoa(
+    new Uint8Array(arrayBuffer).reduce((acc, byte) => acc + String.fromCharCode(byte), "")
+  );
+
+  const tmpUri = (FileSystem.cacheDirectory ?? "") + fileName;
+  await FileSystem.writeAsStringAsync(tmpUri, base64, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
 
   try {
     if (Platform.OS === "android") {
-      // Android: salva direto na pasta Downloads sem share sheet
       await saveToAndroidDownloads(tmpUri, fileName);
       await FileSystem.deleteAsync(tmpUri, { idempotent: true });
       return;
     }
 
-    // iOS: share sheet nativa (única forma disponível no iOS)
-    const destUri = (FileSystem.cacheDirectory ?? "") + fileName;
-    await FileSystem.copyAsync({ from: tmpUri, to: destUri });
-    await FileSystem.deleteAsync(tmpUri, { idempotent: true });
-
+    // iOS: share sheet nativa
     const canShare = await Sharing.isAvailableAsync();
     if (!canShare) throw new Error("Compartilhamento não disponível neste dispositivo");
 
-    await Sharing.shareAsync(destUri, {
+    await Sharing.shareAsync(tmpUri, {
       mimeType: "application/pdf",
       dialogTitle: "Salvar cálculo",
       UTI: "com.adobe.pdf",
     });
+
+    await FileSystem.deleteAsync(tmpUri, { idempotent: true }).catch(() => {});
   } catch (err) {
     await FileSystem.deleteAsync(tmpUri, { idempotent: true }).catch(() => {});
     throw err;
