@@ -5,7 +5,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  TextInput,
 } from "react-native";
 import {
   BottomSheetModal,
@@ -15,7 +14,6 @@ import {
 } from "@gorhom/bottom-sheet";
 import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import { Feather } from "@expo/vector-icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import colors from "@/constants/colors";
 import type { ResultData } from "@/lib/apiClient";
@@ -114,88 +112,6 @@ export const SessionCalcsSheet = forwardRef<
             ))}
           </BottomSheetScrollView>
         )}
-      </BottomSheetView>
-    </BottomSheetModal>
-  );
-});
-
-/* ─── SESSION NOTES SHEET ─── */
-export interface SessionNotesSheetHandle {
-  open(): void;
-  close(): void;
-}
-
-export const SessionNotesSheet = forwardRef<
-  SessionNotesSheetHandle,
-  {
-    onClose?: () => void;
-    note: string;
-    onChangeNote: (text: string) => void;
-  }
->(function SessionNotesSheet({ onClose, note, onChangeNote }, ref) {
-  const insets = useSafeAreaInsets();
-  const sheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ["50%"], []);
-
-  useImperativeHandle(ref, () => ({
-    open: () => sheetRef.current?.present(),
-    close: () => sheetRef.current?.dismiss(),
-  }));
-
-  /* onDismiss fires AFTER the modal is already gone — only notify parent, never dismiss again */
-  const handleDismiss = useCallback(() => {
-    onClose?.();
-  }, [onClose]);
-
-  return (
-    <BottomSheetModal
-      ref={sheetRef}
-      snapPoints={snapPoints}
-      onDismiss={handleDismiss}
-      backdropComponent={Backdrop}
-      backgroundStyle={styles.sheet}
-      handleIndicatorStyle={styles.handle}
-      enablePanDownToClose
-      keyboardBehavior="interactive"
-      keyboardBlurBehavior="restore"
-    >
-      <BottomSheetView style={[styles.notesBody, { paddingBottom: insets.bottom + 16 }]}>
-        <View style={styles.sheetHeader}>
-          <Text style={styles.sheetTitle}>Notas</Text>
-          {/* dismiss directly on the internal ref — never through the forwarded handle */}
-          <Pressable
-            onPress={() => sheetRef.current?.dismiss()}
-            hitSlop={12}
-            style={styles.sheetCloseBtn}
-          >
-            <Feather name="x" size={17} color={c.faint} />
-          </Pressable>
-        </View>
-        <TextInput
-          value={note}
-          onChangeText={onChangeNote}
-          placeholder="Escreva anotações sobre essa sessão…"
-          placeholderTextColor={c.ghost}
-          multiline
-          style={styles.notesInput}
-          textAlignVertical="top"
-        />
-        <View style={styles.notesFooter}>
-          <Text style={styles.charCount}>{note.length > 0 ? `${note.length} caracteres` : ""}</Text>
-          {note.trim().length > 0 && (
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                onChangeNote("");
-              }}
-              hitSlop={8}
-              style={({ pressed }) => [styles.clearBtn, pressed && { opacity: 0.6 }]}
-            >
-              <Feather name="trash-2" size={13} color={c.ghost} />
-              <Text style={styles.clearBtnText}>limpar</Text>
-            </Pressable>
-          )}
-        </View>
       </BottomSheetView>
     </BottomSheetModal>
   );
@@ -310,39 +226,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: c.border,
     marginHorizontal: 24,
-  },
-  notesBody: {
-    flex: 1,
-    paddingTop: 16,
-    gap: 10,
-  },
-  notesInput: {
-    flex: 1,
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
-    color: c.text,
-    lineHeight: 22,
-    paddingHorizontal: 24,
-  },
-  notesFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 8,
-    paddingHorizontal: 24,
-    borderTopWidth: 1,
-    borderTopColor: c.border,
-  },
-  charCount: {
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
-    color: c.ghost,
-  },
-  clearBtn: { flexDirection: "row", alignItems: "center", gap: 4 },
-  clearBtnText: {
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
-    color: c.ghost,
   },
   bar: {
     flexShrink: 0,

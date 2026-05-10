@@ -19,8 +19,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import colors from "@/constants/colors";
 import { CalcOverlay, HistoryOverlay, CalculationsScreen, PlansScreen, PlanManagementScreen } from "@/components/Overlays";
 import { CalcSummaryCard } from "@/components/CalcSummaryCard";
-import { QuickActionsBar, SessionCalcsSheet, SessionNotesSheet } from "@/components/QuickActionSheets";
-import type { SessionCalcsSheetHandle, SessionNotesSheetHandle } from "@/components/QuickActionSheets";
+import { QuickActionsBar, SessionCalcsSheet } from "@/components/QuickActionSheets";
+import type { SessionCalcsSheetHandle } from "@/components/QuickActionSheets";
 import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateStream, type ResultData, type MissingVariable } from "@/lib/apiClient";
@@ -193,8 +193,6 @@ export default function PhormulаScreen() {
   const [calcOrigin, setCalcOrigin] = useState<"main" | "calculations">("main");
   const [thinkingMessage, setThinkingMessage] = useState<string | null>(null);
   const sessionCalcsRef = useRef<SessionCalcsSheetHandle>(null);
-  const sessionNotesRef = useRef<SessionNotesSheetHandle>(null);
-  const [sessionNote, setSessionNote] = useState("");
   const inputRef = useRef<TextInput>(null);
 
   const lastResult = [...chat].reverse().find((x) => x.kind === "result");
@@ -427,12 +425,6 @@ export default function PhormulаScreen() {
             label: "Cálculos",
             onPress: () => sessionCalcsRef.current?.open(),
           },
-          {
-            id: "notes",
-            icon: "edit-3",
-            label: "Notas",
-            onPress: () => sessionNotesRef.current?.open(),
-          },
         ]}
       />
 
@@ -551,11 +543,6 @@ export default function PhormulаScreen() {
           setCalcOrigin("main");
           setScreen("calc");
         }}
-      />
-      <SessionNotesSheet
-        ref={sessionNotesRef}
-        note={sessionNote}
-        onChangeNote={setSessionNote}
       />
     </View>
   );
