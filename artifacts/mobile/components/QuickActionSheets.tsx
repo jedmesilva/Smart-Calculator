@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 22,
+    paddingHorizontal: 24,
     paddingVertical: 14,
   },
   sheetTitle: {
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: c.border,
-    marginHorizontal: 20,
+    marginHorizontal: 24,
   },
   notesBody: {
     flex: 1,
@@ -318,14 +318,14 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     color: c.text,
     lineHeight: 22,
-    paddingHorizontal: 22,
+    paddingHorizontal: 24,
   },
   notesFooter: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingTop: 8,
-    paddingHorizontal: 22,
+    paddingHorizontal: 24,
     borderTopWidth: 1,
     borderTopColor: c.border,
   },
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     flexGrow: 0,
   },
   barContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingVertical: 4,
     gap: 10,
     flexDirection: "row",

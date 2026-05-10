@@ -590,7 +590,7 @@ export function PlansScreen({ onClose }: { onClose: () => void }) {
 
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 28 + insets.bottom, gap: 12 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 28 + insets.bottom, gap: 12 }}
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.plansSubtitle}>
@@ -708,7 +708,7 @@ export function PlanManagementScreen({
 
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 28 + insets.bottom, gap: 16 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 28 + insets.bottom, gap: 16 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Plan badge */}
@@ -932,7 +932,7 @@ export function FormulasScreen({
   return (
     <View style={[styles.overlay, { paddingTop: topPad }]}>
       {/* Header */}
-      <View style={{ paddingHorizontal: 28, paddingTop: 10, paddingBottom: 12 }}>
+      <View style={{ paddingHorizontal: 24, paddingTop: 10, paddingBottom: 12 }}>
         <View style={styles.overlayHeaderRow}>
           <Text style={styles.overlayTitle}>Fórmulas</Text>
           <Pressable onPress={onClose} style={styles.iconBtn} hitSlop={12}>
@@ -979,7 +979,7 @@ export function FormulasScreen({
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.catScroll}
-          contentContainerStyle={{ paddingHorizontal: 28, gap: 6, flexDirection: "row", alignItems: "flex-start" }}
+          contentContainerStyle={{ paddingHorizontal: 24, gap: 6, flexDirection: "row", alignItems: "flex-start" }}
         >
           {cats.map((cat) => (
             <Pressable
@@ -1052,7 +1052,7 @@ const styles = StyleSheet.create({
     zIndex: 60,
   },
   overlayHeader: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 10,
     paddingBottom: 14,
     flexDirection: "row",
@@ -1102,7 +1102,7 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_600SemiBold",
   },
   overlayBody: {
-    paddingHorizontal: 28,
+    paddingHorizontal: 24,
     paddingBottom: 28,
     gap: 6,
   },
@@ -2102,6 +2102,6 @@ const styles = StyleSheet.create({
   listDivider: {
     height: 1,
     backgroundColor: c.border,
-    marginHorizontal: 20,
+    marginHorizontal: 24,
   },
 });
