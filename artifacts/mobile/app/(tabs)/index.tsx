@@ -151,7 +151,7 @@ const SUGGESTIONS = [
 /* ─── EMPTY STATE ─── */
 function EmptyChat({ onSuggest, bottomOffset }: { onSuggest: (text: string) => void; bottomOffset: number }) {
   return (
-    <View style={[styles.emptyWrap, { transform: [{ scaleY: -1 }], paddingTop: bottomOffset }]}>
+    <View style={[styles.emptyWrap, { paddingBottom: bottomOffset }]}>
       <Text style={styles.emptyσ}>σ</Text>
       <Text style={styles.emptyTitle}>Nova sessão</Text>
       <Text style={styles.emptySubtitle}>Descreva qualquer cálculo em português</Text>
