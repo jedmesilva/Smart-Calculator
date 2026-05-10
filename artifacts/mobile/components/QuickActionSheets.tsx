@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useRef, useEffect } from "react";
+import React, { useMemo, useCallback, useRef, forwardRef, useImperativeHandle } from "react";
 import {
   View,
   Text,
@@ -35,33 +35,27 @@ function Backdrop(props: BottomSheetBackdropProps) {
 }
 
 /* ─── SESSION CALCS SHEET ─── */
-export function SessionCalcsSheet({
-  visible,
-  onClose,
-  results,
-  onView,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  results: ResultData[];
-  onView: (r: ResultData) => void;
-}) {
+export interface SessionCalcsSheetHandle {
+  open(): void;
+  close(): void;
+}
+
+export const SessionCalcsSheet = forwardRef<
+  SessionCalcsSheetHandle,
+  {
+    onClose: () => void;
+    results: ResultData[];
+    onView: (r: ResultData) => void;
+  }
+>(function SessionCalcsSheet({ onClose, results, onView }, ref) {
   const insets = useSafeAreaInsets();
   const sheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["64%"], []);
-  const mounted = useRef(false);
 
-  useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      return;
-    }
-    if (visible) {
-      sheetRef.current?.present();
-    } else {
-      sheetRef.current?.dismiss();
-    }
-  }, [visible]);
+  useImperativeHandle(ref, () => ({
+    open: () => sheetRef.current?.present(),
+    close: () => sheetRef.current?.dismiss(),
+  }));
 
   const handleDismiss = useCallback(() => {
     onClose();
@@ -80,7 +74,7 @@ export function SessionCalcsSheet({
       <BottomSheetView style={{ flex: 1 }}>
         <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>Cálculos da sessão</Text>
-          <Pressable onPress={onClose} hitSlop={12} style={styles.sheetCloseBtn}>
+          <Pressable onPress={() => sheetRef.current?.dismiss()} hitSlop={12} style={styles.sheetCloseBtn}>
             <Feather name="x" size={17} color={c.faint} />
           </Pressable>
         </View>
@@ -135,36 +129,30 @@ export function SessionCalcsSheet({
       </BottomSheetView>
     </BottomSheetModal>
   );
-}
+});
 
 /* ─── SESSION NOTES SHEET ─── */
-export function SessionNotesSheet({
-  visible,
-  onClose,
-  note,
-  onChangeNote,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  note: string;
-  onChangeNote: (text: string) => void;
-}) {
+export interface SessionNotesSheetHandle {
+  open(): void;
+  close(): void;
+}
+
+export const SessionNotesSheet = forwardRef<
+  SessionNotesSheetHandle,
+  {
+    onClose: () => void;
+    note: string;
+    onChangeNote: (text: string) => void;
+  }
+>(function SessionNotesSheet({ onClose, note, onChangeNote }, ref) {
   const insets = useSafeAreaInsets();
   const sheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["50%"], []);
-  const mounted = useRef(false);
 
-  useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      return;
-    }
-    if (visible) {
-      sheetRef.current?.present();
-    } else {
-      sheetRef.current?.dismiss();
-    }
-  }, [visible]);
+  useImperativeHandle(ref, () => ({
+    open: () => sheetRef.current?.present(),
+    close: () => sheetRef.current?.dismiss(),
+  }));
 
   const handleDismiss = useCallback(() => {
     onClose();
@@ -185,7 +173,7 @@ export function SessionNotesSheet({
       <BottomSheetView style={[styles.notesBody, { paddingBottom: insets.bottom + 16 }]}>
         <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>Notas</Text>
-          <Pressable onPress={onClose} hitSlop={12} style={styles.sheetCloseBtn}>
+          <Pressable onPress={() => sheetRef.current?.dismiss()} hitSlop={12} style={styles.sheetCloseBtn}>
             <Feather name="x" size={17} color={c.faint} />
           </Pressable>
         </View>
@@ -197,7 +185,6 @@ export function SessionNotesSheet({
           multiline
           style={styles.notesInput}
           textAlignVertical="top"
-          autoFocus={visible}
         />
         <View style={styles.notesFooter}>
           <Text style={styles.charCount}>{note.length > 0 ? `${note.length} caracteres` : ""}</Text>
@@ -218,7 +205,7 @@ export function SessionNotesSheet({
       </BottomSheetView>
     </BottomSheetModal>
   );
-}
+});
 
 /* ─── QUICK ACTIONS BAR ─── */
 type QuickAction = {

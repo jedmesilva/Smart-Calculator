@@ -18,6 +18,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import colors from "@/constants/colors";
 import { CalcOverlay, HistoryOverlay, FormulasScreen, CalculationsScreen, PlansScreen, PlanManagementScreen } from "@/components/Overlays";
 import { QuickActionsBar, SessionCalcsSheet, SessionNotesSheet } from "@/components/QuickActionSheets";
+import type { SessionCalcsSheetHandle, SessionNotesSheetHandle } from "@/components/QuickActionSheets";
 import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateStream, type ResultData, type MissingVariable } from "@/lib/apiClient";
@@ -276,8 +277,8 @@ export default function PhormulаScreen() {
   const [viewingResult, setViewingResult] = useState<ResultData | null>(null);
   const [calcOrigin, setCalcOrigin] = useState<"main" | "calculations">("main");
   const [thinkingMessage, setThinkingMessage] = useState<string | null>(null);
-  const [showSessionCalcs, setShowSessionCalcs] = useState(false);
-  const [showSessionNotes, setShowSessionNotes] = useState(false);
+  const sessionCalcsRef = useRef<SessionCalcsSheetHandle>(null);
+  const sessionNotesRef = useRef<SessionNotesSheetHandle>(null);
   const [sessionNote, setSessionNote] = useState("");
   const inputRef = useRef<TextInput>(null);
 
@@ -520,13 +521,13 @@ export default function PhormulаScreen() {
             id: "calcs",
             icon: "hash",
             label: "Cálculos",
-            onPress: () => setShowSessionCalcs(true),
+            onPress: () => sessionCalcsRef.current?.open(),
           },
           {
             id: "notes",
             icon: "edit-3",
             label: "Notas",
-            onPress: () => setShowSessionNotes(true),
+            onPress: () => sessionNotesRef.current?.open(),
           },
         ]}
       />
@@ -638,19 +639,19 @@ export default function PhormulаScreen() {
       )}
       {/* ── BOTTOM SHEETS ── */}
       <SessionCalcsSheet
-        visible={showSessionCalcs}
-        onClose={() => setShowSessionCalcs(false)}
+        ref={sessionCalcsRef}
+        onClose={() => sessionCalcsRef.current?.close()}
         results={chat.filter((x) => x.kind === "result").map((x) => (x as any).result as ResultData)}
         onView={(result) => {
-          setShowSessionCalcs(false);
+          sessionCalcsRef.current?.close();
           setViewingResult(result);
           setCalcOrigin("main");
           setScreen("calc");
         }}
       />
       <SessionNotesSheet
-        visible={showSessionNotes}
-        onClose={() => setShowSessionNotes(false)}
+        ref={sessionNotesRef}
+        onClose={() => sessionNotesRef.current?.close()}
         note={sessionNote}
         onChangeNote={setSessionNote}
       />
