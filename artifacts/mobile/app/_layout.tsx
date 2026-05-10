@@ -21,13 +21,23 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
-function RootLayoutNav() {
+function RootLayoutNav({ fontsReady }: { fontsReady: boolean }) {
   const { session, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
+  const appReady = fontsReady && !loading;
+
+  // Hide splash only when both fonts and session are ready
   useEffect(() => {
-    if (loading) return;
+    if (appReady) {
+      SplashScreen.hideAsync();
+    }
+  }, [appReady]);
+
+  // Redirect based on session state
+  useEffect(() => {
+    if (!appReady) return;
 
     const inAuthGroup = segments[0] === "auth";
 
@@ -36,9 +46,9 @@ function RootLayoutNav() {
     } else if (session && inAuthGroup) {
       router.replace("/(tabs)");
     }
-  }, [session, loading, segments]);
+  }, [session, appReady, segments]);
 
-  if (loading) return null;
+  if (!appReady) return null;
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
@@ -57,13 +67,9 @@ export default function RootLayout() {
     Inter_700Bold,
   });
 
-  useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
+  const fontsReady = fontsLoaded || !!fontError;
 
-  if (!fontsLoaded && !fontError) return null;
+  if (!fontsReady) return null;
 
   return (
     <SafeAreaProvider>
@@ -73,7 +79,7 @@ export default function RootLayout() {
             <GestureHandlerRootView style={{ flex: 1 }}>
               <BottomSheetModalProvider>
                 <KeyboardProvider>
-                  <RootLayoutNav />
+                  <RootLayoutNav fontsReady={fontsReady} />
                 </KeyboardProvider>
               </BottomSheetModalProvider>
             </GestureHandlerRootView>

@@ -29,14 +29,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userName, setUserNameState] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
+    // onAuthStateChange fires immediately with INITIAL_SESSION event,
+    // which includes any token refresh. This is the safest way to restore
+    // a persisted session on both web and native.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        setLoading(false);
+      }
+    );
 
     return () => subscription.unsubscribe();
   }, []);
@@ -62,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUserNameState(trimmed);
     await supabase
       .from("profiles")
-      .upsert({ id: session.user.id, full_name: trimmed, updated_at: new Date().toISOString() });
+      .upsert({ id: session.user.id, full_name: trimmed });
   };
 
   const signOut = async () => {
