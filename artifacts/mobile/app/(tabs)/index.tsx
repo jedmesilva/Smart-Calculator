@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Platform,
   Animated,
+  Dimensions,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
@@ -215,6 +216,10 @@ function EmptyChat({ onSuggest }: { onSuggest: (text: string) => void }) {
 /* ─── MAIN ─── */
 export default function PhormulаScreen() {
   const insets = useSafeAreaInsets();
+  const sheetBottomInset = Math.max(
+    insets.bottom,
+    Dimensions.get("screen").height - Dimensions.get("window").height
+  );
   const { userId, userName, setUserName } = useAuth();
   const queryClient = useQueryClient();
 
@@ -579,7 +584,7 @@ export default function PhormulаScreen() {
       {/* ── BOTTOM SHEETS ── */}
       <SessionCalcsSheet
         ref={sessionCalcsRef}
-        bottomInset={insets.bottom}
+        bottomInset={sheetBottomInset}
         results={chat.filter((x) => x.kind === "result").map((x) => (x as any).result as ResultData)}
         onView={(result) => {
           sessionCalcsRef.current?.close();
