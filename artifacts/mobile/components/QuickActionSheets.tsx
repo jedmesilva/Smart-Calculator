@@ -435,6 +435,7 @@ const styles = StyleSheet.create({
   },
   bar: {
     flexShrink: 0,
+    flexGrow: 0,
   },
   barContent: {
     paddingHorizontal: 20,
