@@ -107,8 +107,6 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
     minute: "2-digit",
   });
 
-  const titulo = data.meta?.titulo ?? "";
-  const categoria = data.meta?.categoria ?? "";
   const subcategoria = data.meta?.subcategoria ?? "";
   const resultValor = data.resultado?.valor ?? "";
   const resultUnidade = data.resultado?.unidade ?? "";
@@ -167,42 +165,16 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
         contentContainerStyle={[styles.overlayBody, { paddingBottom: botPad + 32 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── ID Card ── */}
-        <View style={styles.idCard}>
-          <View style={styles.idCardTop}>
-            <Text style={styles.idTitle}>{titulo}</Text>
+        {/* ── Objetivo (destaque principal) ── */}
+        {!!objetivo && (
+          <View style={styles.objetivoHero}>
             {data.searchUsed && (
-              <View style={styles.idBadge}>
+              <View style={[styles.idBadge, { marginBottom: 6 }]}>
                 <Feather name="globe" size={9} color={c.mid} />
                 <Text style={styles.idBadgeText}>pesquisa web</Text>
               </View>
             )}
-          </View>
-          <View style={styles.idMeta}>
-            {!!categoria && (
-              <View style={styles.idMetaItem}>
-                <Text style={styles.idMetaLabel}>Categoria</Text>
-                <Text style={styles.idMetaValue}>{categoria}</Text>
-              </View>
-            )}
-            <View style={styles.idMetaItem}>
-              <Text style={styles.idMetaLabel}>Data</Text>
-              <Text style={styles.idMetaValueMono}>{today}</Text>
-            </View>
-            <View style={styles.idMetaItem}>
-              <Text style={styles.idMetaLabel}>Resultado</Text>
-              <Text style={styles.idMetaValue}>
-                {resultUnidade ? `${resultUnidade} ` : ""}{resultValor}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* ── Contextualização ── */}
-        {!!objetivo && (
-          <View style={styles.objetivoBox}>
-            <Text style={styles.objetivoLabel}>Objetivo</Text>
-            <Text style={styles.objetivoText}>{objetivo}</Text>
+            <Text style={styles.objetivoHeroText}>{objetivo}</Text>
           </View>
         )}
 
@@ -1366,25 +1338,14 @@ const styles = StyleSheet.create({
     color: c.mid,
   },
   /* ── Objetivo / Contextualização ── */
-  objetivoBox: {
-    borderLeftWidth: 2,
-    borderLeftColor: c.ghost,
-    paddingLeft: 14,
-    marginBottom: 22,
-    gap: 4,
+  objetivoHero: {
+    marginBottom: 24,
   },
-  objetivoLabel: {
+  objetivoHeroText: {
     fontFamily: "Inter_600SemiBold",
-    fontSize: 9,
-    color: c.ghost,
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  },
-  objetivoText: {
-    fontFamily: "Inter_400Regular",
-    fontSize: 13,
-    color: c.mid,
-    lineHeight: 20,
+    fontSize: 20,
+    color: c.text,
+    lineHeight: 28,
   },
   /* ── Context ── */
   contextText: {
