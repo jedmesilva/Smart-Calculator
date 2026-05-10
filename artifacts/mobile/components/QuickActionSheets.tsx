@@ -260,7 +260,7 @@ export function QuickActionsBar({ actions }: { actions: QuickAction[] }) {
           style={({ pressed }) => [styles.actionBtn, pressed && styles.actionBtnPressed]}
         >
           <View style={styles.actionIconWrap}>
-            <Feather name={action.icon} size={14} color={c.mid} />
+            <Feather name={action.icon} size={18} color={c.mid} />
           </View>
           <Text style={styles.actionLabel} numberOfLines={1}>
             {action.label}
@@ -271,7 +271,7 @@ export function QuickActionsBar({ actions }: { actions: QuickAction[] }) {
   );
 }
 
-const BTN_SIZE = 36;
+const BTN_SIZE = 52;
 
 const styles = StyleSheet.create({
   sheet: {
