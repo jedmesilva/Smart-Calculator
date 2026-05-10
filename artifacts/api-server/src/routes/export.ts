@@ -99,17 +99,21 @@ function buildHTML(data: any): string {
 
   const formulaLatexDoc = data.formula?.latex;
   const formulaHTML = hasFormula
-    ? `<div class="section-label">${String(++secIdx).padStart(2, "0")} — Fórmula</div>
-       <div class="formula-box">
-         ${formulaLatexDoc
-           ? `<div class="step-latex">${renderLatex(formulaLatexDoc)}</div>`
-           : `<div class="formula-symbolic">${formulaAbstrata}</div>`}
+    ? `<div class="section-block">
+         <div class="section-label">${String(++secIdx).padStart(2, "0")} — Fórmula</div>
+         <div class="formula-box">
+           ${formulaLatexDoc
+             ? `<div class="step-latex">${renderLatex(formulaLatexDoc)}</div>`
+             : `<div class="formula-symbolic">${formulaAbstrata}</div>`}
+         </div>
        </div>`
     : "";
 
   const varsHTML = hasVars
-    ? `<div class="section-label">${String(++secIdx).padStart(2, "0")} — Variáveis</div>
-       <table>${varsRows}</table>`
+    ? `<div class="section-block">
+         <div class="section-label">${String(++secIdx).padStart(2, "0")} — Variáveis</div>
+         <table>${varsRows}</table>
+       </div>`
     : "";
 
   const desenvolHTML = hasSteps
@@ -131,77 +135,113 @@ function buildHTML(data: any): string {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
   <style>
     ${katexCSS}
+    @page {
+      size: A4;
+      margin: 0;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif;
       background: #F7F6F3;
       color: #1A1A18;
-      padding: 48px 40px;
-      font-size: 14px;
+      font-size: 11px;
+      line-height: 1.5;
+      padding: 40px 44px 36px 44px;
+      width: 210mm;
     }
     .header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 32px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #E8E7E3;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #E0DFD9;
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
-    .logo { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #1A1A18; }
+    .logo { font-size: 14px; font-weight: 700; color: #1A1A18; }
     .logo span { color: #AEADA8; font-weight: 400; }
-    .date { font-size: 11px; color: #AEADA8; margin-top: 4px; }
+    .date { font-size: 9px; color: #AEADA8; margin-top: 3px; }
     .badge {
-      font-size: 10px; font-weight: 500; color: #6B6B66;
-      background: #E8E7E3; padding: 3px 8px; border-radius: 6px; white-space: nowrap;
+      font-size: 9px; font-weight: 500; color: #6B6B66;
+      background: #E8E7E3; padding: 2px 7px; border-radius: 5px; white-space: nowrap;
     }
-    .objetivo-hero { margin-bottom: 32px; }
+    .objetivo-hero {
+      margin-bottom: 24px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
     .objetivo-label {
-      font-size: 9px; font-weight: 600; color: #C8C7C2;
-      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
+      font-size: 8px; font-weight: 600; color: #C8C7C2;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;
     }
-    .objetivo-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .objetivo-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
     .objetivo-text {
-      font-size: 22px; font-weight: 700; color: #1A1A18;
-      letter-spacing: -0.4px; line-height: 1.3;
+      font-size: 18px; font-weight: 700; color: #1A1A18;
+      line-height: 1.25;
+    }
+    .section-block {
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
     .section-label {
-      font-size: 10px; font-weight: 600; color: #AEADA8;
+      font-size: 8px; font-weight: 600; color: #AEADA8;
       text-transform: uppercase; letter-spacing: 1.2px;
-      margin-bottom: 8px; margin-top: 28px;
-      padding-bottom: 6px; border-bottom: 1px solid #E8E7E3;
+      margin-bottom: 6px; margin-top: 22px;
+      padding-bottom: 5px; border-bottom: 1px solid #E0DFD9;
+      break-after: avoid;
+      page-break-after: avoid;
     }
     .formula-box {
-      background: #EFEFEC; border-radius: 12px; padding: 16px 20px; margin-top: 8px;
+      background: #EFEFEC; border-radius: 10px; padding: 12px 16px; margin-top: 6px;
+      break-inside: avoid; page-break-inside: avoid;
     }
-    .formula-symbolic { font-size: 13px; color: #1A1A18; font-family: monospace; }
-    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-    tr { border-bottom: 1px solid #E8E7E3; }
+    .formula-symbolic { font-size: 11px; color: #1A1A18; font-family: monospace; }
+    table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    tr {
+      border-bottom: 1px solid #E0DFD9;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
     tr:last-child { border-bottom: none; }
-    td { padding: 10px 4px; vertical-align: middle; }
-    .var-symbol { font-weight: 700; color: #1A1A18; width: 32px; font-size: 13px; }
-    .var-name { color: #AEADA8; flex: 1; font-size: 13px; }
-    .var-value { font-weight: 600; text-align: right; font-size: 13px; color: #1A1A18; }
+    td { padding: 7px 4px; vertical-align: middle; }
+    .var-symbol { font-weight: 700; color: #1A1A18; width: 36px; font-size: 11px; }
+    .var-name { color: #AEADA8; font-size: 11px; }
+    .var-value { font-weight: 600; text-align: right; font-size: 11px; color: #1A1A18; }
+    .steps { margin-top: 6px; }
     .step {
-      display: flex; gap: 16px; padding: 10px 0;
-      border-bottom: 1px solid #E8E7E3; align-items: flex-start;
+      display: flex; gap: 14px; padding: 8px 0;
+      border-bottom: 1px solid #E0DFD9; align-items: flex-start;
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
     .step:last-child { border-bottom: none; }
-    .step-num { font-weight: 700; font-size: 10px; color: #C8C7C2; min-width: 20px; padding-top: 2px; }
-    .step-body { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-    .step-text { font-size: 13px; color: #6B6B66; line-height: 1.6; }
-    .step-tipo { font-size: 9px; color: #C8C7C2; text-transform: uppercase; letter-spacing: 0.5px; }
-    .result-card {
-      background: #F0EFEB; border-radius: 16px; padding: 16px 22px; margin-top: 8px;
+    .step-num { font-weight: 700; font-size: 9px; color: #C8C7C2; min-width: 18px; padding-top: 2px; }
+    .step-body { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+    .step-text { font-size: 11px; color: #6B6B66; line-height: 1.55; }
+    .step-tipo { font-size: 8px; color: #C8C7C2; text-transform: uppercase; letter-spacing: 0.5px; }
+    .result-section {
+      break-before: avoid;
+      page-break-before: avoid;
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
-    .result-unit { font-size: 11px; font-weight: 500; color: #AEADA8; letter-spacing: 0.2px; margin-bottom: 2px; }
-    .result-num { font-size: 40px; font-weight: 700; color: #1A1A18; letter-spacing: -2px; line-height: 1.1; }
-    .result-label { font-size: 11px; font-weight: 500; color: #6B6B66; text-transform: uppercase; letter-spacing: 0.2px; margin-top: 6px; }
-    .result-interpretacao { font-size: 11px; color: #AEADA8; margin-top: 4px; font-style: italic; }
-    .step-latex { text-align: center; padding: 6px 0; color: #1A1A18; }
+    .result-card {
+      background: #EFEFEC; border-radius: 12px; padding: 14px 18px; margin-top: 6px;
+      break-inside: avoid; page-break-inside: avoid;
+    }
+    .result-unit { font-size: 9px; font-weight: 500; color: #AEADA8; letter-spacing: 0.2px; margin-bottom: 2px; }
+    .result-num { font-size: 34px; font-weight: 700; color: #1A1A18; letter-spacing: -1px; line-height: 1.1; }
+    .result-label { font-size: 9px; font-weight: 500; color: #6B6B66; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 5px; }
+    .result-interpretacao { font-size: 10px; color: #AEADA8; margin-top: 3px; font-style: italic; }
+    .katex { font-size: 1em; }
+    .katex-display { display: block; text-align: center; margin: 0.4em 0; }
+    .step-latex { text-align: center; padding: 4px 0; color: #1A1A18; }
     .footer {
-      margin-top: 48px; padding-top: 16px; border-top: 1px solid #E8E7E3;
-      font-size: 10px; color: #C8C7C2;
+      margin-top: 36px; padding-top: 12px; border-top: 1px solid #E0DFD9;
+      font-size: 9px; color: #C8C7C2;
       display: flex; justify-content: space-between;
+      break-inside: avoid; page-break-inside: avoid;
     }
   </style>
 </head>
@@ -226,12 +266,14 @@ function buildHTML(data: any): string {
   ${varsHTML}
   ${desenvolHTML}
 
-  <div class="section-label">${String(resSecNum).padStart(2, "0")} — Resultado</div>
-  <div class="result-card">
-    ${resultUnidade ? `<div class="result-unit">${resultUnidade}</div>` : ""}
-    <div class="result-num">${resultValor}</div>
-    ${subcategoria ? `<div class="result-label">${subcategoria}</div>` : ""}
-    ${resultInterpretacao ? `<div class="result-interpretacao">${resultInterpretacao}</div>` : ""}
+  <div class="result-section">
+    <div class="section-label">${String(resSecNum).padStart(2, "0")} — Resultado</div>
+    <div class="result-card">
+      ${resultUnidade ? `<div class="result-unit">${resultUnidade}</div>` : ""}
+      <div class="result-num">${resultValor}</div>
+      ${subcategoria ? `<div class="result-label">${subcategoria}</div>` : ""}
+      ${resultInterpretacao ? `<div class="result-interpretacao">${resultInterpretacao}</div>` : ""}
+    </div>
   </div>
 
   <div class="footer">
@@ -270,8 +312,9 @@ router.post("/export/pdf", requireAuth, async (req, res) => {
       await page.setContent(html, { waitUntil: "networkidle0", timeout: 15000 });
       const pdfBuffer = await page.pdf({
         format: "A4",
-        margin: { top: "1.5cm", bottom: "1.5cm", left: "1.5cm", right: "1.5cm" },
+        margin: { top: "0", bottom: "0", left: "0", right: "0" },
         printBackground: true,
+        preferCSSPageSize: true,
       });
       await browser.close();
 
