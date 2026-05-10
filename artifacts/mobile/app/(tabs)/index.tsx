@@ -663,15 +663,13 @@ const styles = StyleSheet.create({
   displayPanel: {
     flexShrink: 0,
     paddingHorizontal: 28,
-    paddingBottom: 36,
-    justifyContent: "space-between",
-    minHeight: 300,
+    paddingBottom: 16,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 36,
+    marginBottom: 16,
   },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 7 },
   headerRight: { flexDirection: "row", gap: 4 },
