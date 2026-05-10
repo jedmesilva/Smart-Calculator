@@ -30,15 +30,13 @@ App mobile de calculadora inteligente com chat em português — o usuário desc
 - `artifacts/mobile/lib/supabase.ts` — cliente Supabase (mobile, AsyncStorage)
 - `artifacts/mobile/contexts/AuthContext.tsx` — Supabase session management
 - `artifacts/api-server/src/routes/calculate.ts` — POST /api/calculate (delega para orchestrator)
-- `artifacts/api-server/src/lib/orchestrator.ts` — coordenador central (5 fases)
+- `artifacts/api-server/src/lib/orchestrator.ts` — pipeline 3 agentes (coordenador central)
 - `artifacts/api-server/src/lib/formulaCompute.ts` — avalia expressão com mathjs
 - `artifacts/api-server/src/lib/explainBuilder.ts` — monta ResultData (código puro)
 - `artifacts/api-server/src/agents/types.ts` — tipos compartilhados entre agentes
-- `artifacts/api-server/src/agents/formulaAgent.ts` — Fase 1b: busca/identifica/valida fórmula
-- `artifacts/api-server/src/agents/contextAgent.ts` — Fase 1a: extrai valores genéricos da conversa
-- `artifacts/api-server/src/agents/expressionAgent.ts` — Fase 2: monta expressão MathJS (retry + web search)
-- `artifacts/api-server/src/agents/validationAgent.ts` — Fase 4: prova reversa + checagem de razoabilidade
-- `artifacts/api-server/src/agents/conversationalAgent.ts` — Fase 5b: resposta em linguagem natural
+- `artifacts/api-server/src/agents/calculatorAgent.ts` — Agent 2: decide estratégia (simple/complex), monta expressão MathJS, computa localmente
+- `artifacts/api-server/src/agents/evaluatorAgent.ts` — Agent 3: score 0-10 + aprovação + feedback para retry
+- `artifacts/api-server/src/agents/conversationalAgent.ts` — resposta em linguagem natural (pós-resultado) + guidance (fallback)
 - `artifacts/api-server/src/agents/formulaValidationAgent.ts` — validação de fórmula ao criar (fluxo separado)
 - `artifacts/api-server/src/lib/summaryBuilder.ts` — geração de resumo LLM da sessão (gpt-4o-mini)
 - `artifacts/api-server/src/middlewares/auth.ts` — verificação JWT Supabase
@@ -48,14 +46,12 @@ App mobile de calculadora inteligente com chat em português — o usuário desc
 
 - **Híbrido**: mobile fala com Supabase diretamente para CRUD; fala com API server apenas para IA
 - **Auth**: Supabase JWT enviado como Bearer token para o servidor; servidor verifica via `supabase.auth.getUser(token)`
-- **Pipeline de cálculo (5 fases)**:
-  - Fase 1 (paralelo): `formulaAgent` (DB lookup ou LLM identifica fórmula, valida adequação) + `contextAgent` (extrai valores genéricos da conversa)
-  - Fase 2: `expressionAgent` monta/valida expressão MathJS com loop de retry (máx 3 tentativas; web search via gpt-5.1 + web_search_preview como fallback)
-  - Fase 3: `computeFormula` via mathjs local
-  - Fase 4: `validationAgent` — prova reversa matemática + checagem de razoabilidade via LLM
-  - Fase 5 (paralelo): `buildResult` (código puro) + `conversationalAgent` (resposta pt-BR em linguagem natural)
-- **Orquestrador central**: `lib/orchestrator.ts` coordena todas as fases, loops de retry e propagação de erro
-- **formulaAgent modo fixo**: valida se a fórmula selecionada é adequada para a query (retorna `wrong_formula` se não)
+- **Pipeline de cálculo (3 agentes)**:
+  - **Agent 1 (Intent)**: LLM call focado; analisa query + contexto → `{status: "ready", objective, values, contextSummary}` ou `"needs_input"` ou `"conversational"`. Embutido no orchestrator.
+  - **Agent 2 (Calculator)**: `calculatorAgent.ts` — recebe `{objective, values, contextSummary, feedback?}`; decide SIMPLE (expressão única MathJS) ou COMPLEX (multi-step com `{label}` refs); computa localmente com MathJS
+  - **Agent 3 (Evaluator)**: `evaluatorAgent.ts` — analisa objetivo × fórmula × resultado; score 0-10; aprovado se ≥ 7; caso contrário envia feedback ao Agent 2 para retry (máx 2 retentativas)
+  - **Fase final (paralelo)**: `buildDesenvolvimento` + `runConversationalAgent` → monta `ResultData` completo
+- **Orquestrador central**: `lib/orchestrator.ts` coordena os 3 agentes, loop de retry do evaluator, e propagação de erro
 - **formulaValidationAgent**: fluxo separado para validar fórmulas ao criá-las (testa expressão MathJS com valores de exemplo)
 - **ResultData estendido**: inclui `proof: { verified, method, detail }` + `conversationalResponse: string`
 - **Chat UX**: resposta bem-sucedida → bubble de texto conversacional + card de resultado (dois itens no chat)
