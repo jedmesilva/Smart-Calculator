@@ -172,27 +172,6 @@ function EmptyChat({ onSuggest }: { onSuggest: (text: string) => void }) {
   );
 }
 
-/* ─── WEB: injeta CSS puro no textarea para evitar conflito com RN Web ─── */
-if (Platform.OS === "web" && typeof document !== "undefined") {
-  const styleId = "phormula-chat-input-css";
-  if (!document.getElementById(styleId)) {
-    const el = document.createElement("style");
-    el.id = styleId;
-    el.textContent = `
-      #phormula-chat-input, #phormula-chat-input textarea {
-        resize: none !important;
-        border: none !important;
-        outline: none !important;
-        background: transparent !important;
-        padding: 6px 0 !important;
-        line-height: 1.5 !important;
-        overflow-y: auto !important;
-      }
-    `;
-    document.head.appendChild(el);
-  }
-}
-
 /* ─── MAIN ─── */
 export default function PhormulаScreen() {
   const insets = useSafeAreaInsets();
@@ -240,10 +219,6 @@ export default function PhormulаScreen() {
     if (!query.trim() || isLoading) return;
     const text = query.trim();
     setQuery("");
-    if (Platform.OS === "web") {
-      const el = document.getElementById("phormula-chat-input") as HTMLTextAreaElement | null;
-      if (el) el.style.height = "auto";
-    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     const msgId = Date.now().toString() + Math.random().toString(36).slice(2, 6);
@@ -487,30 +462,14 @@ export default function PhormulаScreen() {
             <TextInput
               ref={inputRef}
               value={query}
-              onChangeText={(text) => {
-                setQuery(text);
-                if (Platform.OS === "web") {
-                  const el = document.getElementById("phormula-chat-input") as HTMLTextAreaElement | null;
-                  if (el) {
-                    el.style.height = "auto";
-                    el.style.height = Math.min(el.scrollHeight, 120) + "px";
-                  }
-                }
-              }}
-              nativeID={Platform.OS === "web" ? "phormula-chat-input" : undefined}
+              onChangeText={setQuery}
               placeholder="Descreva o cálculo…"
               placeholderTextColor={c.ghost}
               multiline
               style={styles.textInput}
-              returnKeyType={Platform.OS === "web" ? "default" : "send"}
-              onSubmitEditing={Platform.OS !== "web" ? handleSend : undefined}
+              returnKeyType="send"
+              onSubmitEditing={handleSend}
               blurOnSubmit={false}
-              onKeyPress={Platform.OS === "web" ? (e: any) => {
-                if (e.nativeEvent.key === "Enter" && (e.nativeEvent.ctrlKey || e.nativeEvent.metaKey)) {
-                  e.preventDefault?.();
-                  handleSend();
-                }
-              } : undefined}
             />
             <Pressable
               onPress={handleSend}
@@ -890,7 +849,9 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     minHeight: 32,
     maxHeight: 120,
-    ...(Platform.OS !== "web" ? { paddingTop: 0, paddingBottom: 0, textAlignVertical: "center" } : {}),
+    paddingTop: 0,
+    paddingBottom: 0,
+    textAlignVertical: "center",
   },
   sendBtn: {
     width: 32,
