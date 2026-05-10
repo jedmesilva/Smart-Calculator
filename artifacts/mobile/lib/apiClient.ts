@@ -66,6 +66,7 @@ export type ResultData = {
     valor: string;
     latex: string | null;
     unidade: string;
+    resultUnitType?: string;
     interpretacao?: string | null;
   };
 

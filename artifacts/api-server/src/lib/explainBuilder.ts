@@ -2,6 +2,7 @@ import { parse } from "mathjs";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import type { ExpressionResult, ValidationResult, FormulaExpressionMeta } from "../agents/types";
 import { logger } from "./logger";
+import { normalizeUnit, formatValue, formatWithUnit, type UnitType } from "./unitUtils";
 
 /* ═══════════════════════════════════════════════════════
    Schema Universal de Resultado
@@ -58,6 +59,7 @@ export type ResultData = {
     valor: string;
     latex: string | null;
     unidade: string;
+    resultUnitType?: UnitType;
     interpretacao?: string | null;
   };
 
@@ -393,14 +395,8 @@ export async function buildDesenvolvimento(opts: {
     })
     .join(", ");
 
-  let displayValue = computedValue;
-  if (resultUnit === "%") displayValue = computedValue * 100;
-  const decimals = Number.isInteger(displayValue) ? 0 : 2;
-  const formattedResult = new Intl.NumberFormat("pt-BR", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(displayValue);
-  const resultWithUnit = `${formattedResult}${resultUnit && resultUnit !== "%" ? " " + resultUnit : resultUnit === "%" ? "%" : ""}`;
+  const normUnit = normalizeUnit(resultUnit);
+  const resultWithUnit = formatWithUnit(computedValue, normUnit);
 
   /* ── Monta dicas de sub-expressões para ajudar o LLM a decompor ── */
   const subExpressionHints = buildSubExpressionHints(expression, extracted, solveFor);
@@ -594,7 +590,8 @@ export function buildResult(
     interpretacao?: string | null;
   } = {}
 ): Omit<ResultData, "conversationalResponse" | "desenvolvimento"> {
-  const formatted = formatPtBR(computedValue, vars.resultUnit);
+  const normUnit = normalizeUnit(vars.resultUnit);
+  const formatted = formatValue(computedValue, normUnit);
 
   /* ── Determina tipo de operação e preenche dominio + operacao ── */
   const tipoOp = detectExpressionType(vars.expression);
@@ -684,7 +681,8 @@ export function buildResult(
     resultado: {
       valor: formatted,
       latex: latexRes,
-      unidade: vars.resultUnit,
+      unidade: normUnit.symbol,
+      resultUnitType: normUnit.type,
       interpretacao: options.interpretacao ?? null,
     },
 
@@ -692,13 +690,7 @@ export function buildResult(
   };
 }
 
+// formatPtBR mantido como wrapper para compatibilidade com código legado
 function formatPtBR(value: number, unit: string): string {
-  if (unit === "%") {
-    return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 4 }).format(value * 100);
-  }
-  const decimals = Number.isInteger(value) ? 0 : 2;
-  return new Intl.NumberFormat("pt-BR", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(value);
+  return formatValue(value, normalizeUnit(unit));
 }

@@ -18,6 +18,7 @@
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { computeFormula } from "../lib/formulaCompute";
 import { logger } from "../lib/logger";
+import { normalizeUnit, UNIT_PROMPT_RULES, type UnitType } from "../lib/unitUtils";
 
 /* ── Tipos ────────────────────────────────────────────── */
 
@@ -48,7 +49,8 @@ export type CalculatorResult = {
   expression: string;
   computedValue: number;
   computedSteps?: ComputedStep[];
-  resultUnit: string;
+  resultUnit: string;       // símbolo canônico após normalização
+  resultUnitType: UnitType; // tipo semântico (currency, percent, physical, …)
   resultLabel: string;
   solveFor: string;
   variables: CalcVariable[];
@@ -144,7 +146,9 @@ Estratégia COMPLEX:
 Em COMPLEX, use {label} para referenciar o resultado de um step anterior.
 O último step ou o step indicado em "resultStep" é o resultado final.
 REGRA: "numericValue" em cada variável DEVE ser o número puro (sem unidade, sem formatação pt-BR).
-REGRA: "expression" DEVE conter valores numéricos literais (substitua todos os símbolos).`;
+REGRA: "expression" DEVE conter valores numéricos literais (substitua todos os símbolos).
+
+${UNIT_PROMPT_RULES}`;
 
 /* ── Resolvedor de steps complexos com {label} ────────── */
 
@@ -329,13 +333,16 @@ export async function runCalculatorAgent(
       "calculatorAgent: simple result"
     );
 
+    const normUnit = normalizeUnit(parsed.resultUnit ?? "");
+
     return {
       strategy: "simple",
       formulaName: parsed.formulaName ?? "Cálculo",
       formulaSymbolic: parsed.formulaSymbolic ?? "",
       expression: parsed.expression ?? "",
       computedValue,
-      resultUnit: parsed.resultUnit ?? "",
+      resultUnit: normUnit.symbol,
+      resultUnitType: normUnit.type,
       resultLabel: parsed.resultLabel ?? "resultado",
       solveFor: parsed.solveFor ?? "R",
       variables,
@@ -376,6 +383,8 @@ export async function runCalculatorAgent(
       "calculatorAgent: complex result"
     );
 
+    const normUnit = normalizeUnit(parsed.resultUnit ?? "");
+
     return {
       strategy: "complex",
       formulaName: parsed.formulaName ?? "Cálculo",
@@ -383,7 +392,8 @@ export async function runCalculatorAgent(
       expression: finalExpression,
       computedValue: finalValue,
       computedSteps,
-      resultUnit: parsed.resultUnit ?? "",
+      resultUnit: normUnit.symbol,
+      resultUnitType: normUnit.type,
       resultLabel: parsed.resultLabel ?? "resultado",
       solveFor: parsed.solveFor ?? "R",
       variables,

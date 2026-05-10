@@ -9,6 +9,7 @@
 
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { logger } from "../lib/logger";
+import { normalizeUnit, formatWithUnit } from "../lib/unitUtils";
 import type { ConversationMessage, ExpressionResult, FormulaInfo, ValidationResult } from "./types";
 
 export type GuidanceResponse = {
@@ -136,14 +137,8 @@ export async function runConversationalAgent(opts: {
 }): Promise<string> {
   const { query, formula, expressionResult, computedValue, validation, context, sessionSummary, userName } = opts;
 
-  const isPercent = expressionResult.resultUnit === "%";
-  const displayValue = isPercent ? computedValue * 100 : computedValue;
-  const formattedResult = new Intl.NumberFormat("pt-BR", {
-    maximumFractionDigits: 4,
-  }).format(displayValue);
-  const resultWithUnit = expressionResult.resultUnit
-    ? `${expressionResult.resultUnit} ${formattedResult}`
-    : formattedResult;
+  const normUnit = normalizeUnit(expressionResult.resultUnit);
+  const resultWithUnit = formatWithUnit(computedValue, normUnit);
 
   const varDesc = Object.entries(expressionResult.variableValues)
     .filter(([sym]) => sym !== expressionResult.solveFor)
