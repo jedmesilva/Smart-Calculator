@@ -7,7 +7,8 @@ import {
   StyleSheet,
   TextInput,
 } from "react-native";
-import BottomSheet, {
+import {
+  BottomSheetModal,
   BottomSheetView,
   BottomSheetScrollView,
   BottomSheetBackdrop,
@@ -48,34 +49,35 @@ export const SessionCalcsSheet = forwardRef<
   }
 >(function SessionCalcsSheet({ onClose, results, onView }, ref) {
   const insets = useSafeAreaInsets();
-  const sheetRef = useRef<BottomSheet>(null);
+  const sheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["64%"], []);
 
   useImperativeHandle(ref, () => ({
-    open: () => sheetRef.current?.expand(),
-    close: () => sheetRef.current?.close(),
+    open: () => sheetRef.current?.present(),
+    close: () => sheetRef.current?.dismiss(),
   }));
 
-  const handleChange = useCallback((index: number) => {
-    if (index === -1) onClose?.();
+  /* onDismiss fires AFTER the modal is already gone — only notify parent, never dismiss again */
+  const handleDismiss = useCallback(() => {
+    onClose?.();
   }, [onClose]);
 
   return (
-    <BottomSheet
+    <BottomSheetModal
       ref={sheetRef}
-      index={-1}
       snapPoints={snapPoints}
-      enablePanDownToClose
+      onDismiss={handleDismiss}
       backdropComponent={Backdrop}
       backgroundStyle={styles.sheet}
       handleIndicatorStyle={styles.handle}
-      onChange={handleChange}
+      enablePanDownToClose
     >
       <BottomSheetView style={{ flex: 1 }}>
         <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>Cálculos da sessão</Text>
+          {/* dismiss directly on the internal ref — never through the forwarded handle */}
           <Pressable
-            onPress={() => sheetRef.current?.close()}
+            onPress={() => sheetRef.current?.dismiss()}
             hitSlop={12}
             style={styles.sheetCloseBtn}
           >
@@ -131,7 +133,7 @@ export const SessionCalcsSheet = forwardRef<
           </BottomSheetScrollView>
         )}
       </BottomSheetView>
-    </BottomSheet>
+    </BottomSheetModal>
   );
 });
 
@@ -150,36 +152,37 @@ export const SessionNotesSheet = forwardRef<
   }
 >(function SessionNotesSheet({ onClose, note, onChangeNote }, ref) {
   const insets = useSafeAreaInsets();
-  const sheetRef = useRef<BottomSheet>(null);
+  const sheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["50%"], []);
 
   useImperativeHandle(ref, () => ({
-    open: () => sheetRef.current?.expand(),
-    close: () => sheetRef.current?.close(),
+    open: () => sheetRef.current?.present(),
+    close: () => sheetRef.current?.dismiss(),
   }));
 
-  const handleChange = useCallback((index: number) => {
-    if (index === -1) onClose?.();
+  /* onDismiss fires AFTER the modal is already gone — only notify parent, never dismiss again */
+  const handleDismiss = useCallback(() => {
+    onClose?.();
   }, [onClose]);
 
   return (
-    <BottomSheet
+    <BottomSheetModal
       ref={sheetRef}
-      index={-1}
       snapPoints={snapPoints}
-      enablePanDownToClose
+      onDismiss={handleDismiss}
       backdropComponent={Backdrop}
       backgroundStyle={styles.sheet}
       handleIndicatorStyle={styles.handle}
-      onChange={handleChange}
+      enablePanDownToClose
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
     >
       <BottomSheetView style={[styles.notesBody, { paddingBottom: insets.bottom + 16 }]}>
         <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>Notas</Text>
+          {/* dismiss directly on the internal ref — never through the forwarded handle */}
           <Pressable
-            onPress={() => sheetRef.current?.close()}
+            onPress={() => sheetRef.current?.dismiss()}
             hitSlop={12}
             style={styles.sheetCloseBtn}
           >
@@ -212,7 +215,7 @@ export const SessionNotesSheet = forwardRef<
           )}
         </View>
       </BottomSheetView>
-    </BottomSheet>
+    </BottomSheetModal>
   );
 });
 
