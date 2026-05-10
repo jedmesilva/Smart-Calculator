@@ -827,7 +827,7 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   inputWrap: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 28,
     paddingTop: 8,
   },
   inputBox: {
