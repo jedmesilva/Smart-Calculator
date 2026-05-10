@@ -7,7 +7,8 @@ import {
   StyleSheet,
   TextInput,
 } from "react-native";
-import BottomSheet, {
+import {
+  BottomSheetModal,
   BottomSheetView,
   BottomSheetScrollView,
   BottomSheetBackdrop,
@@ -46,27 +47,26 @@ export function SessionCalcsSheet({
   onView: (r: ResultData) => void;
 }) {
   const insets = useSafeAreaInsets();
-  const sheetRef = useRef<BottomSheet>(null);
+  const sheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["64%"], []);
 
   useEffect(() => {
     if (visible) {
-      sheetRef.current?.expand();
+      sheetRef.current?.present();
     } else {
-      sheetRef.current?.close();
+      sheetRef.current?.dismiss();
     }
   }, [visible]);
 
-  const handleChange = useCallback((index: number) => {
-    if (index === -1) onClose();
+  const handleDismiss = useCallback(() => {
+    onClose();
   }, [onClose]);
 
   return (
-    <BottomSheet
+    <BottomSheetModal
       ref={sheetRef}
-      index={-1}
       snapPoints={snapPoints}
-      onChange={handleChange}
+      onDismiss={handleDismiss}
       backdropComponent={Backdrop}
       backgroundStyle={styles.sheet}
       handleIndicatorStyle={styles.handle}
@@ -128,7 +128,7 @@ export function SessionCalcsSheet({
           </BottomSheetScrollView>
         )}
       </BottomSheetView>
-    </BottomSheet>
+    </BottomSheetModal>
   );
 }
 
@@ -145,27 +145,26 @@ export function SessionNotesSheet({
   onChangeNote: (text: string) => void;
 }) {
   const insets = useSafeAreaInsets();
-  const sheetRef = useRef<BottomSheet>(null);
+  const sheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["50%"], []);
 
   useEffect(() => {
     if (visible) {
-      sheetRef.current?.expand();
+      sheetRef.current?.present();
     } else {
-      sheetRef.current?.close();
+      sheetRef.current?.dismiss();
     }
   }, [visible]);
 
-  const handleChange = useCallback((index: number) => {
-    if (index === -1) onClose();
+  const handleDismiss = useCallback(() => {
+    onClose();
   }, [onClose]);
 
   return (
-    <BottomSheet
+    <BottomSheetModal
       ref={sheetRef}
-      index={-1}
       snapPoints={snapPoints}
-      onChange={handleChange}
+      onDismiss={handleDismiss}
       backdropComponent={Backdrop}
       backgroundStyle={styles.sheet}
       handleIndicatorStyle={styles.handle}
@@ -207,7 +206,7 @@ export function SessionNotesSheet({
           )}
         </View>
       </BottomSheetView>
-    </BottomSheet>
+    </BottomSheetModal>
   );
 }
 
