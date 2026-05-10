@@ -321,7 +321,6 @@ function buildHTML(data: ResultData): string {
 }
 
 export async function exportAsPDF(data: ResultData): Promise<void> {
-  const html = buildHTML(data);
   const fileName = buildFileName(data);
 
   if (Platform.OS === "web") {
@@ -358,6 +357,7 @@ export async function exportAsPDF(data: ResultData): Promise<void> {
     return;
   }
 
+  const html = buildHTML(data);
   const { uri: tmpUri } = await Print.printToFileAsync({ html, base64: false });
 
   try {

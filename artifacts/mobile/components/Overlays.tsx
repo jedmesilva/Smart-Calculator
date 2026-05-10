@@ -65,18 +65,28 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
   const topPad = Platform.OS === "web" ? 0 : insets.top;
   const botPad = Platform.OS === "web" ? 0 : insets.bottom;
   const [exporting, setExporting] = useState(false);
+  const [exportStatus, setExportStatus] = useState<"idle" | "ok" | "err">("idle");
   const [copied, setCopied] = useState(false);
 
   const handleExportPDF = async () => {
     if (exporting) return;
     setExporting(true);
+    setExportStatus("idle");
     try {
       await exportAsPDF(data);
       if (Platform.OS === "android") {
         Alert.alert("Arquivo salvo", "PDF salvo na pasta Downloads do seu dispositivo.");
       }
+      setExportStatus("ok");
+      setTimeout(() => setExportStatus("idle"), 3000);
     } catch (err: any) {
-      Alert.alert("Erro ao exportar", err?.message ?? "Tente novamente.");
+      console.error("[exportAsPDF]", err);
+      if (Platform.OS === "web") {
+        setExportStatus("err");
+        setTimeout(() => setExportStatus("idle"), 4000);
+      } else {
+        Alert.alert("Erro ao exportar", err?.message ?? "Tente novamente.");
+      }
     } finally {
       setExporting(false);
     }
@@ -132,16 +142,26 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
           <Pressable
             onPress={handleExportPDF}
             disabled={exporting}
-            style={[styles.exportBtn, styles.exportBtnPDF, exporting && { opacity: 0.6 }]}
+            style={[
+              styles.exportBtn,
+              styles.exportBtnPDF,
+              exporting && { opacity: 0.6 },
+              exportStatus === "ok" && { backgroundColor: "#4CAF50" },
+              exportStatus === "err" && { backgroundColor: "#E53935" },
+            ]}
             hitSlop={8}
           >
             {exporting ? (
               <ActivityIndicator size="small" color="#fff" style={{ width: 13, height: 13 }} />
+            ) : exportStatus === "ok" ? (
+              <Feather name="check" size={13} color="#fff" />
+            ) : exportStatus === "err" ? (
+              <Feather name="alert-circle" size={13} color="#fff" />
             ) : (
               <Feather name="share" size={13} color="#fff" />
             )}
             <Text style={[styles.exportBtnText, styles.exportBtnTextActive]}>
-              {exporting ? "gerando…" : "salvar"}
+              {exporting ? "gerando…" : exportStatus === "ok" ? "baixado!" : exportStatus === "err" ? "erro" : "salvar"}
             </Text>
           </Pressable>
           <Pressable onPress={onClose} style={styles.iconBtn} hitSlop={12}>
