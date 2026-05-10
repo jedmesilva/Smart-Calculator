@@ -1,17 +1,19 @@
-import React, { useRef, useEffect, useCallback, useState } from "react";
+import React, { useRef, useEffect, useMemo } from "react";
 import {
   View,
   Text,
   Pressable,
   ScrollView,
   StyleSheet,
-  Animated,
-  Modal,
   TextInput,
-  ActivityIndicator,
-  Dimensions,
-  Platform,
 } from "react-native";
+import BottomSheet, {
+  BottomSheetModal,
+  BottomSheetView,
+  BottomSheetScrollView,
+  BottomSheetBackdrop,
+} from "@gorhom/bottom-sheet";
+import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -19,94 +21,16 @@ import colors from "@/constants/colors";
 import type { ResultData } from "@/lib/apiClient";
 
 const c = colors.light;
-const SCREEN_HEIGHT = Dimensions.get("window").height;
-const SHEET_HEIGHT = Math.round(SCREEN_HEIGHT * 0.64);
 
-/* ─── BASE BOTTOM SHEET ─── */
-function BottomSheet({
-  visible,
-  onClose,
-  title,
-  children,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  title: string;
-  children: React.ReactNode;
-}) {
-  const insets = useSafeAreaInsets();
-  const slideAnim = useRef(new Animated.Value(SHEET_HEIGHT)).current;
-  const backdropAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (visible) {
-      Animated.parallel([
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          useNativeDriver: true,
-          tension: 68,
-          friction: 11,
-        }),
-        Animated.timing(backdropAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleClose = useCallback(() => {
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: SHEET_HEIGHT,
-        duration: 220,
-        useNativeDriver: true,
-      }),
-      Animated.timing(backdropAnim, {
-        toValue: 0,
-        duration: 170,
-        useNativeDriver: true,
-      }),
-    ]).start(() => onClose());
-  }, [onClose, slideAnim, backdropAnim]);
-
-  if (!visible) return null;
-
+/* ─── SHARED BACKDROP ─── */
+function Backdrop(props: BottomSheetBackdropProps) {
   return (
-    <Modal visible transparent animationType="none" onRequestClose={handleClose}>
-      <View style={{ flex: 1, justifyContent: "flex-end" }}>
-        <Animated.View
-          style={[
-            StyleSheet.absoluteFill,
-            { backgroundColor: "rgba(0,0,0,0.22)", opacity: backdropAnim },
-          ]}
-        />
-        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
-
-        <Animated.View
-          style={[
-            styles.sheet,
-            {
-              height: SHEET_HEIGHT,
-              paddingBottom: (Platform.OS === "web" ? 0 : insets.bottom) + 16,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <View style={styles.handle} />
-
-          <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>{title}</Text>
-            <Pressable onPress={handleClose} hitSlop={12} style={styles.sheetCloseBtn}>
-              <Feather name="x" size={17} color={c.faint} />
-            </Pressable>
-          </View>
-
-          {children}
-        </Animated.View>
-      </View>
-    </Modal>
+    <BottomSheetBackdrop
+      {...props}
+      disappearsOnIndex={-1}
+      appearsOnIndex={0}
+      opacity={0.22}
+    />
   );
 }
 
@@ -122,20 +46,43 @@ export function SessionCalcsSheet({
   results: ResultData[];
   onView: (r: ResultData) => void;
 }) {
+  const ref = useRef<BottomSheetModal>(null);
+  const insets = useSafeAreaInsets();
+  const snapPoints = useMemo(() => ["64%"], []);
+
+  useEffect(() => {
+    if (visible) ref.current?.present();
+    else ref.current?.dismiss();
+  }, [visible]);
+
   return (
-    <BottomSheet visible={visible} onClose={onClose} title="Cálculos da sessão">
+    <BottomSheetModal
+      ref={ref}
+      snapPoints={snapPoints}
+      onDismiss={onClose}
+      backdropComponent={Backdrop}
+      backgroundStyle={styles.sheet}
+      handleIndicatorStyle={styles.handle}
+      enablePanDownToClose
+    >
+      <View style={styles.sheetHeader}>
+        <Text style={styles.sheetTitle}>Cálculos da sessão</Text>
+        <Pressable onPress={() => ref.current?.dismiss()} hitSlop={12} style={styles.sheetCloseBtn}>
+          <Feather name="x" size={17} color={c.faint} />
+        </Pressable>
+      </View>
+
       {results.length === 0 ? (
-        <View style={styles.emptyState}>
+        <BottomSheetView style={styles.emptyState}>
           <Text style={styles.emptyIcon}>Φ</Text>
           <Text style={styles.emptyTitle}>Nenhum cálculo ainda</Text>
           <Text style={styles.emptySubtitle}>
             Os cálculos feitos nesta sessão aparecerão aqui
           </Text>
-        </View>
+        </BottomSheetView>
       ) : (
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={styles.calcsList}
+        <BottomSheetScrollView
+          contentContainerStyle={[styles.calcsList, { paddingBottom: insets.bottom + 16 }]}
           showsVerticalScrollIndicator={false}
         >
           {[...results].reverse().map((r, i) => {
@@ -154,35 +101,25 @@ export function SessionCalcsSheet({
                 style={({ pressed }) => [styles.calcItem, pressed && styles.calcItemPressed]}
               >
                 <View style={styles.calcItemLeft}>
-                  <Text style={styles.calcItemTitle} numberOfLines={1}>
-                    {titulo}
-                  </Text>
+                  <Text style={styles.calcItemTitle} numberOfLines={1}>{titulo}</Text>
                   {!!subcategoria && (
-                    <Text style={styles.calcItemSub} numberOfLines={1}>
-                      {subcategoria}
-                    </Text>
+                    <Text style={styles.calcItemSub} numberOfLines={1}>{subcategoria}</Text>
                   )}
                   {!!abstrata && (
-                    <Text style={styles.calcItemFormula} numberOfLines={1}>
-                      {abstrata}
-                    </Text>
+                    <Text style={styles.calcItemFormula} numberOfLines={1}>{abstrata}</Text>
                   )}
                 </View>
                 <View style={styles.calcItemRight}>
-                  {!!unidade && (
-                    <Text style={styles.calcItemUnit}>{unidade}</Text>
-                  )}
-                  <Text style={styles.calcItemVal} numberOfLines={1}>
-                    {valor}
-                  </Text>
+                  {!!unidade && <Text style={styles.calcItemUnit}>{unidade}</Text>}
+                  <Text style={styles.calcItemVal} numberOfLines={1}>{valor}</Text>
                   <Feather name="chevron-right" size={13} color={c.ghost} />
                 </View>
               </Pressable>
             );
           })}
-        </ScrollView>
+        </BottomSheetScrollView>
       )}
-    </BottomSheet>
+    </BottomSheetModal>
   );
 }
 
@@ -198,11 +135,35 @@ export function SessionNotesSheet({
   note: string;
   onChangeNote: (text: string) => void;
 }) {
-  const charCount = note.length;
+  const ref = useRef<BottomSheetModal>(null);
+  const insets = useSafeAreaInsets();
+  const snapPoints = useMemo(() => ["50%"], []);
+
+  useEffect(() => {
+    if (visible) ref.current?.present();
+    else ref.current?.dismiss();
+  }, [visible]);
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} title="Notas">
-      <View style={styles.notesBody}>
+    <BottomSheetModal
+      ref={ref}
+      snapPoints={snapPoints}
+      onDismiss={onClose}
+      backdropComponent={Backdrop}
+      backgroundStyle={styles.sheet}
+      handleIndicatorStyle={styles.handle}
+      enablePanDownToClose
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+    >
+      <View style={styles.sheetHeader}>
+        <Text style={styles.sheetTitle}>Notas</Text>
+        <Pressable onPress={() => ref.current?.dismiss()} hitSlop={12} style={styles.sheetCloseBtn}>
+          <Feather name="x" size={17} color={c.faint} />
+        </Pressable>
+      </View>
+
+      <BottomSheetView style={[styles.notesBody, { paddingBottom: insets.bottom + 16 }]}>
         <TextInput
           value={note}
           onChangeText={onChangeNote}
@@ -214,7 +175,7 @@ export function SessionNotesSheet({
           autoFocus
         />
         <View style={styles.notesFooter}>
-          <Text style={styles.charCount}>{charCount > 0 ? `${charCount} caracteres` : ""}</Text>
+          <Text style={styles.charCount}>{note.length > 0 ? `${note.length} caracteres` : ""}</Text>
           {note.trim().length > 0 && (
             <Pressable
               onPress={() => {
@@ -229,8 +190,8 @@ export function SessionNotesSheet({
             </Pressable>
           )}
         </View>
-      </View>
-    </BottomSheet>
+      </BottomSheetView>
+    </BottomSheetModal>
   );
 }
 
@@ -241,6 +202,8 @@ type QuickAction = {
   label: string;
   onPress: () => void;
 };
+
+const BTN_SIZE = 52;
 
 export function QuickActionsBar({ actions }: { actions: QuickAction[] }) {
   return (
@@ -271,27 +234,16 @@ export function QuickActionsBar({ actions }: { actions: QuickAction[] }) {
   );
 }
 
-const BTN_SIZE = 52;
-
 const styles = StyleSheet.create({
   sheet: {
     backgroundColor: c.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 16,
   },
   handle: {
+    backgroundColor: c.ghost,
     width: 36,
     height: 4,
-    borderRadius: 2,
-    backgroundColor: c.ghost,
-    alignSelf: "center",
-    marginTop: 10,
-    marginBottom: 6,
   },
   sheetHeader: {
     flexDirection: "row",
@@ -355,14 +307,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 12,
   },
-  calcItemPressed: {
-    backgroundColor: c.surface,
-  },
-  calcItemLeft: {
-    flex: 1,
-    minWidth: 0,
-    gap: 2,
-  },
+  calcItemPressed: { backgroundColor: c.surface },
+  calcItemLeft: { flex: 1, minWidth: 0, gap: 2 },
   calcItemTitle: {
     fontSize: 13,
     fontFamily: "Inter_600SemiBold",
@@ -400,7 +346,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 8,
     gap: 10,
   },
   notesInput: {
@@ -423,11 +368,7 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     color: c.ghost,
   },
-  clearBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
+  clearBtn: { flexDirection: "row", alignItems: "center", gap: 4 },
   clearBtnText: {
     fontSize: 11,
     fontFamily: "Inter_400Regular",
@@ -444,13 +385,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  actionBtn: {
-    alignItems: "center",
-    gap: 5,
-  },
-  actionBtnPressed: {
-    opacity: 0.6,
-  },
+  actionBtn: { alignItems: "center", gap: 5 },
+  actionBtnPressed: { opacity: 0.6 },
   actionIconWrap: {
     width: BTN_SIZE,
     height: BTN_SIZE,
