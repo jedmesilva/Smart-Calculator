@@ -467,7 +467,7 @@ export default function PhormulаScreen() {
               placeholderTextColor={c.ghost}
               multiline
               style={styles.textInput}
-              returnKeyType="send"
+              returnKeyType={Platform.OS === "web" ? "default" : "send"}
               onSubmitEditing={Platform.OS !== "web" ? handleSend : undefined}
               blurOnSubmit={false}
               onKeyPress={Platform.OS === "web" ? (e: any) => {
