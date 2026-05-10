@@ -212,7 +212,6 @@ export default function PhormulаScreen() {
     setCurrentSessionId(null);
     setSessionSummary(null);
     setMessageCount(0);
-    setSessionNote("");
     setScreen("main");
   }, []);
 
