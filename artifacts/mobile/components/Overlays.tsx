@@ -59,17 +59,6 @@ function DocSection({
   );
 }
 
-/* ── Rótulo legível do tipo de prova ── */
-function proofTipoLabel(tipo: string): string {
-  switch (tipo) {
-    case "inversa": return "Prova real";
-    case "derivacao": return "Derivação analítica";
-    case "substituicao": return "Verificação por substituição";
-    case "razoabilidade": return "Verificação de razoabilidade";
-    default: return "Verificação";
-  }
-}
-
 /* ─── CALC OVERLAY ─── */
 export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () => void }) {
   const insets = useSafeAreaInsets();
@@ -114,8 +103,6 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
   const formulaAbstrata = data.formula?.abstrata ?? "";
   const variaveis = data.variaveis ?? [];
   const desenvolvimento = data.desenvolvimento ?? [];
-  const prova = data.prova ?? null;
-  const proofValido = prova?.valido ?? true;
   const objetivo = data.objetivo ?? null;
 
   const hasFormula = !!(formulaLatex || formulaAbstrata);
@@ -273,62 +260,6 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
           )}
         </DocSection>
 
-        {/* ── 05 Verificação ── */}
-        {prova && (
-          <DocSection numero={nextSec()} titulo="Verificação">
-            <View style={[styles.proofBox, proofValido ? styles.proofBoxOk : styles.proofBoxWarn]}>
-              <View style={styles.proofHeader}>
-                <Feather
-                  name={proofValido ? "check-circle" : "alert-circle"}
-                  size={14}
-                  color={proofValido ? "#2A7A4B" : "#B07D1A"}
-                />
-                <Text
-                  style={[
-                    styles.proofMethod,
-                    proofValido ? styles.proofMethodOk : styles.proofMethodWarn,
-                  ]}
-                >
-                  {proofTipoLabel(prova.tipo)}
-                </Text>
-                <View style={[styles.proofBadge, proofValido ? styles.proofBadgeOk : styles.proofBadgeWarn]}>
-                  <Text style={[styles.proofBadgeText, proofValido ? styles.proofBadgeTextOk : styles.proofBadgeTextWarn]}>
-                    {proofValido ? "aprovado" : "revisar"}
-                  </Text>
-                </View>
-              </View>
-              {/* Prova inversa: mostra só os passos LaTeX step-by-step */}
-              {prova.tipo === "inversa" && prova.steps && prova.steps.length > 0 ? (
-                <View style={styles.proofSteps}>
-                  {prova.steps.map((step, idx) => (
-                    <MathView
-                      key={idx}
-                      latex={step.latex}
-                      color={proofValido ? "#2A7A4B" : "#B07D1A"}
-                    />
-                  ))}
-                </View>
-              ) : (
-                <>
-                  <Text style={styles.proofDetail}>{prova.descricao}</Text>
-                  {prova.latex && (
-                    <MathView latex={prova.latex} color={proofValido ? "#2A7A4B" : "#B07D1A"} />
-                  )}
-                </>
-              )}
-            </View>
-          </DocSection>
-        )}
-
-        {/* ── Warning ── */}
-        {data.warning && (
-          <View style={styles.notesWrap}>
-            <View style={styles.warningRow}>
-              <Feather name="alert-triangle" size={11} color="#B07D1A" />
-              <Text style={styles.warningText}>{data.warning}</Text>
-            </View>
-          </View>
-        )}
 
         {/* ── Footer ── */}
         <View style={styles.docFooter}>
