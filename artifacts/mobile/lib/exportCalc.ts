@@ -3,8 +3,48 @@ import * as Sharing from "expo-sharing";
 import * as Clipboard from "expo-clipboard";
 import * as FileSystem from "expo-file-system/legacy";
 import { Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import katex from "katex";
 import type { ResultData } from "@/lib/apiClient";
+
+const SAF_DIR_KEY = "@phormula/saf_dir";
+
+async function saveToAndroidDownloads(pdfUri: string, fileName: string): Promise<void> {
+  let directoryUri = await AsyncStorage.getItem(SAF_DIR_KEY).catch(() => null);
+
+  const tryCreate = async (dirUri: string) => {
+    const fileUri = await FileSystem.StorageAccessFramework.createFileAsync(
+      dirUri,
+      fileName,
+      "application/pdf"
+    );
+    const base64 = await FileSystem.readAsStringAsync(pdfUri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    await FileSystem.writeAsStringAsync(fileUri, base64, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+  };
+
+  if (directoryUri) {
+    try {
+      await tryCreate(directoryUri);
+      return;
+    } catch {
+      // URI expirou ou permissão revogada — pede novamente
+      await AsyncStorage.removeItem(SAF_DIR_KEY).catch(() => {});
+      directoryUri = null;
+    }
+  }
+
+  // Primeira vez: abre o seletor de pasta pré-apontado para Downloads
+  const downloadsUri = FileSystem.StorageAccessFramework.getUriForDirectoryInRoot("Download");
+  const result = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync(downloadsUri);
+  if (!result.granted) throw new Error("Permissão negada pelo usuário");
+
+  await AsyncStorage.setItem(SAF_DIR_KEY, result.directoryUri).catch(() => {});
+  await tryCreate(result.directoryUri);
+}
 
 function renderLatex(latex: string): string {
   try {
@@ -298,23 +338,33 @@ export async function exportAsPDF(data: ResultData): Promise<void> {
     return;
   }
 
-  // Mobile: gera PDF e abre share sheet nativa (padrão iOS/Android)
   const { uri: tmpUri } = await Print.printToFileAsync({ html, base64: false });
 
-  const destUri = (FileSystem.cacheDirectory ?? "") + fileName;
-  await FileSystem.copyAsync({ from: tmpUri, to: destUri });
-  await FileSystem.deleteAsync(tmpUri, { idempotent: true });
+  try {
+    if (Platform.OS === "android") {
+      // Android: salva direto na pasta Downloads sem share sheet
+      await saveToAndroidDownloads(tmpUri, fileName);
+      await FileSystem.deleteAsync(tmpUri, { idempotent: true });
+      return;
+    }
 
-  const canShare = await Sharing.isAvailableAsync();
-  if (!canShare) {
-    throw new Error("Compartilhamento não disponível neste dispositivo");
+    // iOS: share sheet nativa (única forma disponível no iOS)
+    const destUri = (FileSystem.cacheDirectory ?? "") + fileName;
+    await FileSystem.copyAsync({ from: tmpUri, to: destUri });
+    await FileSystem.deleteAsync(tmpUri, { idempotent: true });
+
+    const canShare = await Sharing.isAvailableAsync();
+    if (!canShare) throw new Error("Compartilhamento não disponível neste dispositivo");
+
+    await Sharing.shareAsync(destUri, {
+      mimeType: "application/pdf",
+      dialogTitle: "Salvar cálculo",
+      UTI: "com.adobe.pdf",
+    });
+  } catch (err) {
+    await FileSystem.deleteAsync(tmpUri, { idempotent: true }).catch(() => {});
+    throw err;
   }
-
-  await Sharing.shareAsync(destUri, {
-    mimeType: "application/pdf",
-    dialogTitle: "Salvar cálculo",
-    UTI: "com.adobe.pdf",
-  });
 }
 
 export function buildTextSummary(data: ResultData): string {

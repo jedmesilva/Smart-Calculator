@@ -72,6 +72,9 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
     setExporting(true);
     try {
       await exportAsPDF(data);
+      if (Platform.OS === "android") {
+        Alert.alert("Arquivo salvo", "PDF salvo na pasta Downloads do seu dispositivo.");
+      }
     } catch (err: any) {
       Alert.alert("Erro ao exportar", err?.message ?? "Tente novamente.");
     } finally {
