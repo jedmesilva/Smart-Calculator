@@ -579,6 +579,7 @@ export default function PhormulаScreen() {
       {/* ── BOTTOM SHEETS ── */}
       <SessionCalcsSheet
         ref={sessionCalcsRef}
+        bottomInset={insets.bottom}
         results={chat.filter((x) => x.kind === "result").map((x) => (x as any).result as ResultData)}
         onView={(result) => {
           sessionCalcsRef.current?.close();

@@ -46,9 +46,9 @@ export const SessionCalcsSheet = forwardRef<
     onClose?: () => void;
     results: ResultData[];
     onView: (r: ResultData) => void;
+    bottomInset?: number;
   }
->(function SessionCalcsSheet({ onClose, results, onView }, ref) {
-  const insets = useSafeAreaInsets();
+>(function SessionCalcsSheet({ onClose, results, onView, bottomInset = 0 }, ref) {
   const sheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["64%"], []);
 
@@ -72,7 +72,7 @@ export const SessionCalcsSheet = forwardRef<
       handleIndicatorStyle={styles.handle}
       enablePanDownToClose
     >
-      <BottomSheetView style={{ flex: 1, paddingBottom: insets.bottom }}>
+      <BottomSheetView style={{ flex: 1, paddingBottom: bottomInset }}>
         <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>Cálculos da sessão</Text>
           {/* dismiss directly on the internal ref — never through the forwarded handle */}
