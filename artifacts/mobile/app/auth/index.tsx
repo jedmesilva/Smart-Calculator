@@ -28,11 +28,11 @@ export default function WelcomeScreen() {
 
       <View style={styles.middle}>
         <Text style={styles.headline}>
-          Calcule qualquer coisa{"\n"}em português.
+          Calcule qualquer coisa.{"\n"}Entenda cada passo.
         </Text>
         <Text style={styles.sub}>
-          Descreva o cálculo em linguagem natural e receba o
-          resultado com fórmula, variáveis e passo a passo.
+          Descreva o que quer calcular e receba o resultado
+          completo: fórmula, variáveis e passo a passo.
         </Text>
       </View>
 

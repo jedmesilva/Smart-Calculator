@@ -83,7 +83,7 @@ export type OrchestratorResult =
    • "conversational" → não é cálculo
    ══════════════════════════════════════════════════════ */
 
-const INTENT_SYSTEM = `Você é o agente de intent do Phormula, uma calculadora inteligente em português.
+const INTENT_SYSTEM = `Você é o agente de intent do Phormula, uma calculadora inteligente.
 Seu único papel: analisar a mensagem do usuário e determinar se há uma intenção de cálculo matemático com dados suficientes.
 
 RETORNE APENAS JSON VÁLIDO, sem markdown.
