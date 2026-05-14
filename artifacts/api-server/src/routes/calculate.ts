@@ -4,6 +4,7 @@ import { requireAuth } from "../middlewares/auth";
 import { logger } from "../lib/logger";
 import { runCalculationPipeline } from "../lib/orchestrator";
 import { registerConsulta } from "../lib/billingService";
+import { warmDevCache, devCacheKey } from "../lib/devCache";
 
 const router = Router();
 
@@ -75,6 +76,13 @@ router.post("/calculate", requireAuth, async (req, res) => {
         sessionId: sessionId ?? null,
         tokenUsage: result.tokenUsage,
       }).catch((err) => logger.warn({ err }, "calculate: billing failed silently"));
+    }
+
+    // Aquece cache do desenvolvimento em background antes de enviar ao cliente
+    if (result.status === "success" && result.result.desenvolvimentoInput) {
+      const di = result.result.desenvolvimentoInput;
+      const key = devCacheKey(di.expression, di.solveFor, di.computedValue);
+      warmDevCache(key, di);
     }
 
     try {
