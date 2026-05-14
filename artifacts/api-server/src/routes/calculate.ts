@@ -56,6 +56,7 @@ router.post("/calculate", requireAuth, async (req, res) => {
       sessionSummary,
       messageCount,
       userName,
+      userId,
       emit,
     });
 

@@ -209,6 +209,17 @@ export async function calculateStream(
   throw new Error("Stream encerrado sem resultado");
 }
 
+export async function predictQuery(req: CalcRequest): Promise<void> {
+  try {
+    await apiFetch("/predict", {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+  } catch {
+    // silencioso — pré-computação é best-effort
+  }
+}
+
 export async function calculate(req: CalcRequest): Promise<CalcResponse> {
   const res = await apiFetch("/calculate", {
     method: "POST",

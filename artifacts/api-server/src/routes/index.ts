@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
 import calculateRouter from "./calculate";
+import predictRouter from "./predict";
 import preanalyzeRouter from "./preanalyze";
 import desenvolvimentoRouter from "./desenvolvimento";
 import formulasRouter from "./formulas";
@@ -14,6 +15,7 @@ const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(calculateRouter);
+router.use(predictRouter);
 router.use(preanalyzeRouter);
 router.use(desenvolvimentoRouter);
 router.use("/formulas", formulasRouter);

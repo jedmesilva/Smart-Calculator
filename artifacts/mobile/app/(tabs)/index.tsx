@@ -24,7 +24,7 @@ import { QuickActionsBar, SessionCalcsSheet } from "@/components/QuickActionShee
 import type { SessionCalcsSheetHandle } from "@/components/QuickActionSheets";
 import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
-import { calculateStream, type ResultData, type MissingVariable } from "@/lib/apiClient";
+import { calculateStream, predictQuery, type ResultData, type MissingVariable } from "@/lib/apiClient";
 import { buildContext } from "@/lib/contextBuilder";
 import { createSession, saveMessages, touchSession, fetchSessionSummary } from "@/lib/queries";
 
@@ -195,6 +195,7 @@ export default function PhormulаScreen() {
   const [thinkingMessage, setThinkingMessage] = useState<string | null>(null);
   const sessionCalcsRef = useRef<SessionCalcsSheetHandle>(null);
   const inputRef = useRef<TextInput>(null);
+  const predictDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const lastResult = [...chat].reverse().find((x) => x.kind === "result");
   const current = lastResult?.kind === "result" ? lastResult.result : null;
@@ -216,8 +217,29 @@ export default function PhormulаScreen() {
     setScreen("main");
   }, []);
 
+  const handleQueryChange = useCallback((text: string) => {
+    setQuery(text);
+    if (predictDebounceRef.current) clearTimeout(predictDebounceRef.current);
+    const trimmed = text.trim();
+    if (trimmed.length < 10 || isLoading) return;
+    predictDebounceRef.current = setTimeout(() => {
+      predictQuery({
+        query: trimmed,
+        context: buildContext(chat),
+        sessionId: currentSessionId ?? undefined,
+        sessionSummary: sessionSummary ?? undefined,
+        messageCount,
+        userName: userName ?? undefined,
+      });
+    }, 1000);
+  }, [isLoading, chat, currentSessionId, sessionSummary, messageCount, userName]);
+
   const handleSend = useCallback(async () => {
     if (!query.trim() || isLoading) return;
+    if (predictDebounceRef.current) {
+      clearTimeout(predictDebounceRef.current);
+      predictDebounceRef.current = null;
+    }
     const text = query.trim();
     setQuery("");
     Keyboard.dismiss();
@@ -465,7 +487,7 @@ export default function PhormulаScreen() {
             <TextInput
               ref={inputRef}
               value={query}
-              onChangeText={setQuery}
+              onChangeText={handleQueryChange}
               placeholder="Descreva o cálculo…"
               placeholderTextColor={c.ghost}
               multiline

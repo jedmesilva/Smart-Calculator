@@ -13,7 +13,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { db } from "@workspace/db";
+import { db, pool } from "@workspace/db";
 import { formulas } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 import { logger } from "./logger";
@@ -22,6 +22,11 @@ import { runCalculatorAgent } from "../agents/calculatorAgent";
 import { runEvaluatorAgent } from "../agents/evaluatorAgent";
 import { runConversationalAgent, runGuidanceAgent } from "../agents/conversationalAgent";
 import { generateSessionSummary } from "./summaryBuilder";
+import {
+  setSpeculativeEntry,
+  getSpeculativeEntry,
+  normalizeQuery,
+} from "./speculativeCache";
 import type { ConversationMessage, ExpressionResult, ValidationResult, FormulaInfo } from "../agents/types";
 import type { ResultData } from "./explainBuilder";
 import type { TokenUsage } from "./billingService";
@@ -235,6 +240,284 @@ function evaluatorToValidation(score: number, feedback: string, approved: boolea
 }
 
 /* ══════════════════════════════════════════════════════
+   prediction_attempts — tabela criada on-demand no Supabase
+   ══════════════════════════════════════════════════════ */
+
+let tableEnsured = false;
+async function ensurePredictionAttemptsTable(): Promise<void> {
+  if (tableEnsured) return;
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS prediction_attempts (
+        id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+        user_id text NOT NULL,
+        session_id uuid,
+        partial_query text NOT NULL,
+        predicted_objective text,
+        actual_query text,
+        matched boolean,
+        speculative_elapsed_ms integer,
+        final_elapsed_ms integer,
+        created_at timestamptz DEFAULT now() NOT NULL
+      )
+    `);
+    tableEnsured = true;
+  } catch (err) {
+    logger.warn({ err }, "orchestrator: ensurePredictionAttemptsTable failed (silenced)");
+  }
+}
+
+async function recordPredictionAttempt(opts: {
+  userId: string;
+  sessionId?: string;
+  partialQuery: string;
+  predictedObjective?: string;
+  actualQuery?: string;
+  matched?: boolean;
+  speculativeElapsedMs?: number;
+  finalElapsedMs?: number;
+}): Promise<void> {
+  await ensurePredictionAttemptsTable();
+  try {
+    await pool.query(
+      `INSERT INTO prediction_attempts
+         (user_id, session_id, partial_query, predicted_objective, actual_query, matched, speculative_elapsed_ms, final_elapsed_ms)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [
+        opts.userId,
+        opts.sessionId ?? null,
+        opts.partialQuery.slice(0, 500),
+        opts.predictedObjective?.slice(0, 300) ?? null,
+        opts.actualQuery?.slice(0, 500) ?? null,
+        opts.matched ?? null,
+        opts.speculativeElapsedMs ?? null,
+        opts.finalElapsedMs ?? null,
+      ]
+    );
+  } catch (err) {
+    logger.warn({ err }, "orchestrator: recordPredictionAttempt failed (silenced)");
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   Pipeline especulativo — roda Agents 1+2+3 + buildResult
+   em background enquanto o usuário ainda digita.
+   NÃO roda conversationalAgent (precisa da query real).
+   ══════════════════════════════════════════════════════ */
+
+export async function runSpeculativePipeline(opts: {
+  query: string;
+  formulaId?: string;
+  context: ConversationMessage[];
+  sessionId?: string;
+  sessionSummary?: string;
+  messageCount?: number;
+  userName?: string;
+  userId: string;
+}): Promise<void> {
+  const { query, formulaId, context, sessionId, sessionSummary, userId } = opts;
+  const start = Date.now();
+
+  logger.info(
+    { query: query.slice(0, 80), userId: userId.slice(0, 8) },
+    "speculative: pipeline start"
+  );
+
+  /* ── Carrega fórmula pré-selecionada ── */
+  let preloadedFormula: FormulaInfo | null = null;
+  if (formulaId) {
+    try {
+      const [f] = await db
+        .select({
+          id: formulas.id,
+          name: formulas.name,
+          description: formulas.description,
+          symbolic: formulas.symbolic,
+          category: formulas.category,
+          expression: formulas.expression,
+          expression_meta: formulas.expression_meta,
+        })
+        .from(formulas)
+        .where(eq(formulas.id, formulaId))
+        .limit(1);
+      if (f) {
+        preloadedFormula = {
+          id: f.id,
+          name: f.name,
+          description: f.description ?? "",
+          symbolic: f.symbolic,
+          category: f.category,
+          expression: f.expression ?? null,
+          expression_meta: f.expression_meta ?? null,
+        };
+      }
+    } catch { /* silenced */ }
+  }
+
+  const formulaHint = preloadedFormula
+    ? `${preloadedFormula.name} — ${preloadedFormula.symbolic}`
+    : undefined;
+
+  /* ── Agent 1: Intent ── */
+  let intentResult: IntentResult;
+  try {
+    intentResult = await runIntentAgent({ query, context, sessionSummary, formulaHint });
+  } catch {
+    logger.info({ query: query.slice(0, 60) }, "speculative: intent failed, skipping");
+    return;
+  }
+
+  if (intentResult.status !== "ready") {
+    logger.info(
+      { status: intentResult.status },
+      "speculative: not ready, skipping"
+    );
+    return;
+  }
+
+  const { objective, values, contextSummary } = intentResult;
+
+  const enrichedContext = [
+    contextSummary,
+    sessionSummary ? `Resumo da sessão: ${sessionSummary}` : "",
+    preloadedFormula
+      ? `Fórmula pré-selecionada: ${preloadedFormula.name} (${preloadedFormula.symbolic}).`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  /* ── Agent 2: Calculator ── */
+  const MAX_RETRIES = 2;
+  let calcResult: import("../agents/calculatorAgent").CalculatorResult | null = null;
+  let evalFeedback: { score: number; feedback: string; suggestion: string | null } | undefined;
+  let lastEvalScore = 10;
+  let lastEvalFeedback = "";
+  let lastEvalApproved = true;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      calcResult = await runCalculatorAgent(
+        {
+          objective,
+          values,
+          contextSummary: enrichedContext,
+          feedback: evalFeedback,
+          formulaHint: preloadedFormula
+            ? `${preloadedFormula.name}: ${preloadedFormula.symbolic}${preloadedFormula.expression ? ` | MathJS: ${preloadedFormula.expression}` : ""}`
+            : undefined,
+        },
+        () => {}
+      );
+    } catch (err: any) {
+      if (attempt >= MAX_RETRIES) return;
+      evalFeedback = {
+        score: 0,
+        feedback: `Erro MathJS: ${err?.message}`,
+        suggestion: "Revise a expressão.",
+      };
+      continue;
+    }
+
+    /* ── Agent 3: Evaluator ── */
+    try {
+      const evalResult = await runEvaluatorAgent({
+        objective,
+        formulaName: calcResult.formulaName,
+        formulaSymbolic: calcResult.formulaSymbolic,
+        expression: calcResult.expression,
+        computedValue: calcResult.computedValue,
+        resultUnit: calcResult.resultUnit,
+        resultLabel: calcResult.resultLabel,
+        strategy: calcResult.strategy,
+        computedSteps: calcResult.computedSteps,
+      });
+
+      lastEvalScore = evalResult.score;
+      lastEvalFeedback = evalResult.feedback;
+      lastEvalApproved = evalResult.approved;
+
+      if (evalResult.approved) break;
+
+      if (attempt < MAX_RETRIES) {
+        evalFeedback = {
+          score: evalResult.score,
+          feedback: evalResult.feedback,
+          suggestion: evalResult.suggestion,
+        };
+      }
+    } catch {
+      lastEvalApproved = true;
+      lastEvalFeedback = "Verificação concluída.";
+      lastEvalScore = 7;
+      break;
+    }
+  }
+
+  if (!calcResult) return;
+
+  /* ── buildResult (sem conversational) ── */
+  const formulaInfo = calcResultToFormulaInfo(calcResult, formulaId);
+  const exprResult = calcResultToExpressionResult(calcResult);
+  const validationResult = evaluatorToValidation(lastEvalScore, lastEvalFeedback, lastEvalApproved);
+  const warning = !lastEvalApproved
+    ? `Verifique o resultado: score ${lastEvalScore}/10.`
+    : undefined;
+
+  const partialResult = buildResult(
+    calcResult.formulaName,
+    calcResult.formulaSymbolic,
+    exprResult,
+    calcResult.computedValue,
+    {
+      formulaId: formulaId ?? null,
+      formulaCategory: preloadedFormula?.category ?? "Cálculo",
+      warning,
+      searchUsed: false,
+      proof: validationResult,
+      formulaExpression: calcResult.expression,
+      formulaMeta: formulaInfo.expression_meta,
+      interpretacao: null,
+    }
+  );
+
+  const elapsed = Date.now() - start;
+
+  /* ── Armazena no cache ── */
+  setSpeculativeEntry(query, {
+    calcResult,
+    intentResult,
+    formulaId,
+    evalScore: lastEvalScore,
+    evalFeedback: lastEvalFeedback,
+    evalApproved: lastEvalApproved,
+    partialResult,
+    formulaInfo,
+    exprResult,
+    validationResult,
+    objective,
+    warning,
+    createdAt: Date.now(),
+    elapsedMs: elapsed,
+    userId,
+  });
+
+  /* ── Registra tentativa no banco ── */
+  recordPredictionAttempt({
+    userId,
+    sessionId,
+    partialQuery: query,
+    predictedObjective: objective,
+    speculativeElapsedMs: elapsed,
+  }).catch(() => {});
+
+  logger.info(
+    { objective: objective.slice(0, 60), elapsedMs: elapsed },
+    "speculative: pipeline done"
+  );
+}
+
+/* ══════════════════════════════════════════════════════
    Geração de sumário de sessão — fire-and-forget
    ══════════════════════════════════════════════════════ */
 
@@ -272,6 +555,7 @@ export async function runCalculationPipeline(opts: {
   sessionSummary?: string;
   messageCount?: number;
   userName?: string;
+  userId?: string;
   precomputedIntent?: IntentResult;
   emit?: (message: string) => void;
 }): Promise<OrchestratorResult> {
@@ -283,11 +567,86 @@ export async function runCalculationPipeline(opts: {
     sessionSummary,
     messageCount = 0,
     userName,
+    userId,
     precomputedIntent,
     emit = () => {},
   } = opts;
 
   const pipelineStart = Date.now();
+
+  /* ══════════════════════════════════════════════════
+     CACHE ESPECULATIVO — verifica antes de rodar pipeline
+     ══════════════════════════════════════════════════ */
+  if (userId) {
+    const cached = getSpeculativeEntry(query, userId);
+    if (cached) {
+      emit("Preparando resultado…");
+
+      const conversationalText = await runConversationalAgent({
+        query,
+        formula: cached.formulaInfo,
+        expressionResult: cached.exprResult,
+        computedValue: cached.calcResult.computedValue,
+        validation: cached.validationResult,
+        context,
+        sessionSummary,
+        userName,
+      });
+
+      const finalResult: ResultData = {
+        ...cached.partialResult,
+        conversationalResponse: conversationalText,
+        desenvolvimento: [],
+        desenvolvimentoInput: {
+          formulaName: cached.calcResult.formulaName,
+          formulaSymbolic: cached.calcResult.formulaSymbolic,
+          formulaSubstituted: cached.calcResult.formulaSubstituted,
+          expression: cached.calcResult.expression,
+          extracted: cached.calcResult.extracted,
+          variableNames: cached.calcResult.variableNames,
+          variableValues: cached.calcResult.variableValues,
+          solveFor: cached.calcResult.solveFor,
+          computedValue: cached.calcResult.computedValue,
+          resultUnit: cached.calcResult.resultUnit,
+          resultLabel: cached.calcResult.resultLabel,
+        },
+        objetivo: cached.objective,
+      };
+
+      const totalElapsed = Date.now() - pipelineStart;
+      logger.info(
+        {
+          cacheHit: true,
+          speculativeElapsedMs: cached.elapsedMs,
+          conversationalElapsedMs: totalElapsed,
+          totalElapsedMs: totalElapsed,
+          savedMs: cached.elapsedMs,
+        },
+        "orchestrator3: CACHE HIT — resultado especulativo entregue"
+      );
+
+      recordPredictionAttempt({
+        userId,
+        sessionId,
+        partialQuery: query,
+        predictedObjective: cached.objective,
+        actualQuery: query,
+        matched: true,
+        speculativeElapsedMs: cached.elapsedMs,
+        finalElapsedMs: totalElapsed,
+      }).catch(() => {});
+
+      maybeTriggerSummary({
+        sessionId,
+        messageCount,
+        context,
+        query,
+        resultText: `${cached.calcResult.formulaName}: ${cached.calcResult.computedValue} ${cached.calcResult.resultUnit}`,
+      });
+
+      return { status: "success", result: finalResult };
+    }
+  }
   logger.info(
     { formulaId: formulaId ?? "dynamic", query: query.slice(0, 80), sessionId },
     "orchestrator3: start"
