@@ -294,7 +294,7 @@ export async function runCalculatorAgent(
   if (emit) emit(feedback ? "Revisando cálculo com base no feedback…" : "Analisando fórmula e estratégia…");
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-5.1",
     max_completion_tokens: 800,
     messages: [
       { role: "system", content: CALCULATOR_SYSTEM },

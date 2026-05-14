@@ -161,7 +161,7 @@ export async function runIntentAgent(opts: {
   messages.push({ role: "user", content: userContent });
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5.1",
     max_completion_tokens: 600,
     messages,
   } as any);
