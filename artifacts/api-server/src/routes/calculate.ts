@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireAuth } from "../middlewares/auth";
 import { logger } from "../lib/logger";
 import { runCalculationPipeline } from "../lib/orchestrator";
-import { registerConsulta } from "../lib/billingService";
+import { registerConsulta, checkSaldo } from "../lib/billingService";
 import { warmDevCache, devCacheKey } from "../lib/devCache";
 
 const router = Router();
@@ -32,6 +32,13 @@ router.post("/calculate", requireAuth, async (req, res) => {
 
   const { query, formulaId, context = [], sessionId, sessionSummary, messageCount, userName } = parsed.data;
   const userId = (req as any).user.id as string;
+
+  // Verificação prévia de saldo (sem lock — apenas para UX; o débito real usa FOR UPDATE)
+  const saldo = await checkSaldo(userId);
+  if (saldo <= 0) {
+    res.status(402).json({ error: "saldo_insuficiente", message: "Você não tem créditos suficientes para continuar. Recarregue sua conta." });
+    return;
+  }
 
   res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
   res.setHeader("Cache-Control", "no-cache, no-transform");

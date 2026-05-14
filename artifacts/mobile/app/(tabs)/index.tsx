@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -199,11 +199,16 @@ export default function PhormulаScreen() {
   const inputRef = useRef<TextInput>(null);
   const predictDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const lastResult = [...chat].reverse().find((x) => x.kind === "result");
-  const current = lastResult?.kind === "result" ? lastResult.result : null;
+  const current = useMemo(() => {
+    for (let i = chat.length - 1; i >= 0; i--) {
+      if (chat[i].kind === "result") return (chat[i] as { kind: "result"; id: string; result: ResultData }).result;
+    }
+    return null;
+  }, [chat]);
   const hasResult = !!current;
   const displayNum = current?.resultado?.valor ?? "0";
   const numFontSize = displayNum.length > 12 ? 38 : displayNum.length > 8 ? 50 : 64;
+  const invertedData = useMemo(() => [...chat].reverse(), [chat]);
 
   const topPad = insets.top;
   const botPad = insets.bottom;
@@ -257,7 +262,11 @@ export default function PhormulаScreen() {
       setMessageCount(msgs.length);
       if (summary) setSessionSummary(summary);
     } catch {
-      // Falhou — continua com sessão em branco mas ID correto
+      setChat([{
+        kind: "error",
+        id: "session-load-error",
+        message: "Não foi possível carregar o histórico desta sessão. Você pode continuar a conversa normalmente.",
+      }]);
     } finally {
       setIsLoadingSession(false);
     }
@@ -395,7 +404,6 @@ export default function PhormulаScreen() {
   }, [query, isLoading, currentSessionId, sessionSummary, messageCount, queryClient, chat, userName, setUserName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const canSend = query.trim().length > 0 && !isLoading;
-  const invertedData = [...chat].reverse();
 
   const renderItem = useCallback(
     ({ item, index }: { item: ChatItem; index: number }) => {

@@ -152,7 +152,7 @@ export async function calculateStream(
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error((body as any).error ?? `Erro ${res.status}`);
+    throw new Error((body as any).message ?? (body as any).error ?? `Erro ${res.status}`);
   }
 
   function parseSSEBlocks(text: string): CalcResponse | null {

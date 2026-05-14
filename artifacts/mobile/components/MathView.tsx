@@ -75,7 +75,8 @@ function buildHtml(latex: string, color: string, fontSize: number): string {
 export function MathView({ latex, color = "#3A3A38", fontSize = 18 }: Props) {
   const [height, setHeight] = useState(60);
 
-  const html = buildHtml(latex, color, fontSize);
+  const safeLatex = latex ?? "";
+  const html = buildHtml(safeLatex, color, fontSize);
 
   return (
     <View style={{ width: "100%", height }}>

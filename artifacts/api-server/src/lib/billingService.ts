@@ -65,6 +65,23 @@ async function ensureCarteira(client: any, userId: string): Promise<number> {
   return WELCOME_CREDITS;
 }
 
+/* ── Verifica se usuário tem créditos suficientes (sem lock) ── */
+export async function checkSaldo(userId: string): Promise<number> {
+  const client = await pool.connect();
+  try {
+    const res = await client.query(
+      `SELECT saldo_creditos FROM carteira WHERE usuario_id = $1`,
+      [userId]
+    );
+    if (res.rows.length === 0) return WELCOME_CREDITS; // novo usuário — receberá boas-vindas no primeiro débito
+    return res.rows[0].saldo_creditos as number;
+  } catch {
+    return 999; // em caso de erro de DB, deixa passar (o lock no débito vai tratar)
+  } finally {
+    client.release();
+  }
+}
+
 /* ── Busca saldo da carteira ── */
 export async function getCarteira(userId: string): Promise<CarteiraInfo | null> {
   const client = await pool.connect();

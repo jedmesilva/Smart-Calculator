@@ -39,11 +39,16 @@ const FORMULA_COLS = {
 
 /* ── GET /api/formulas ── */
 router.get("/", async (_req, res) => {
-  const data = await db
-    .select(FORMULA_COLS)
-    .from(formulas)
-    .orderBy(asc(formulas.category), asc(formulas.name));
-  res.json(data);
+  try {
+    const data = await db
+      .select(FORMULA_COLS)
+      .from(formulas)
+      .orderBy(asc(formulas.category), asc(formulas.name));
+    res.json(data);
+  } catch (err) {
+    logger.warn({ err }, "formulas: failed to list");
+    res.status(500).json({ error: "Falha ao buscar fórmulas" });
+  }
 });
 
 /* ── POST /api/formulas ── */
@@ -71,11 +76,16 @@ router.post("/", requireAuth, async (req, res) => {
 /* ── GET /api/formulas/saved ── */
 router.get("/saved", requireAuth, async (req, res) => {
   const user = (req as any).user;
-  const data = await db
-    .select({ formula_id: savedFormulas.formula_id })
-    .from(savedFormulas)
-    .where(eq(savedFormulas.user_id, user.id));
-  res.json(data.map((r) => r.formula_id));
+  try {
+    const data = await db
+      .select({ formula_id: savedFormulas.formula_id })
+      .from(savedFormulas)
+      .where(eq(savedFormulas.user_id, user.id));
+    res.json(data.map((r) => r.formula_id));
+  } catch (err) {
+    logger.warn({ err }, "formulas: failed to list saved");
+    res.status(500).json({ error: "Falha ao buscar fórmulas salvas" });
+  }
 });
 
 /* ── POST /api/formulas/saved/:id ── */
@@ -183,9 +193,12 @@ router.post("/:id/notes", requireAuth, async (req, res) => {
 
 /* ── DELETE /api/formulas/:id/notes/:noteId ── */
 router.delete("/:id/notes/:noteId", requireAuth, async (req, res) => {
+  const user = (req as any).user;
   const { noteId } = req.params;
   try {
-    await db.delete(formulaNotes).where(eq(formulaNotes.id, noteId));
+    await db.delete(formulaNotes).where(
+      and(eq(formulaNotes.id, noteId), eq(formulaNotes.user_id, user.id))
+    );
     res.json({ ok: true });
   } catch (err) {
     logger.warn({ err }, "formulas: notes table not available");
