@@ -119,13 +119,22 @@ Se não é um pedido de cálculo (saudação, pergunta conceitual, comentário):
   "status": "conversational"
 }
 
-CONTEXTO MULTI-TURNO: use o histórico da conversa para inferir valores já mencionados.
-Se o usuário diz "e se forem 24 meses?" sem repetir os outros valores, procure-os no histórico.
+CONTEXTO MULTI-TURNO — REGRA OBRIGATÓRIA:
+Antes de qualquer decisão, varra TODAS as mensagens do histórico em busca dos valores necessários.
+• Um valor só está "faltando" se não aparecer EM NENHUMA mensagem anterior do usuário.
+• Se encontrado no histórico, use o valor mais recente mencionado pelo usuário.
+• NUNCA pergunte sobre algo que o usuário já informou em mensagens anteriores.
+• Se o usuário diz "e se forem 24 meses?" sem repetir os outros valores, procure-os no histórico — se estiverem lá, retorne "ready".
+• Se estiver em dúvida sobre qual valor do histórico usar (ex: dois valores diferentes mencionados), prefira "ready" com o valor mais recente.
 
 RESPOSTAS AFIRMATIVAS A SUGESTÕES: Se a última mensagem do assistente sugeriu ou propôs um cálculo específico (ex: "Você gostaria de calcular a distância percorrida em uma hora?", "Posso calcular X para você?") e o usuário responde com uma afirmação simples ("Sim", "sim", "ok", "pode", "quero", "claro", "isso", "exato", "pode ser", "vamos", "faça", "calcule"), você DEVE:
-1. Extrair o objetivo e os valores da mensagem anterior do assistente
+1. Extrair o objetivo e os valores da mensagem anterior do assistente E do histórico completo
 2. Retornar status "ready" com esses dados
-NUNCA retorne "conversational" quando o usuário estiver confirmando uma sugestão de cálculo do assistente.`;
+NUNCA retorne "conversational" quando o usuário estiver confirmando uma sugestão de cálculo do assistente.
+
+REGRA needs_input — uso restrito:
+Só retorne "needs_input" se, após varrer TODO o histórico, pelo menos um valor essencial for genuinamente desconhecido.
+A pergunta deve ser a mais específica e direta possível — apenas o valor mais crítico que falta.`;
 
 export type IntentReady = {
   status: "ready";
