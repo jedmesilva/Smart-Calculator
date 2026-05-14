@@ -118,21 +118,21 @@ Se não é um pedido de cálculo (saudação, pergunta conceitual, comentário):
 CONTEXTO MULTI-TURNO: use o histórico da conversa para inferir valores já mencionados.
 Se o usuário diz "e se forem 24 meses?" sem repetir os outros valores, procure-os no histórico.`;
 
-type IntentReady = {
+export type IntentReady = {
   status: "ready";
   objective: string;
   values: Record<string, number | string>;
   contextSummary: string;
 };
-type IntentNeedsInput = {
+export type IntentNeedsInput = {
   status: "needs_input";
   message: string;
   missing: { symbol: string; name: string; description: string }[];
 };
-type IntentConversational = { status: "conversational" };
-type IntentResult = IntentReady | IntentNeedsInput | IntentConversational;
+export type IntentConversational = { status: "conversational" };
+export type IntentResult = IntentReady | IntentNeedsInput | IntentConversational;
 
-async function runIntentAgent(opts: {
+export async function runIntentAgent(opts: {
   query: string;
   context: ConversationMessage[];
   sessionSummary?: string;
@@ -272,6 +272,7 @@ export async function runCalculationPipeline(opts: {
   sessionSummary?: string;
   messageCount?: number;
   userName?: string;
+  precomputedIntent?: IntentResult;
   emit?: (message: string) => void;
 }): Promise<OrchestratorResult> {
   const {
@@ -282,6 +283,7 @@ export async function runCalculationPipeline(opts: {
     sessionSummary,
     messageCount = 0,
     userName,
+    precomputedIntent,
     emit = () => {},
   } = opts;
 
@@ -330,25 +332,29 @@ export async function runCalculationPipeline(opts: {
     : undefined;
 
   /* ══════════════════════════════════════════════════
-     AGENT 1 — Intent Detection
+     AGENT 1 — Intent Detection (ou pré-computado)
      ══════════════════════════════════════════════════ */
 
-  emit("Entendendo o pedido…");
-
   let intentResult: IntentResult;
-  try {
-    intentResult = await runIntentAgent({ query, context, sessionSummary, formulaHint });
-  } catch (err: any) {
-    logger.warn({ err }, "orchestrator3: intentAgent failed, fallback guidance");
-    const guidance = await runGuidanceAgent({ query, context, sessionSummary, userName });
-    return {
-      status: "conversational",
-      message: guidance.message,
-      capturedName: guidance.capturedName,
-    };
-  }
 
-  logger.info({ intentStatus: intentResult.status }, "orchestrator3: intent detected");
+  if (precomputedIntent) {
+    intentResult = precomputedIntent;
+    logger.info({ intentStatus: intentResult.status }, "orchestrator3: using precomputed intent (speculative)");
+  } else {
+    emit("Entendendo o pedido…");
+    try {
+      intentResult = await runIntentAgent({ query, context, sessionSummary, formulaHint });
+    } catch (err: any) {
+      logger.warn({ err }, "orchestrator3: intentAgent failed, fallback guidance");
+      const guidance = await runGuidanceAgent({ query, context, sessionSummary, userName });
+      return {
+        status: "conversational",
+        message: guidance.message,
+        capturedName: guidance.capturedName,
+      };
+    }
+    logger.info({ intentStatus: intentResult.status }, "orchestrator3: intent detected");
+  }
 
   /* ── Caso conversacional ── */
   if (intentResult.status === "conversational") {
