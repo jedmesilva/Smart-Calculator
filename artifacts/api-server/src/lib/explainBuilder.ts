@@ -176,8 +176,7 @@ function toLatexResultado(
       .replace(/\bPI\b/g, "\\pi")
       .replace(/\bE\b(?=[^a-zA-Z])/g, "e");
 
-    let displayValue = computedValue;
-    if (resultUnit === "%") displayValue = computedValue * 100;
+    const displayValue = computedValue;
     const decimals = Number.isInteger(displayValue) ? 0 : 2;
     const formatted = new Intl.NumberFormat("pt-BR", {
       minimumFractionDigits: decimals,
@@ -297,6 +296,27 @@ TIPOS DE PASSO:
 - resultado: passo final com o valor numérico completo — SEMPRE o último passo
 
 ══════════════════════════════════════
+PASSO 1 — REGRA ABSOLUTA (enunciado)
+══════════════════════════════════════
+O Passo 1 é SEMPRE tipo "enunciado" e contém a fórmula SIMBÓLICA (com letras/símbolos, SEM valores numéricos).
+Use EXATAMENTE a "Expressão simbólica" fornecida nos dados do cálculo, convertida para LaTeX.
+
+✅ CORRETO para Passo 1:
+  descricao: "Partimos da fórmula dos juros compostos"
+  latex: "M = C \\times (1 + i)^{n}"          ← símbolos, sem números
+
+❌ ERRADO para Passo 1:
+  latex: "M = 5000 \\times (1 + 0{,}01)^{12}" ← valores numéricos (isso é substituição, não enunciado)
+  latex: "M"                                    ← só a variável, sem equação
+  latex: null                                   ← Passo 1 DEVE ter latex
+
+Regras do Passo 1:
+- latex OBRIGATÓRIO e não pode ser null
+- Deve ser a equação simbólica completa: "VARIÁVEL = expressão"
+- Se a expressão simbólica não foi fornecida, construa uma equivalente com símbolos representativos
+- descricao: explique em linguagem simples o que a fórmula representa
+
+══════════════════════════════════════
 ROTEIRO DETALHADO — ÁLGEBRA (tipo_operacao = "algebra")
 ══════════════════════════════════════
 Decomponha a expressão na ORDEM DE PRECEDÊNCIA MATEMÁTICA (parênteses → potências → multiplicação/divisão → adição/subtração).
@@ -308,31 +328,58 @@ EXEMPLO — Juros Compostos: M = C × (1 + i)^n, com C=5000, i=0,01, n=12:
     latex: "M = C \\times (1 + i)^{n}"
   Passo 2 [substituicao]: Substituir todos os valores
     descricao: "Substituímos o capital C = R$ 5.000, a taxa i = 0,01 e o número de períodos n = 12"
-    latex: "M = 5000 \\times (1 + 0{,}01)^{12}"
+    latex: "M = 5{.}000 \\times (1 + 0{,}01)^{12}"
   Passo 3 [resolucao]: Resolver a soma dentro dos parênteses
     descricao: "Calculamos a soma dentro dos parênteses: 1 + 0,01 = 1,01"
-    latex: "M = 5000 \\times (1{,}01)^{12}"
+    latex: "M = 5{.}000 \\times (1{,}01)^{12}"
   Passo 4 [resolucao]: Calcular a potência
     descricao: "Elevamos 1,01 à décima segunda potência: (1,01)^12 ≈ 1,1268"
-    latex: "M = 5000 \\times 1{,}1268"
+    latex: "M = 5{.}000 \\times 1{,}1268"
   Passo 5 [resolucao]: Multiplicar o capital pelo fator
-    descricao: "Multiplicamos o capital inicial R$ 5.000 pelo fator de crescimento 1,1268"
-    latex: "M = 5000 \\times 1{,}1268 = 5634{,}13"
+    descricao: "Multiplicamos R$ 5.000 pelo fator de crescimento 1,1268"
+    latex: "M = 5{.}000 \\times 1{,}1268 = 5{.}634{,}13"
   Passo 6 [resultado]: Resultado final
     descricao: "O montante final após 12 meses é R$ 5.634,13"
     latex: "M = 5{.}634{,}13\\;\\text{R\\$}"
 
+EXEMPLO — Percentual de Lucro: Lucro% = (Pv - Pc) / Pc × 100, com Pv=1000, Pc=800:
+  Passo 1 [enunciado]:
+    descricao: "Partimos da fórmula do percentual de lucro sobre o custo"
+    latex: "Lucro\\% = \\frac{Pv - Pc}{Pc} \\times 100"
+  Passo 2 [substituicao]:
+    descricao: "Substituímos o preço de venda Pv = R$ 1.000 e o preço de compra Pc = R$ 800"
+    latex: "Lucro\\% = \\frac{1{.}000 - 800}{800} \\times 100"
+  Passo 3 [resolucao]: Calcular o numerador
+    descricao: "Calculamos a diferença: 1.000 − 800 = 200"
+    latex: "Lucro\\% = \\frac{200}{800} \\times 100"
+  Passo 4 [resolucao]: Calcular a divisão
+    descricao: "Dividimos 200 por 800: 200 ÷ 800 = 0,25"
+    latex: "Lucro\\% = 0{,}25 \\times 100"
+  Passo 5 [resultado]:
+    descricao: "Multiplicamos por 100 para obter o percentual: 25%"
+    latex: "Lucro\\% = 25\\%"
+
 EXEMPLO — Área do Círculo: A = π × r², com r=7:
-  Passo 1 [enunciado]: "A = \\pi \\times r^{2}"
-  Passo 2 [substituicao]: "A = \\pi \\times 7^{2}" (substituímos r=7)
-  Passo 3 [resolucao]: "Calculamos 7² = 49" → "A = \\pi \\times 49"
-  Passo 4 [resolucao]: "Multiplicamos π ≈ 3,1416 por 49" → "A = 3{,}1416 \\times 49 = 153{,}94"
-  Passo 5 [resultado]: "A = 153{,}94\\;\\text{cm}^{2}"
+  Passo 1 [enunciado]:
+    descricao: "Partimos da fórmula da área do círculo"
+    latex: "A = \\pi \\times r^{2}"
+  Passo 2 [substituicao]:
+    descricao: "Substituímos o raio r = 7 cm"
+    latex: "A = \\pi \\times 7^{2}"
+  Passo 3 [resolucao]: Calcular o quadrado
+    descricao: "Calculamos 7² = 49"
+    latex: "A = \\pi \\times 49"
+  Passo 4 [resolucao]: Multiplicar por π
+    descricao: "Multiplicamos π ≈ 3,1416 por 49"
+    latex: "A = 3{,}1416 \\times 49 = 153{,}94"
+  Passo 5 [resultado]:
+    descricao: "A área do círculo é 153,94 cm²"
+    latex: "A = 153{,}94\\;\\text{cm}^{2}"
 
 ══════════════════════════════════════
 ROTEIRO — INTEGRAL DEFINIDA (tipo_operacao = "integral")
 ══════════════════════════════════════
-  Passo 1 [enunciado]: Escrever \\int_a^b f(x)\\,dx
+  Passo 1 [enunciado]: Escrever \\int_a^b f(x)\\,dx  (latex obrigatório)
   Passo 2 [teorema]: Regra de integração aplicada (justificativa obrigatória)
   Passo 3 [aplicacao]: Calcular a primitiva F(x)
   Passo 4 [teorema]: Teorema Fundamental do Cálculo — justificativa: "TFC: \\int_a^b f = F(b) - F(a)"
@@ -341,7 +388,7 @@ ROTEIRO — INTEGRAL DEFINIDA (tipo_operacao = "integral")
   Passo 7 [resultado]: Valor final
 
 ROTEIRO — DERIVADA (tipo_operacao = "derivada")
-  Passo 1 [enunciado]: \\frac{d}{dx}[f(x)]
+  Passo 1 [enunciado]: \\frac{d}{dx}[f(x)]  (latex obrigatório)
   Passo 2 [teorema]: Regra de derivação (potência, produto, cadeia...) com justificativa
   Passo 3 [aplicacao]: Aplicar a regra — calcular f'(x) simbolicamente
   Passo 4 [substituicao]: Substituir x = valor real
@@ -349,7 +396,7 @@ ROTEIRO — DERIVADA (tipo_operacao = "derivada")
   Passo 6 [resultado]: f'(a) = valor
 
 ROTEIRO — SOMATÓRIO (tipo_operacao = "somatorio")
-  Passo 1 [enunciado]: \\sum_{k=a}^{b} f(k)
+  Passo 1 [enunciado]: \\sum_{k=a}^{b} f(k)  (latex obrigatório)
   Passo 2 [teorema ou resolucao]: Fórmula fechada (se existir) ou expandir os primeiros termos
   Passo 3 [resolucao]: Calcular o valor da soma
   Passo 4 [resultado]: Valor final
@@ -357,18 +404,20 @@ ROTEIRO — SOMATÓRIO (tipo_operacao = "somatorio")
 ══════════════════════════════════════
 REGRAS OBRIGATÓRIAS
 ══════════════════════════════════════
-1. NUNCA agrupe duas operações num só passo — cada operação matemática tem seu passo próprio
-2. NUNCA escreva "Identificamos as variáveis" — isso não é passo matemático
-3. NUNCA salte da fórmula simbólica direto para o resultado — sempre mostre os intermediários
-4. A descrição de cada passo DEVE mencionar os valores numéricos concretos envolvidos
-5. O passo "resultado" é OBRIGATÓRIO e SEMPRE o último
-6. Use QUANTOS PASSOS FOREM NECESSÁRIOS para o cálculo — não há limite mínimo nem máximo. Um cálculo simples pode ter 3 passos; uma fórmula complexa pode ter 15. Você decide com base na complexidade real do cálculo.
-7. LaTeX compatível com KaTeX (sem \\begin{equation}, sem align — apenas inline)
-8. Decimais pt-BR no LaTeX: vírgula com chaves — ex: 1{,}5 ou 5{.}634{,}13
-9. Separador de milhar: ponto com chaves — ex: 5{.}000 ou 1{.}126{,}83
-10. Unidades no LaTeX: \\text{m}, \\text{kg}, \\text{R\\$}, \\text{cm}^2, \\text{anos}
-11. justificativa: obrigatória quando tipo="teorema"; null em todos os outros tipos
-12. interpretacao: frase curta e objetiva sobre o significado prático do resultado`;
+1. Passo 1 É SEMPRE tipo "enunciado" com latex da fórmula SIMBÓLICA (nunca null, nunca numérico)
+2. NUNCA agrupe duas operações num só passo — cada operação matemática tem seu passo próprio
+3. NUNCA escreva "Identificamos as variáveis" — isso não é passo matemático
+4. NUNCA salte da fórmula simbólica direto para o resultado — sempre mostre os intermediários
+5. A descrição de cada passo DEVE mencionar os valores numéricos concretos envolvidos
+6. O passo "resultado" é OBRIGATÓRIO e SEMPRE o último
+7. Use QUANTOS PASSOS FOREM NECESSÁRIOS — um cálculo simples pode ter 3; uma fórmula complexa pode ter 15
+8. LaTeX compatível com KaTeX (sem \\begin{equation}, sem align — apenas expressões inline)
+9. Decimais pt-BR no LaTeX: vírgula com chaves — ex: 1{,}5 ou 5{.}634{,}13
+10. Separador de milhar: ponto com chaves — ex: 5{.}000 ou 1{.}126{,}83
+11. Unidades no LaTeX: \\text{m}, \\text{kg}, \\text{R\\$}, \\text{cm}^{2}, \\text{anos}
+12. Percentual no LaTeX: \\% (não apenas %)
+13. justificativa: obrigatória quando tipo="teorema"; null em todos os outros tipos
+14. interpretacao: frase curta e objetiva sobre o significado prático do resultado`;
 
 export type DesenvolvimentoResult = {
   steps: DesenvolvimentoStep[];
@@ -490,8 +539,7 @@ function buildFallbackDesenvolvimento(
 ): DesenvolvimentoResult {
   const steps: DesenvolvimentoStep[] = [];
 
-  let displayValue = computedValue;
-  if (resultUnit === "%") displayValue = computedValue * 100;
+  const displayValue = computedValue;
   const decimals = Number.isInteger(displayValue) ? 0 : 2;
   const formattedResult = new Intl.NumberFormat("pt-BR", {
     minimumFractionDigits: decimals,

@@ -148,6 +148,34 @@ O último step ou o step indicado em "resultStep" é o resultado final.
 REGRA: "numericValue" em cada variável DEVE ser o número puro (sem unidade, sem formatação pt-BR).
 REGRA: "expression" DEVE conter valores numéricos literais (substitua todos os símbolos).
 
+══════════════════════════════════════
+REGRAS OBRIGATÓRIAS PARA "formulaSymbolic"
+══════════════════════════════════════
+"formulaSymbolic" é a fórmula matemática SIMBÓLICA — com nomes de variáveis, NUNCA valores numéricos.
+Ela aparece como "Etapa 1" na visualização explicativa do app. Deve ser autoexplicativa.
+
+FORMATO OBRIGATÓRIO: "SÍMBOLO_RESULTADO = expressão com símbolos das variáveis"
+
+✅ CORRETO:
+  "Lucro% = (Pv - Pc) / Pc × 100"      (percentual de lucro)
+  "M = C × (1 + i)^n"                  (juros compostos)
+  "A = π × r²"                         (área do círculo)
+  "v = d / t"                          (velocidade)
+  "IMC = m / h²"                       (índice de massa corporal)
+  "F = m × a"                          (força)
+  "d = √((x₂-x₁)² + (y₂-y₁)²)"       (distância entre pontos)
+
+❌ ERRADO — NUNCA faça isso:
+  "R"                    ← só a variável, sem equação
+  "Resultado"            ← texto genérico, sem equação
+  "25"                   ← valor numérico
+  "800 + 200"            ← valores concretos em vez de símbolos
+  "M = 1000 × 1.01^12"  ← valores numéricos no campo simbólico
+
+REGRA: Se a fórmula não tem nome canônico, invente símbolos curtos e intuitivos para cada variável
+(ex: para "desconto em reais": "D = Pn - Pp", onde Pn=preço normal, Pp=preço promocional).
+"solveFor" DEVE corresponder exatamente ao símbolo à esquerda do "=" em "formulaSymbolic".
+
 ${UNIT_PROMPT_RULES}`;
 
 /* ── Resolvedor de steps complexos com {label} ────────── */
