@@ -297,13 +297,12 @@ export function formatValue(value: number, unit: NormalizedUnit): string {
     }
 
     case "percent": {
-      // Multiplica por 100 e usa até 4 casas decimais
-      const pct = value * 100;
-      const decimals = Number.isInteger(pct) ? 0 : Math.min(4, decimalPlaces(pct));
+      // O valor já chega como número percentual (ex: 25 = 25%), não como decimal (0.25)
+      const decimals = Number.isInteger(value) ? 0 : Math.min(4, decimalPlaces(value));
       return new Intl.NumberFormat("pt-BR", {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals,
-      }).format(pct);
+      }).format(value);
     }
 
     case "physical": {
