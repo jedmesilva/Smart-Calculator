@@ -120,7 +120,12 @@ Se não é um pedido de cálculo (saudação, pergunta conceitual, comentário):
 }
 
 CONTEXTO MULTI-TURNO: use o histórico da conversa para inferir valores já mencionados.
-Se o usuário diz "e se forem 24 meses?" sem repetir os outros valores, procure-os no histórico.`;
+Se o usuário diz "e se forem 24 meses?" sem repetir os outros valores, procure-os no histórico.
+
+RESPOSTAS AFIRMATIVAS A SUGESTÕES: Se a última mensagem do assistente sugeriu ou propôs um cálculo específico (ex: "Você gostaria de calcular a distância percorrida em uma hora?", "Posso calcular X para você?") e o usuário responde com uma afirmação simples ("Sim", "sim", "ok", "pode", "quero", "claro", "isso", "exato", "pode ser", "vamos", "faça", "calcule"), você DEVE:
+1. Extrair o objetivo e os valores da mensagem anterior do assistente
+2. Retornar status "ready" com esses dados
+NUNCA retorne "conversational" quando o usuário estiver confirmando uma sugestão de cálculo do assistente.`;
 
 export type IntentReady = {
   status: "ready";
