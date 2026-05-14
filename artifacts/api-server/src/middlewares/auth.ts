@@ -23,6 +23,12 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   const { data: { user }, error } = await supabase.auth.getUser(token);
 
   if (error || !user) {
+    console.error("[auth] getUser failed:", {
+      error: error?.message,
+      status: error?.status,
+      supabaseUrl,
+      tokenPrefix: token.slice(0, 20),
+    });
     res.status(401).json({ error: "Sessão inválida ou expirada" });
     return;
   }
