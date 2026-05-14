@@ -256,6 +256,34 @@ function buildVariableMaps(variables: CalcVariable[]): {
   return { extracted, variableNames, variableValues };
 }
 
+/* ── Sanitiza formulaSymbolic: reverte valores numéricos → símbolos ──
+   O LLM às vezes retorna "A = π · (8²)" em vez de "A = π · r²".
+   Essa função substitui os numericValues pelos seus símbolos corretos. */
+
+function sanitizeFormulaSymbolic(
+  formulaSymbolic: string,
+  variables: CalcVariable[]
+): string {
+  // Ordena por comprimento do valor numérico (maior primeiro) para evitar
+  // substituições parciais. Ex: "12" deve ser substituído antes de "1" ou "2".
+  const sorted = [...variables]
+    .filter((v) => v.numericValue !== undefined && isFinite(v.numericValue))
+    .sort((a, b) => String(b.numericValue).length - String(a.numericValue).length);
+
+  let result = formulaSymbolic;
+  for (const v of sorted) {
+    const numStr = String(v.numericValue);
+    // Escapa ponto decimal para uso em regex
+    const escaped = numStr.replace(".", "\\.");
+    // Substitui o número quando não está adjacente a outros dígitos ou ponto
+    result = result.replace(
+      new RegExp(`(?<![\\d.])${escaped}(?![\\d.])`, "g"),
+      v.symbol
+    );
+  }
+  return result;
+}
+
 /* ── Deriva formulaSubstituted a partir da symbolic ─────── */
 
 function buildFormulaSubstituted(
@@ -346,10 +374,8 @@ export async function runCalculatorAgent(
 
     const variables: CalcVariable[] = parsed.variables ?? [];
     const { extracted, variableNames, variableValues } = buildVariableMaps(variables);
-    const formulaSubstituted = buildFormulaSubstituted(
-      parsed.formulaSymbolic ?? "",
-      variables
-    );
+    const cleanSymbolic = sanitizeFormulaSymbolic(parsed.formulaSymbolic ?? "", variables);
+    const formulaSubstituted = buildFormulaSubstituted(cleanSymbolic, variables);
 
     logger.info(
       {
@@ -366,7 +392,7 @@ export async function runCalculatorAgent(
     return {
       strategy: "simple",
       formulaName: parsed.formulaName ?? "Cálculo",
-      formulaSymbolic: parsed.formulaSymbolic ?? "",
+      formulaSymbolic: cleanSymbolic,
       expression: parsed.expression ?? "",
       computedValue,
       resultUnit: normUnit.symbol,
@@ -396,10 +422,8 @@ export async function runCalculatorAgent(
 
     const variables: CalcVariable[] = parsed.variables ?? [];
     const { extracted, variableNames, variableValues } = buildVariableMaps(variables);
-    const formulaSubstituted = buildFormulaSubstituted(
-      parsed.formulaSymbolic ?? "",
-      variables
-    );
+    const cleanSymbolicComplex = sanitizeFormulaSymbolic(parsed.formulaSymbolic ?? "", variables);
+    const formulaSubstituted = buildFormulaSubstituted(cleanSymbolicComplex, variables);
 
     logger.info(
       {
@@ -416,7 +440,7 @@ export async function runCalculatorAgent(
     return {
       strategy: "complex",
       formulaName: parsed.formulaName ?? "Cálculo",
-      formulaSymbolic: parsed.formulaSymbolic ?? "",
+      formulaSymbolic: cleanSymbolicComplex,
       expression: finalExpression,
       computedValue: finalValue,
       computedSteps,
