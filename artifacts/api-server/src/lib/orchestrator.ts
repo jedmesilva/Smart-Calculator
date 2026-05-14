@@ -17,7 +17,7 @@ import { db } from "@workspace/db";
 import { formulas } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 import { logger } from "./logger";
-import { buildResult, buildDesenvolvimento } from "./explainBuilder";
+import { buildResult } from "./explainBuilder";
 import { runCalculatorAgent } from "../agents/calculatorAgent";
 import { runEvaluatorAgent } from "../agents/evaluatorAgent";
 import { runConversationalAgent, runGuidanceAgent } from "../agents/conversationalAgent";
@@ -161,7 +161,7 @@ export async function runIntentAgent(opts: {
   messages.push({ role: "user", content: userContent });
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-4o-mini",
     max_completion_tokens: 600,
     messages,
   } as any);
@@ -516,31 +516,16 @@ export async function runCalculationPipeline(opts: {
     ? `Verifique o resultado: avaliação automática com score ${lastEvalScore}/10.`
     : undefined;
 
-  const [desenvolvimentoResult, conversationalText] = await Promise.all([
-    buildDesenvolvimento({
-      formulaName: calcResult.formulaName,
-      formulaSymbolic: calcResult.formulaSymbolic,
-      formulaSubstituted: calcResult.formulaSubstituted,
-      expression: calcResult.expression,
-      extracted: calcResult.extracted,
-      variableNames: calcResult.variableNames,
-      variableValues: calcResult.variableValues,
-      solveFor: calcResult.solveFor,
-      computedValue: calcResult.computedValue,
-      resultUnit: calcResult.resultUnit,
-      resultLabel: calcResult.resultLabel,
-    }),
-    runConversationalAgent({
-      query,
-      formula: formulaInfo,
-      expressionResult: exprResult,
-      computedValue: calcResult.computedValue,
-      validation: validationResult,
-      context,
-      sessionSummary,
-      userName,
-    }),
-  ]);
+  const conversationalText = await runConversationalAgent({
+    query,
+    formula: formulaInfo,
+    expressionResult: exprResult,
+    computedValue: calcResult.computedValue,
+    validation: validationResult,
+    context,
+    sessionSummary,
+    userName,
+  });
 
   const partialResult = buildResult(
     calcResult.formulaName,
@@ -555,14 +540,27 @@ export async function runCalculationPipeline(opts: {
       proof: validationResult,
       formulaExpression: calcResult.expression,
       formulaMeta: formulaInfo.expression_meta,
-      interpretacao: desenvolvimentoResult.interpretacao ?? null,
+      interpretacao: null,
     }
   );
 
   const finalResult: ResultData = {
     ...partialResult,
     conversationalResponse: conversationalText,
-    desenvolvimento: desenvolvimentoResult.steps,
+    desenvolvimento: [],
+    desenvolvimentoInput: {
+      formulaName: calcResult.formulaName,
+      formulaSymbolic: calcResult.formulaSymbolic,
+      formulaSubstituted: calcResult.formulaSubstituted,
+      expression: calcResult.expression,
+      extracted: calcResult.extracted,
+      variableNames: calcResult.variableNames,
+      variableValues: calcResult.variableValues,
+      solveFor: calcResult.solveFor,
+      computedValue: calcResult.computedValue,
+      resultUnit: calcResult.resultUnit,
+      resultLabel: calcResult.resultLabel,
+    },
     objetivo: objective,
   };
 

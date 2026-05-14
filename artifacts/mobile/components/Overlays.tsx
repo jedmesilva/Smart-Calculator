@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MathView } from "@/components/MathView";
 import { CalcSummaryCard } from "@/components/CalcSummaryCard";
 import {
@@ -17,7 +17,8 @@ import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import colors from "@/constants/colors";
-import type { ResultData } from "@/lib/apiClient";
+import type { ResultData, DesenvolvimentoStep } from "@/lib/apiClient";
+import { fetchDesenvolvimento } from "@/lib/apiClient";
 import { exportAsPDF, copyToClipboard } from "@/lib/exportCalc";
 import {
   useFormulas,
@@ -67,6 +68,21 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
   const [exporting, setExporting] = useState(false);
   const [exportStatus, setExportStatus] = useState<"idle" | "ok" | "err">("idle");
   const [copied, setCopied] = useState(false);
+  const [lazySteps, setLazySteps] = useState<DesenvolvimentoStep[] | null>(null);
+  const [loadingSteps, setLoadingSteps] = useState(false);
+  const [interpretacaoLazy, setInterpretacaoLazy] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!data.desenvolvimentoInput) return;
+    setLoadingSteps(true);
+    fetchDesenvolvimento(data.desenvolvimentoInput)
+      .then((r) => {
+        setLazySteps(r.steps);
+        setInterpretacaoLazy(r.interpretacao);
+      })
+      .catch(() => setLazySteps([]))
+      .finally(() => setLoadingSteps(false));
+  }, [data.desenvolvimentoInput]);
 
   const handleExportPDF = async () => {
     if (exporting) return;
@@ -110,7 +126,7 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
   const formulaLatex = data.formula?.latex ?? null;
   const formulaAbstrata = data.formula?.abstrata ?? "";
   const variaveis = data.variaveis ?? [];
-  const desenvolvimento = data.desenvolvimento ?? [];
+  const desenvolvimento = lazySteps ?? data.desenvolvimento ?? [];
   const objetivo = data.objetivo ?? null;
 
   const hasFormula = !!(formulaLatex || formulaAbstrata);
@@ -232,33 +248,38 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
         )}
 
         {/* ── 03 Desenvolvimento ── */}
-        {desenvolvimento.length > 0 && (
+        {(loadingSteps || desenvolvimento.length > 0) && (
           <DocSection numero={nextSec()} titulo="Desenvolvimento">
-            {desenvolvimento.map((step, i) => {
-              const isLast = i === desenvolvimento.length - 1;
-              return (
-                <View key={i} style={styles.docStepRow}>
-                  {/* Coluna esquerda: linha vertical + ponto */}
-                  <View style={styles.docStepTrack}>
-                    <View style={[
-                      styles.docStepDot,
-                      step.tipo === "resultado" && styles.docStepDotResult,
-                    ]} />
-                    {!isLast && <View style={styles.docStepLine} />}
+            {loadingSteps ? (
+              <View style={styles.loadingStepsRow}>
+                <ActivityIndicator size="small" color={c.mid} />
+                <Text style={styles.loadingStepsText}>Gerando passo a passo…</Text>
+              </View>
+            ) : (
+              desenvolvimento.map((step, i) => {
+                const isLast = i === desenvolvimento.length - 1;
+                return (
+                  <View key={i} style={styles.docStepRow}>
+                    <View style={styles.docStepTrack}>
+                      <View style={[
+                        styles.docStepDot,
+                        step.tipo === "resultado" && styles.docStepDotResult,
+                      ]} />
+                      {!isLast && <View style={styles.docStepLine} />}
+                    </View>
+                    <View style={styles.docStepContent}>
+                      <Text style={styles.docStepText}>{step.descricao}</Text>
+                      {!!step.justificativa && (
+                        <Text style={styles.docStepJustificativa}>{step.justificativa}</Text>
+                      )}
+                      {step.latex && (
+                        <MathView latex={step.latex} color={step.tipo === "resultado" ? c.text : c.mid} />
+                      )}
+                    </View>
                   </View>
-                  {/* Conteúdo */}
-                  <View style={styles.docStepContent}>
-                    <Text style={styles.docStepText}>{step.descricao}</Text>
-                    {!!step.justificativa && (
-                      <Text style={styles.docStepJustificativa}>{step.justificativa}</Text>
-                    )}
-                    {step.latex && (
-                      <MathView latex={step.latex} color={step.tipo === "resultado" ? c.text : c.mid} />
-                    )}
-                  </View>
-                </View>
-              );
-            })}
+                );
+              })
+            )}
           </DocSection>
         )}
 
@@ -1403,6 +1424,17 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   /* ── Steps doc ── */
+  loadingStepsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 12,
+  },
+  loadingStepsText: {
+    fontSize: 13,
+    color: c.mid,
+    fontFamily: "Inter_400Regular",
+  },
   docStepRow: {
     flexDirection: "row",
     alignItems: "stretch",

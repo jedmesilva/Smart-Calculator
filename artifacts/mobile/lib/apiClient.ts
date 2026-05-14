@@ -62,6 +62,20 @@ export type ResultData = {
 
   desenvolvimento: DesenvolvimentoStep[];
 
+  desenvolvimentoInput?: {
+    formulaName: string;
+    formulaSymbolic: string;
+    formulaSubstituted: string;
+    expression: string;
+    extracted: Record<string, number>;
+    variableNames: Record<string, string>;
+    variableValues: Record<string, string>;
+    solveFor: string;
+    computedValue: number;
+    resultUnit: string;
+    resultLabel: string;
+  };
+
   resultado: {
     valor: string;
     latex: string | null;
@@ -373,6 +387,18 @@ export type CarteiraInfo = {
   totalConsultas: number;
   totalGastoBrl: number;
 };
+
+export async function fetchDesenvolvimento(
+  input: ResultData["desenvolvimentoInput"]
+): Promise<{ steps: DesenvolvimentoStep[]; interpretacao: string | null }> {
+  if (!input) return { steps: [], interpretacao: null };
+  const res = await apiFetch("/desenvolvimento", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error("Falha ao carregar passo a passo");
+  return res.json();
+}
 
 export async function fetchCarteira(): Promise<CarteiraInfo | null> {
   try {

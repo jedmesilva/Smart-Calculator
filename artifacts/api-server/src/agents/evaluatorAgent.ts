@@ -147,7 +147,7 @@ export async function runEvaluatorAgent(
     .join("\n");
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-4o-mini",
     max_completion_tokens: 400,
     messages: [
       { role: "system", content: EVALUATOR_SYSTEM },

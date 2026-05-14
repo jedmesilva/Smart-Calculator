@@ -295,7 +295,7 @@ export async function runCalculatorAgent(
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
-    max_completion_tokens: 1500,
+    max_completion_tokens: 800,
     messages: [
       { role: "system", content: CALCULATOR_SYSTEM },
       { role: "user", content: userContent },
