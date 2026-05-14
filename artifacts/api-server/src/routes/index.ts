@@ -10,6 +10,7 @@ import usersRouter from "./users";
 import creditsRouter from "./credits";
 import calculationsRouter from "./calculations";
 import exportRouter from "./export";
+import stripeRouter from "./stripe";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use("/users", usersRouter);
 router.use(creditsRouter);
 router.use(calculationsRouter);
 router.use(exportRouter);
+router.use(stripeRouter);
 
 export default router;

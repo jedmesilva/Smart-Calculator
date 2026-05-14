@@ -453,3 +453,60 @@ export async function fetchTransacoes(limit = 20): Promise<Transacao[]> {
     return [];
   }
 }
+
+/* ──── STRIPE ──── */
+
+export type StripePlan = {
+  id: string;
+  name: string;
+  description: string | null;
+  metadata: Record<string, string>;
+  prices: {
+    id: string;
+    unit_amount: number;
+    currency: string;
+    recurring: { interval: string } | null;
+  }[];
+};
+
+export async function fetchStripePlans(): Promise<StripePlan[]> {
+  try {
+    const res = await apiFetch("/stripe/plans");
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function createStripeCheckout(priceId: string, email?: string): Promise<{ url: string }> {
+  const res = await apiFetch("/stripe/checkout", {
+    method: "POST",
+    body: JSON.stringify({ priceId, email }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as any).error ?? "Falha ao criar sessão de pagamento");
+  }
+  return res.json();
+}
+
+export async function fetchStripeSubscription(): Promise<{ subscription: any | null; plano: string }> {
+  try {
+    const res = await apiFetch("/stripe/subscription");
+    if (!res.ok) return { subscription: null, plano: "free" };
+    return res.json();
+  } catch {
+    return { subscription: null, plano: "free" };
+  }
+}
+
+export async function createStripePortal(): Promise<{ url: string }> {
+  const res = await apiFetch("/stripe/portal", { method: "POST" });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as any).error ?? "Falha ao abrir portal");
+  }
+  return res.json();
+}

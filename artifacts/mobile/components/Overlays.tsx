@@ -16,9 +16,11 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
+import * as WebBrowser from "expo-web-browser";
+import { useQueryClient } from "@tanstack/react-query";
 import colors from "@/constants/colors";
 import type { ResultData, DesenvolvimentoStep } from "@/lib/apiClient";
-import { fetchDesenvolvimento } from "@/lib/apiClient";
+import { fetchDesenvolvimento, fetchStripePlans, createStripeCheckout, createStripePortal, type StripePlan } from "@/lib/apiClient";
 import { exportAsPDF, copyToClipboard } from "@/lib/exportCalc";
 import {
   useFormulas,
@@ -570,20 +572,48 @@ const PLANS = [
 export function PlansScreen({ onClose }: { onClose: () => void }) {
   const insets = useSafeAreaInsets();
   const topPad = insets.top;
+  const { session } = useAuth();
+  const queryClient = useQueryClient();
 
-  const handleCta = (plan: typeof PLANS[number]) => {
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [planPriceIds, setPlanPriceIds] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetchStripePlans().then((plans) => {
+      const map: Record<string, string> = {};
+      for (const p of plans) {
+        const planId = p.metadata?.plan_id;
+        const priceId = p.prices[0]?.id;
+        if (planId && priceId) map[planId] = priceId;
+      }
+      setPlanPriceIds(map);
+    });
+  }, []);
+
+  const handleCta = async (plan: typeof PLANS[number]) => {
     if (plan.ctaDisabled) return;
-    Alert.alert(
-      `Assinar ${plan.name}`,
-      `Em breve você poderá assinar o plano ${plan.name} por ${plan.priceLabel}/mês diretamente no app.\n\nEntre em contato: contato@phormula.app`,
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Enviar e-mail",
-          onPress: () => Linking.openURL("mailto:contato@phormula.app?subject=Interesse%20no%20plano%20" + plan.name),
-        },
-      ]
-    );
+
+    const priceId = planPriceIds[plan.id];
+    if (!priceId) {
+      Alert.alert("Indisponível", "Pagamentos em breve. Entre em contato: contato@phormula.app");
+      return;
+    }
+
+    setCheckoutLoading(plan.id);
+    try {
+      const email = session?.user?.email;
+      const { url } = await createStripeCheckout(priceId, email);
+      const result = await WebBrowser.openAuthSessionAsync(url, "mobile://checkout/");
+      if (result.type === "success") {
+        await queryClient.invalidateQueries({ queryKey: ["carteira"] });
+        Alert.alert("Assinatura ativada!", "Seus créditos foram adicionados à sua conta.");
+        onClose();
+      }
+    } catch (err: any) {
+      Alert.alert("Erro", err?.message ?? "Não foi possível abrir o pagamento. Tente novamente.");
+    } finally {
+      setCheckoutLoading(null);
+    }
   };
 
   return (
@@ -655,21 +685,25 @@ export function PlansScreen({ onClose }: { onClose: () => void }) {
             {/* CTA */}
             <Pressable
               onPress={() => handleCta(plan)}
-              disabled={plan.ctaDisabled}
+              disabled={plan.ctaDisabled || checkoutLoading === plan.id}
               style={({ pressed }) => [
                 styles.planCta,
                 plan.highlight && styles.planCtaHighlight,
-                plan.ctaDisabled && styles.planCtaDisabled,
-                pressed && !plan.ctaDisabled && { opacity: 0.8 },
+                (plan.ctaDisabled || checkoutLoading === plan.id) && styles.planCtaDisabled,
+                pressed && !plan.ctaDisabled && checkoutLoading !== plan.id && { opacity: 0.8 },
               ]}
             >
-              <Text style={[
-                styles.planCtaText,
-                plan.highlight && styles.planCtaTextHighlight,
-                plan.ctaDisabled && styles.planCtaTextDisabled,
-              ]}>
-                {plan.cta}
-              </Text>
+              {checkoutLoading === plan.id ? (
+                <ActivityIndicator size="small" color={plan.highlight ? "#fff" : c.mid} />
+              ) : (
+                <Text style={[
+                  styles.planCtaText,
+                  plan.highlight && styles.planCtaTextHighlight,
+                  plan.ctaDisabled && styles.planCtaTextDisabled,
+                ]}>
+                  {plan.cta}
+                </Text>
+              )}
             </Pressable>
           </View>
         ))}
