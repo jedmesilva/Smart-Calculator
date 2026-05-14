@@ -25,7 +25,6 @@ import { generateSessionSummary } from "./summaryBuilder";
 import {
   setSpeculativeEntry,
   getSpeculativeEntry,
-  normalizeQuery,
 } from "./speculativeCache";
 import type { ConversationMessage, ExpressionResult, ValidationResult, FormulaInfo } from "../agents/types";
 import type { ResultData } from "./explainBuilder";
