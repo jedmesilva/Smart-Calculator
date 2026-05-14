@@ -265,13 +265,8 @@ export function useCarteira() {
           table: "carteira",
           filter: `usuario_id=eq.${userId}`,
         },
-        (payload) => {
-          const row = payload.new as any;
-          qc.setQueryData(["carteira", userId], {
-            saldo: row.saldo_creditos ?? 0,
-            totalConsultas: row.total_consultas ?? 0,
-            totalGastoBrl: parseFloat(row.total_gasto_brl ?? "0"),
-          } satisfies CarteiraInfo);
+        () => {
+          qc.invalidateQueries({ queryKey: ["carteira", userId] });
         },
       )
       .subscribe();

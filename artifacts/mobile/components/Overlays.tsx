@@ -726,13 +726,10 @@ export function PlanManagementScreen({
 
   const saldo = carteira?.saldo ?? null;
   const totalConsultas = carteira?.totalConsultas ?? 0;
-  const totalGastoBrl = carteira?.totalGastoBrl ?? 0;
+  const totalCreditosConsumidos = carteira?.totalCreditosConsumidos ?? 0;
 
   const usedCredits = 100 - (saldo ?? 100);
   const usedPct = Math.min(100, Math.max(0, (usedCredits / 100) * 100));
-
-  const formatBrl = (v: number) =>
-    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   return (
     <View style={[styles.overlay, { paddingTop: topPad }]}>
@@ -800,8 +797,8 @@ export function PlanManagementScreen({
             </View>
             <View style={styles.mgmtStatDivider} />
             <View style={styles.mgmtStat}>
-              <Text style={styles.mgmtStatNum}>{formatBrl(totalGastoBrl)}</Text>
-              <Text style={styles.mgmtStatLabel}>custo total de IA</Text>
+              <Text style={styles.mgmtStatNum}>{totalCreditosConsumidos.toLocaleString("pt-BR")}</Text>
+              <Text style={styles.mgmtStatLabel}>créditos consumidos</Text>
             </View>
           </View>
         </View>

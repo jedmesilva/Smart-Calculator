@@ -23,6 +23,7 @@ export interface CarteiraInfo {
   saldo: number;
   totalConsultas: number;
   totalGastoBrl: number;
+  totalCreditosConsumidos: number;
 }
 
 // Preços fallback quando o modelo não está na tabela
@@ -88,16 +89,22 @@ export async function getCarteira(userId: string): Promise<CarteiraInfo | null> 
   const client = await pool.connect();
   try {
     const res = await client.query(
-      `SELECT saldo_creditos, total_consultas, total_gasto_brl FROM carteira WHERE usuario_id = $1`,
+      `SELECT c.saldo_creditos, c.total_consultas, c.total_gasto_brl,
+              COALESCE((
+                SELECT SUM(-t.creditos) FROM transacoes t
+                WHERE t.usuario_id = $1 AND t.tipo = 'debito'
+              ), 0) AS total_creditos_consumidos
+       FROM carteira c WHERE c.usuario_id = $1`,
       [userId]
     );
     if (res.rows.length === 0) {
-      return { saldo: WELCOME_CREDITS, totalConsultas: 0, totalGastoBrl: 0 };
+      return { saldo: WELCOME_CREDITS, totalConsultas: 0, totalGastoBrl: 0, totalCreditosConsumidos: 0 };
     }
     return {
       saldo: res.rows[0].saldo_creditos,
       totalConsultas: res.rows[0].total_consultas,
       totalGastoBrl: parseFloat(res.rows[0].total_gasto_brl ?? "0"),
+      totalCreditosConsumidos: parseInt(res.rows[0].total_creditos_consumidos ?? "0", 10),
     };
   } catch (err) {
     logger.warn({ err, userId }, "billing: getCarteira failed");

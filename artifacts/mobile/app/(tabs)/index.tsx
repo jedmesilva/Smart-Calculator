@@ -386,7 +386,8 @@ export default function PhormulаScreen() {
           if (s) setSessionSummary(s);
         });
       }
-      // Realtime (Supabase) atualiza o saldo automaticamente via subscription
+      // Atualiza créditos e estatísticas após qualquer cálculo processado pelo servidor
+      queryClient.invalidateQueries({ queryKey: ["carteira"] });
     } catch (err: any) {
       const errId = msgId + "_e";
       setChat((prev) => [
