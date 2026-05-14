@@ -172,7 +172,8 @@ export async function calculateStream(
             throw new Error(event.message ?? "Erro no servidor");
           }
         } catch (parseErr: any) {
-          if (parseErr?.message && !parseErr.message.includes("JSON")) throw parseErr;
+          // Só suprime SyntaxError real do JSON.parse — re-lança qualquer outro erro (ex: evento de erro do servidor)
+          if (!(parseErr instanceof SyntaxError)) throw parseErr;
         }
       }
     }

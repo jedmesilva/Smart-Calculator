@@ -77,7 +77,11 @@ router.post("/calculate", requireAuth, async (req, res) => {
       }).catch((err) => logger.warn({ err }, "calculate: billing failed silently"));
     }
 
-    res.write(`data: ${JSON.stringify({ type: "result", data: result })}\n\n`);
+    try {
+      res.write(`data: ${JSON.stringify({ type: "result", data: result })}\n\n`);
+    } catch (writeErr) {
+      logger.warn({ writeErr }, "calculate: falha ao escrever resultado (cliente desconectou?)");
+    }
   } catch (err: any) {
     logger.error({ err }, "calculate route: unhandled error");
 
@@ -88,16 +92,20 @@ router.post("/calculate", requireAuth, async (req, res) => {
         err.message.startsWith("O resultado") ||
         err.message.startsWith("Para calcular"));
 
-    res.write(
-      `data: ${JSON.stringify({
-        type: "error",
-        message: isUserFacing
-          ? err.message
-          : "Falha ao processar o cálculo. Tente novamente.",
-      })}\n\n`
-    );
+    try {
+      res.write(
+        `data: ${JSON.stringify({
+          type: "error",
+          message: isUserFacing
+            ? err.message
+            : "Falha ao processar o cálculo. Tente novamente.",
+        })}\n\n`
+      );
+    } catch (writeErr) {
+      logger.warn({ writeErr }, "calculate: falha ao escrever erro (cliente desconectou?)");
+    }
   } finally {
-    res.end();
+    try { res.end(); } catch { /* already closed */ }
   }
 });
 
