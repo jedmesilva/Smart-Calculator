@@ -29,12 +29,12 @@ name = "Start mobile"
 author = "agent"
 
 [workflows.workflow.metadata]
-outputType = "webview"
+outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "EXPO_PUBLIC_SUPABASE_URL=$SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY EXPO_PUBLIC_DOMAIN=$REPLIT_DEV_DOMAIN PORT=5000 node artifacts/mobile/server/serve.js"
-waitForPort = 5000
+args = "EXPO_PACKAGER_PROXY_URL=https://$REPLIT_EXPO_DEV_DOMAIN EXPO_PUBLIC_DOMAIN=$REPLIT_DEV_DOMAIN EXPO_PUBLIC_REPL_ID=$REPL_ID EXPO_PUBLIC_SUPABASE_URL=$SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY REACT_NATIVE_PACKAGER_HOSTNAME=$REPLIT_DEV_DOMAIN pnpm --filter @workspace/mobile exec expo start --localhost --port 8099"
+waitForPort = 8099
 
 [[workflows.workflow]]
 name = "Start API server"
@@ -72,6 +72,10 @@ externalPort = 8081
 [[ports]]
 localPort = 8082
 externalPort = 3000
+
+[[ports]]
+localPort = 8099
+externalPort = 8099
 
 [[ports]]
 localPort = 18115
