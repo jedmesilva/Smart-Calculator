@@ -497,7 +497,20 @@ export default function PhormulаScreen() {
 
       {/* ── OVERLAYS ── */}
       {screen === "calc" && viewingResult && (
-        <CalcOverlay data={viewingResult} onClose={() => setScreen(calcOrigin)} />
+        <CalcOverlay
+          data={viewingResult}
+          onClose={() => setScreen(calcOrigin)}
+          onDesenvolvimentoLoaded={(steps) => {
+            // Persiste os steps no item do chat para que próximas aberturas não re-façam o fetch
+            setChat((prev) =>
+              prev.map((item) =>
+                item.kind === "result" && item.result === viewingResult
+                  ? { ...item, result: { ...item.result, desenvolvimento: steps } }
+                  : item
+              )
+            );
+          }}
+        />
       )}
       {screen === "history" && (
         <HistoryOverlay

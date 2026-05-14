@@ -60,8 +60,23 @@ function DocSection({
   );
 }
 
+/* ─── CACHE DE MÓDULO — persiste entre mounts do CalcOverlay na mesma sessão ─── */
+const _devCache = new Map<string, { steps: DesenvolvimentoStep[]; interpretacao: string | null }>();
+
+function _devCacheKey(input: NonNullable<ResultData["desenvolvimentoInput"]>): string {
+  return `${input.expression}::${input.solveFor}::${input.computedValue}`;
+}
+
 /* ─── CALC OVERLAY ─── */
-export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () => void }) {
+export function CalcOverlay({
+  data,
+  onClose,
+  onDesenvolvimentoLoaded,
+}: {
+  data: ResultData;
+  onClose: () => void;
+  onDesenvolvimentoLoaded?: (steps: DesenvolvimentoStep[], interpretacao: string | null) => void;
+}) {
   const insets = useSafeAreaInsets();
   const topPad = insets.top;
   const botPad = insets.bottom;
@@ -72,17 +87,38 @@ export function CalcOverlay({ data, onClose }: { data: ResultData; onClose: () =
   const [loadingSteps, setLoadingSteps] = useState(false);
   const [interpretacaoLazy, setInterpretacaoLazy] = useState<string | null>(null);
 
+  // Chave estável derivada de primitivos — evita dependência de referência de objeto
+  const devKey = data.desenvolvimentoInput
+    ? _devCacheKey(data.desenvolvimentoInput)
+    : null;
+  const alreadyHasDev = (data.desenvolvimento?.length ?? 0) > 0;
+
   useEffect(() => {
-    if (!data.desenvolvimentoInput) return;
+    // 1. Desenvolvimento já vem preenchido no resultado — renderização usa data.desenvolvimento diretamente
+    if (alreadyHasDev) return;
+
+    if (!devKey || !data.desenvolvimentoInput) return;
+
+    // 2. Cache de módulo — previne re-fetch em aberturas repetidas do mesmo resultado
+    const cached = _devCache.get(devKey);
+    if (cached) {
+      setLazySteps(cached.steps);
+      setInterpretacaoLazy(cached.interpretacao);
+      return;
+    }
+
+    // 3. Fetch único — armazena em cache e notifica pai para persistir nos items do chat
     setLoadingSteps(true);
     fetchDesenvolvimento(data.desenvolvimentoInput)
       .then((r) => {
         setLazySteps(r.steps);
         setInterpretacaoLazy(r.interpretacao);
+        _devCache.set(devKey, { steps: r.steps, interpretacao: r.interpretacao });
+        onDesenvolvimentoLoaded?.(r.steps, r.interpretacao);
       })
       .catch(() => setLazySteps([]))
       .finally(() => setLoadingSteps(false));
-  }, [data.desenvolvimentoInput]);
+  }, [devKey, alreadyHasDev]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleExportPDF = async () => {
     if (exporting) return;
