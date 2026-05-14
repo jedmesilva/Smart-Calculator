@@ -35,9 +35,10 @@ const FALLBACK_PRICES: Record<string, { input: number; output: number }> = {
 };
 
 const FALLBACK_USD_BRL     = 5.80;
-const FALLBACK_MARGEM      = 3.0;
+const FALLBACK_MARGEM      = 2.0; // margem 100% sobre custo = 2× custo
 const FALLBACK_CREDITO_BRL = 0.10;
 const WELCOME_CREDITS      = 100; // créditos de boas-vindas para novos usuários
+const FREE_DAILY_CREDITS   = 100; // créditos renovados diariamente para plano free
 
 /* ── Busca ou cria carteira do usuário ── */
 async function ensureCarteira(client: any, userId: string): Promise<number> {
@@ -242,6 +243,67 @@ export async function registerConsulta(opts: {
     await client.query("ROLLBACK").catch(() => {});
     logger.warn({ err: err?.message, userId: opts.userId }, "billing: registerConsulta failed");
     return null;
+  } finally {
+    client.release();
+  }
+}
+
+/* ── Renovação diária de créditos para usuários free ── */
+export async function renovarCreditosDiarios(): Promise<void> {
+  const client = await pool.connect();
+  try {
+    // Busca usuários free que ainda não renovaram hoje
+    const res = await client.query(`
+      SELECT c.usuario_id
+      FROM carteira c
+      JOIN profiles p ON p.id::text = c.usuario_id::text
+      WHERE COALESCE(p.plano, 'free') = 'free'
+        AND (
+          c.ultima_renovacao_diaria IS NULL
+          OR c.ultima_renovacao_diaria::date < now()::date
+        )
+    `);
+
+    if (res.rows.length === 0) return;
+
+    logger.info({ count: res.rows.length }, "billing: renovando créditos diários");
+
+    for (const row of res.rows) {
+      const userId = row.usuario_id;
+      try {
+        await client.query("BEGIN");
+
+        const balRes = await client.query(
+          `SELECT saldo_creditos FROM carteira WHERE usuario_id = $1 FOR UPDATE`,
+          [userId]
+        );
+        const saldoAnterior = balRes.rows[0]?.saldo_creditos ?? 0;
+        const saldoPosterior = FREE_DAILY_CREDITS; // reseta para 100 (não acumula)
+
+        await client.query(
+          `UPDATE carteira SET
+             saldo_creditos = $1,
+             ultima_renovacao_diaria = now(),
+             atualizado_em = now()
+           WHERE usuario_id = $2`,
+          [saldoPosterior, userId]
+        );
+
+        await client.query(
+          `INSERT INTO transacoes (usuario_id, tipo, creditos, saldo_anterior, saldo_posterior, descricao)
+           VALUES ($1, 'renovacao_diaria', $2, $3, $4, 'Renovação diária de créditos gratuitos')`,
+          [userId, FREE_DAILY_CREDITS, saldoAnterior, saldoPosterior]
+        );
+
+        await client.query("COMMIT");
+        logger.info({ userId, saldoPosterior }, "billing: créditos diários renovados");
+      } catch (err) {
+        await client.query("ROLLBACK").catch(() => {});
+        logger.warn({ err, userId }, "billing: erro ao renovar créditos diários");
+      }
+    }
+  } catch (err) {
+    logger.warn({ err }, "billing: renovarCreditosDiarios falhou");
   } finally {
     client.release();
   }

@@ -516,8 +516,7 @@ const PLANS = [
     priceLabel: "Grátis",
     credits: 100,
     creditsLabel: "100 créditos",
-    creditsNote: "de boas-vindas, não renova",
-    calcsEstimate: "~33 cálculos",
+    creditsNote: "renovam todo dia às meia-noite",
     features: [
       "Acesso à biblioteca de fórmulas",
       "Histórico de cálculos",
@@ -536,7 +535,6 @@ const PLANS = [
     credits: 500,
     creditsLabel: "500 créditos",
     creditsNote: "por mês, renovam todo mês",
-    calcsEstimate: "~165 cálculos/mês",
     features: [
       "Tudo do Gratuito",
       "Créditos mensais recorrentes",
@@ -555,7 +553,6 @@ const PLANS = [
     credits: 2000,
     creditsLabel: "2.000 créditos",
     creditsNote: "por mês, renovam todo mês",
-    calcsEstimate: "~660 cálculos/mês",
     features: [
       "Tudo do Starter",
       "4× mais créditos",
@@ -666,7 +663,6 @@ export function PlansScreen({ onClose }: { onClose: () => void }) {
                 {plan.creditsLabel}
               </Text>
               <Text style={styles.planCreditsNote}>{plan.creditsNote}</Text>
-              <Text style={styles.planCalcsEstimate}>{plan.calcsEstimate}</Text>
             </View>
 
             {/* Divider */}
@@ -1939,12 +1935,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: "Inter_400Regular",
     color: c.faint,
-  },
-  planCalcsEstimate: {
-    fontSize: 11,
-    fontFamily: "Inter_500Medium",
-    color: c.mid,
-    marginTop: 4,
   },
   planDivider: {
     height: 1,
