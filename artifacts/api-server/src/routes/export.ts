@@ -9,10 +9,10 @@ const CHROMIUM_PATH =
   process.env.CHROMIUM_PATH ??
   "/nix/store/qa9cnw4v5xkxyip6mb9kxqfq1z4x2dx1-chromium-138.0.7204.100/bin/chromium";
 
-function renderLatex(latex: string): string {
+function renderLatex(latex: string, inline = false): string {
   try {
     return katex.renderToString(latex, {
-      displayMode: true,
+      displayMode: !inline,
       throwOnError: false,
       output: "html",
     });
@@ -55,6 +55,24 @@ function esc(s: any): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+}
+
+/* Converte valor de variável para LaTeX básico — mesma lógica do mobile
+   "150 km" → "150\;\text{km}"  |  "75" → "75"  |  "R$ 1.000" → "\text{R\$ 1.000}" */
+function valueToLatex(valor: string): string {
+  if (!valor) return "";
+  const match = valor.match(/^([\d.,]+)\s*(.*)$/);
+  if (match) {
+    const num = match[1].replace(/\./g, "{.}").replace(/,/g, "{,}");
+    const unit = match[2].trim();
+    if (unit) {
+      const safeUnit = unit.replace(/\$/g, "\\$").replace(/%/g, "\\%");
+      return `${num}\\;\\text{${safeUnit}}`;
+    }
+    return num;
+  }
+  const safe = valor.replace(/\$/g, "\\$").replace(/%/g, "\\%");
+  return `\\text{${safe}}`;
 }
 
 function buildHTML(data: any): string {
@@ -122,9 +140,9 @@ function buildHTML(data: any): string {
       ${variaveis.map((v, i) => `
         <div class="var-row${i < variaveis.length - 1 ? " var-border" : ""}">
           <div class="var-top">
-            <span class="var-symbol">${esc(v.simbolo)}</span>
+            <span class="var-symbol">${renderLatex(v.simbolo, true)}</span>
             <span class="var-name">${esc(v.descricao)}</span>
-            <span class="var-value">${v.unidade ? esc(v.unidade) + " " : ""}${esc(v.valor)}</span>
+            <span class="var-value">${renderLatex(valueToLatex(v.unidade ? `${v.valor} ${v.unidade}` : v.valor), true)}</span>
           </div>
           ${v.papel && v.papel !== v.descricao
             ? `<div class="var-bottom"><span class="var-papel">${esc(v.papel)}</span></div>`
@@ -259,9 +277,11 @@ function buildHTML(data: any): string {
     }
     .var-border { border-bottom: 1px solid ${C.surface}; }
     .var-top { display: flex; align-items: center; gap: 10px; }
-    .var-symbol { font-size: 13px; font-weight: 700; color: ${C.text}; min-width: 22px; }
+    .var-symbol { min-width: 26px; display: flex; align-items: center; }
+    .var-symbol .katex { font-size: 13px; color: ${C.text}; }
     .var-name   { font-size: 13px; color: ${C.faint}; flex: 1; }
-    .var-value  { font-size: 13px; font-weight: 600; color: ${C.text}; text-align: right; }
+    .var-value  { display: flex; align-items: center; justify-content: flex-end; }
+    .var-value .katex { font-size: 13px; color: ${C.text}; }
     .var-bottom { padding-left: 32px; }
     .var-papel  { font-size: 11px; color: ${C.ghost}; font-style: normal; line-height: 16px; }
 
