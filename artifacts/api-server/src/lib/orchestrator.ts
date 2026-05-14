@@ -477,9 +477,13 @@ export async function runSpeculativePipeline(opts: {
     ? `Verifique o resultado: score ${lastEvalScore}/10.`
     : undefined;
 
+  const symbolicForResult = (preloadedFormula?.symbolic?.trim())
+    ? preloadedFormula.symbolic
+    : calcResult.formulaSymbolic;
+
   const partialResult = buildResult(
     calcResult.formulaName,
-    calcResult.formulaSymbolic,
+    symbolicForResult,
     exprResult,
     calcResult.computedValue,
     {
@@ -899,9 +903,13 @@ export async function runCalculationPipeline(opts: {
     userName,
   });
 
+  const symbolicForResult = (preloadedFormula?.symbolic?.trim())
+    ? preloadedFormula.symbolic
+    : calcResult.formulaSymbolic;
+
   const partialResult = buildResult(
     calcResult.formulaName,
-    calcResult.formulaSymbolic,
+    symbolicForResult,
     exprResult,
     calcResult.computedValue,
     {
