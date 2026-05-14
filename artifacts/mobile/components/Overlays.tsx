@@ -156,6 +156,26 @@ export function CalcOverlay({
     minute: "2-digit",
   });
 
+  /* ── Converte valor de variável para LaTeX básico ──
+     "150 km" → "150\;\text{km}"  |  "75" → "75"  |  "R$ 1.000" → "\text{R\$ 1.000}" */
+  function valueToLatex(valor: string): string {
+    if (!valor) return "";
+    // Número (pt-BR: pontos de milhar, vírgula decimal) seguido de unidade opcional
+    const match = valor.match(/^([\d.,]+)\s*(.*)$/);
+    if (match) {
+      const num = match[1].replace(/\./g, "{.}").replace(/,/g, "{,}");
+      const unit = match[2].trim();
+      if (unit) {
+        const safeUnit = unit.replace(/\$/g, "\\$").replace(/%/g, "\\%");
+        return `${num}\\;\\text{${safeUnit}}`;
+      }
+      return num;
+    }
+    // Fallback: texto puro
+    const safe = valor.replace(/\$/g, "\\$").replace(/%/g, "\\%");
+    return `\\text{${safe}}`;
+  }
+
   const subcategoria = data.meta?.subcategoria ?? "";
   const resultValor = data.resultado?.valor ?? "";
   const resultUnidade = data.resultado?.unidade ?? "";
@@ -264,13 +284,15 @@ export function CalcOverlay({
               >
                 {/* Linha superior: símbolo + nome + valor */}
                 <View style={styles.docVarTop}>
-                  <Text style={styles.docVarSymbol}>{v.simbolo}</Text>
+                  <View style={styles.docVarSymbolBox}>
+                    <MathView latex={v.simbolo} color={c.text} fontSize={14} />
+                  </View>
                   <Text style={styles.docVarName} numberOfLines={1} ellipsizeMode="tail">
                     {v.descricao}
                   </Text>
-                  <Text style={styles.docVarValue}>
-                    {v.unidade ? `${v.unidade} ` : ""}{v.valor}
-                  </Text>
+                  <View style={styles.docVarValueBox}>
+                    <MathView latex={valueToLatex(v.unidade ? `${v.valor} ${v.unidade}` : v.valor)} color={c.text} fontSize={13} />
+                  </View>
                 </View>
                 {/* Linha inferior: papel/descrição complementar (largura total) */}
                 {!!v.papel && v.papel !== v.descricao && (
@@ -1432,11 +1454,10 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
   },
-  docVarSymbol: {
-    fontFamily: "Inter_700Bold",
-    fontSize: 13,
-    color: c.text,
-    minWidth: 22,
+  docVarSymbolBox: {
+    minWidth: 26,
+    alignItems: "flex-start",
+    justifyContent: "center",
   },
   docVarName: {
     fontFamily: "Inter_400Regular",
@@ -1452,12 +1473,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
     lineHeight: 16,
   },
-  docVarValue: {
-    fontFamily: "Inter_600SemiBold",
-    fontSize: 13,
-    color: c.text,
+  docVarValueBox: {
     flexShrink: 0,
-    textAlign: "right",
+    alignItems: "flex-end",
+    justifyContent: "center",
   },
   /* ── Steps doc ── */
   loadingStepsRow: {
