@@ -10,6 +10,7 @@ import {
   Platform,
   Animated,
   Dimensions,
+  Keyboard,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
@@ -219,6 +220,7 @@ export default function PhormulаScreen() {
     if (!query.trim() || isLoading) return;
     const text = query.trim();
     setQuery("");
+    Keyboard.dismiss();
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     const msgId = Date.now().toString() + Math.random().toString(36).slice(2, 6);
