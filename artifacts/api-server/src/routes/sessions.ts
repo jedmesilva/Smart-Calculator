@@ -54,6 +54,29 @@ router.get("/:id/summary", requireAuth, async (req, res) => {
   res.json({ summary: session?.summary ?? null });
 });
 
+/* ── GET /api/sessions/:id/messages ── */
+router.get("/:id/messages", requireAuth, async (req, res) => {
+  const user = (req as any).user;
+  const { id } = req.params;
+  // Verifica que a sessão pertence ao usuário
+  const [session] = await db
+    .select({ id: sessions.id })
+    .from(sessions)
+    .where(and(eq(sessions.id, id), eq(sessions.user_id, user.id)))
+    .limit(1);
+  if (!session) {
+    res.status(404).json({ error: "Sessão não encontrada" });
+    return;
+  }
+  const data = await db
+    .select()
+    .from(messages)
+    .where(eq(messages.session_id, id))
+    .orderBy(messages.created_at)
+    .limit(200);
+  res.json(data);
+});
+
 /* ── POST /api/sessions/:id/messages ── */
 router.post("/:id/messages", requireAuth, async (req, res) => {
   const { id } = req.params;

@@ -24,9 +24,10 @@ import { QuickActionsBar, SessionCalcsSheet } from "@/components/QuickActionShee
 import type { SessionCalcsSheetHandle } from "@/components/QuickActionSheets";
 import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
-import { calculateStream, predictQuery, type ResultData, type MissingVariable } from "@/lib/apiClient";
+import { calculateStream, predictQuery, fetchSessionMessages, type ResultData, type MissingVariable } from "@/lib/apiClient";
 import { buildContext } from "@/lib/contextBuilder";
 import { createSession, saveMessages, touchSession, fetchSessionSummary } from "@/lib/queries";
+import type { DbSession } from "@/lib/queries";
 
 const c = colors.light;
 
@@ -193,6 +194,7 @@ export default function PhormulаScreen() {
   const [viewingResult, setViewingResult] = useState<ResultData | null>(null);
   const [calcOrigin, setCalcOrigin] = useState<"main" | "calculations">("main");
   const [thinkingMessage, setThinkingMessage] = useState<string | null>(null);
+  const [isLoadingSession, setIsLoadingSession] = useState(false);
   const sessionCalcsRef = useRef<SessionCalcsSheetHandle>(null);
   const inputRef = useRef<TextInput>(null);
   const predictDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -215,6 +217,50 @@ export default function PhormulаScreen() {
     setSessionSummary(null);
     setMessageCount(0);
     setScreen("main");
+  }, []);
+
+  const handleSelectSession = useCallback(async (session: DbSession) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setScreen("main");
+    setIsLoadingSession(true);
+    setChat([]);
+    setQuery("");
+    setCurrentSessionId(session.id);
+    setSessionSummary(null);
+    setMessageCount(0);
+
+    try {
+      const [msgs, summary] = await Promise.all([
+        fetchSessionMessages(session.id),
+        fetchSessionSummary(session.id),
+      ]);
+
+      // Reconstrói o chat a partir das mensagens salvas
+      const rebuilt: ChatItem[] = [];
+      for (const msg of msgs) {
+        const uid = msg.id;
+        if (msg.kind === "user" && msg.text) {
+          rebuilt.push({ kind: "user", id: uid, text: msg.text });
+        } else if (msg.kind === "result" && msg.result_data) {
+          // Se há resposta conversacional, adiciona bubble antes do card
+          const conv = (msg.result_data.conversationalResponse ?? "")
+            .replace(/^["'\s]+$/, "")
+            .trim();
+          if (conv) {
+            rebuilt.push({ kind: "assistant", id: uid + "_a", text: conv });
+          }
+          rebuilt.push({ kind: "result", id: uid + "_r", result: msg.result_data });
+        }
+      }
+
+      setChat(rebuilt);
+      setMessageCount(msgs.length);
+      if (summary) setSessionSummary(summary);
+    } catch {
+      // Falhou — continua com sessão em branco mas ID correto
+    } finally {
+      setIsLoadingSession(false);
+    }
   }, []);
 
   const handleQueryChange = useCallback((text: string) => {
@@ -472,13 +518,22 @@ export default function PhormulаScreen() {
               : null
           }
           ListEmptyComponent={
-            <EmptyChat
-              onSuggest={(text) => {
-                setQuery(text);
-                inputRef.current?.focus();
-              }}
-              bottomOffset={botPad + 80}
-            />
+            isLoadingSession
+              ? (
+                <View style={[styles.emptyWrap, { paddingBottom: botPad + 80, transform: [{ rotate: "180deg" }] }]}>
+                  <ActivityIndicator color={c.ghost} />
+                  <Text style={[styles.emptySubtitle, { marginTop: 12 }]}>Carregando sessão…</Text>
+                </View>
+              )
+              : (
+                <EmptyChat
+                  onSuggest={(text) => {
+                    setQuery(text);
+                    inputRef.current?.focus();
+                  }}
+                  bottomOffset={botPad + 80}
+                />
+              )
           }
         />
 
@@ -539,7 +594,7 @@ export default function PhormulаScreen() {
       {screen === "history" && (
         <HistoryOverlay
           onClose={() => setScreen("main")}
-          onSelect={() => setScreen("main")}
+          onSelect={handleSelectSession}
         />
       )}
       {screen === "calculations" && (

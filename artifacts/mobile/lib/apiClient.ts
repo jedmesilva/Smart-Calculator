@@ -323,6 +323,19 @@ export async function fetchSessionSummary(sessionId: string): Promise<string | n
   return data.summary ?? null;
 }
 
+export async function fetchSessionMessages(sessionId: string): Promise<Array<{
+  id: string;
+  session_id: string;
+  kind: "user" | "result";
+  text: string | null;
+  result_data: ResultData | null;
+  created_at: string;
+}>> {
+  const res = await apiFetch(`/sessions/${sessionId}/messages`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
 export async function saveMessages(sessionId: string, userText: string, resultData: ResultData): Promise<void> {
   await apiFetch(`/sessions/${sessionId}/messages`, {
     method: "POST",
