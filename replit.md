@@ -80,6 +80,17 @@ App mobile de calculadora inteligente com chat em português — o usuário desc
 - Design: paleta warm off-white (#F7F6F3), tipografia Inter, interface chat-first
 - Sem tabs, sem header nativo — tudo via overlay system
 
+## Stripe
+
+- **Secrets necessários:** `STRIPE_SECRET_KEY` (sk_test_... ou sk_live_...) e `STRIPE_WEBHOOK_SECRET` (whsec_...)
+- **Produtos criados via:** `scripts/node_modules/.bin/tsx scripts/seed-products.ts`
+- **Webhook endpoint:** `https://$REPLIT_DEV_DOMAIN/api/stripe/webhook` — registrar no Stripe Dashboard → Developers → Webhooks
+- **Events:** `invoice.payment_succeeded`, `customer.subscription.updated`, `customer.subscription.deleted`
+- **Customer Portal:** ativar em Stripe Dashboard → Settings → Billing → Customer portal
+- **Fluxo:** checkout via `WebBrowser.openAuthSessionAsync` no mobile; webhook adiciona créditos e atualiza `profiles.plano`
+- **Scripts:** `scripts/seed-products.ts` (cria produtos), `scripts/migrate-stripe.mjs` (adiciona colunas em profiles)
+- **Colunas adicionadas em `profiles`:** `stripe_customer_id`, `stripe_subscription_id`, `plano TEXT DEFAULT 'free'`
+
 ## Gotchas
 
 - **NUNCA trocar o banco de Supabase para Replit PostgreSQL** — `lib/db/src/index.ts` usa apenas `DATABASE_URL` (aponta para Supabase). Replit injeta vars `PGHOST/PGUSER/PGDATABASE` mas elas devem ser IGNORADAS.

@@ -15,30 +15,14 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-// ── Inicializa integração Stripe (não-bloqueante) ──────────────
+// ── Verifica credenciais Stripe na inicialização (não-bloqueante) ──
 async function initStripe() {
   try {
-    const { runMigrations } = await import("stripe-replit-sync");
-    const { getStripeSync } = await import("./lib/stripeClient");
-
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) throw new Error("DATABASE_URL ausente");
-
-    logger.info("stripe: inicializando schema...");
-    await runMigrations({ databaseUrl, schema: "stripe" });
-    logger.info("stripe: schema pronto");
-
-    const stripeSync = await getStripeSync();
-
-    const webhookBaseUrl = `https://${process.env.REPLIT_DOMAINS?.split(",")[0]}`;
-    await stripeSync.findOrCreateManagedWebhook(`${webhookBaseUrl}/api/stripe/webhook`);
-    logger.info("stripe: webhook configurado");
-
-    stripeSync.syncBackfill()
-      .then(() => logger.info("stripe: backfill concluído"))
-      .catch((err) => logger.warn({ err }, "stripe: backfill falhou (não-fatal)"));
+    const { getStripeCredentials } = await import("./lib/stripeClient");
+    await getStripeCredentials();
+    logger.info("stripe: credenciais OK");
   } catch (err: any) {
-    logger.warn({ err: err?.message }, "stripe: inicialização adiada (credenciais ainda não configuradas)");
+    logger.warn({ err: err?.message }, "stripe: credenciais não configuradas (pagamentos desativados)");
   }
 }
 

@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { getStripeSync, getStripeCredentials } from "./stripeClient";
+import { getStripeCredentials } from "./stripeClient";
 import { pool } from "@workspace/db";
 import { logger } from "./logger";
 
@@ -17,24 +17,21 @@ export class WebhookHandlers {
       );
     }
 
-    // 1. Sincroniza dados no schema stripe (stripe-replit-sync)
-    const sync = await getStripeSync();
-    await sync.processWebhook(payload, signature);
-
-    // 2. Lógica de negócio customizada (créditos, plano, etc.)
-    try {
-      const { secretKey, webhookSecret } = await getStripeCredentials();
-      if (!webhookSecret) return;
-      const stripe = new Stripe(secretKey);
-      const event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
-      await handleStripeEvent(stripe, event);
-    } catch (err) {
-      logger.warn({ err }, "stripe: erro no handler customizado (não-fatal)");
+    const { secretKey, webhookSecret } = await getStripeCredentials();
+    if (!webhookSecret) {
+      logger.warn("stripe: STRIPE_WEBHOOK_SECRET não configurado — webhook ignorado");
+      return;
     }
+
+    const stripe = new Stripe(secretKey);
+    const event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
+    await handleStripeEvent(stripe, event);
   }
 }
 
 async function handleStripeEvent(stripe: Stripe, event: Stripe.Event): Promise<void> {
+  logger.info({ type: event.type }, "stripe: webhook recebido");
+
   switch (event.type) {
     case "invoice.payment_succeeded": {
       const invoice = event.data.object as Stripe.Invoice;

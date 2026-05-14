@@ -1,47 +1,55 @@
 import { Router } from "express";
 import { requireAuth } from "../middlewares/auth";
+import { getUncachableStripeClient, getStripeCredentials } from "../lib/stripeClient";
 import {
   getOrCreateStripeCustomer,
   createCheckoutSession,
   createPortalSession,
 } from "../lib/stripeService";
-import {
-  getUserProfile,
-  listPlansWithPrices,
-  getUserSubscription,
-} from "../lib/stripeStorage";
+import { getUserProfile, getUserSubscription } from "../lib/stripeStorage";
 import { logger } from "../lib/logger";
 
 const router = Router();
 
-/* GET /api/stripe/plans — planos e preços (público) */
+/* GET /api/stripe/plans — planos e preços via Stripe API */
 router.get("/stripe/plans", async (_req, res) => {
   try {
-    const rows = await listPlansWithPrices();
+    const stripe = await getUncachableStripeClient();
 
-    const map = new Map<string, any>();
-    for (const row of rows) {
-      if (!map.has(row.product_id)) {
-        map.set(row.product_id, {
-          id: row.product_id,
-          name: row.product_name,
-          description: row.product_description,
-          metadata: row.product_metadata ?? {},
-          prices: [],
-        });
-      }
-      if (row.price_id) {
-        map.get(row.product_id).prices.push({
-          id: row.price_id,
-          unit_amount: row.unit_amount,
-          currency: row.currency,
-          recurring: row.recurring,
-        });
-      }
-    }
+    const products = await stripe.products.list({ active: true, limit: 20 });
+    const prices = await stripe.prices.list({ active: true, limit: 50, expand: ["data.product"] });
 
-    res.json({ data: Array.from(map.values()) });
-  } catch (err) {
+    const plans = products.data
+      .filter((p) => p.metadata?.plan_id)
+      .map((product) => {
+        const productPrices = prices.data
+          .filter((pr) => {
+            const prProduct = typeof pr.product === "string" ? pr.product : pr.product.id;
+            return prProduct === product.id;
+          })
+          .map((pr) => ({
+            id: pr.id,
+            unit_amount: pr.unit_amount,
+            currency: pr.currency,
+            recurring: pr.recurring,
+          }));
+
+        return {
+          id: product.id,
+          name: product.name,
+          description: product.description,
+          metadata: product.metadata,
+          prices: productPrices,
+        };
+      })
+      .sort((a, b) => {
+        const aAmount = a.prices[0]?.unit_amount ?? 0;
+        const bAmount = b.prices[0]?.unit_amount ?? 0;
+        return aAmount - bAmount;
+      });
+
+    res.json({ data: plans });
+  } catch (err: any) {
     logger.error({ err }, "stripe: erro ao listar planos");
     res.status(500).json({ error: "Falha ao buscar planos" });
   }
@@ -77,11 +85,8 @@ router.post("/stripe/checkout", requireAuth, async (req, res) => {
       return;
     }
 
-    // Usa o email fornecido pelo cliente, ou constrói um placeholder
     const customerEmail = email ?? `user-${userId.slice(0, 8)}@phormula.app`;
-
     const customerId = await getOrCreateStripeCustomer(userId, customerEmail);
-
     const checkoutUrl = await createCheckoutSession({ customerId, priceId, userId });
 
     res.json({ url: checkoutUrl });
