@@ -809,10 +809,6 @@ export function PlanManagementScreen({
               <View style={styles.mgmtProgressBg}>
                 <View style={[styles.mgmtProgressFill, { width: `${100 - usedPct}%` as any }]} />
               </View>
-
-              <Text style={styles.mgmtProgressLabel}>
-                {usedCredits > 0 ? `${usedCredits} créditos utilizados` : "Nenhum crédito utilizado ainda"}
-              </Text>
             </>
           )}
         </View>
@@ -827,24 +823,13 @@ export function PlanManagementScreen({
             </View>
             <View style={styles.mgmtStatDivider} />
             <View style={styles.mgmtStat}>
-              <Text style={styles.mgmtStatNum}>{totalCreditosConsumidos.toLocaleString("pt-BR")}</Text>
-              <Text style={styles.mgmtStatLabel}>créditos consumidos</Text>
+              <Text style={styles.mgmtStatNum}>
+                {totalConsultas > 0 ? (totalCreditosConsumidos / totalConsultas).toFixed(1) : "—"}
+              </Text>
+              <Text style={styles.mgmtStatLabel}>créditos por cálculo</Text>
             </View>
           </View>
         </View>
-
-        {/* Real average consumption */}
-        {totalConsultas > 0 && (
-          <View style={styles.mgmtInfoBox}>
-            <Feather name="trending-down" size={13} color={c.ghost} style={{ marginTop: 1 }} />
-            <Text style={styles.mgmtInfoText}>
-              Sua média real: <Text style={{ fontWeight: "600", color: c.text }}>
-                {(totalCreditosConsumidos / totalConsultas).toFixed(1)} créditos por cálculo
-              </Text>
-              {" "}(total de {totalCreditosConsumidos.toLocaleString("pt-BR")} créditos em {totalConsultas.toLocaleString("pt-BR")} cálculo{totalConsultas !== 1 ? "s" : ""})
-            </Text>
-          </View>
-        )}
 
         {/* Upgrade prompt */}
         <Pressable
