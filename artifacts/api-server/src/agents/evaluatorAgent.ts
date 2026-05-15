@@ -9,6 +9,7 @@
 
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { logger } from "../lib/logger";
+import type { TokenAccumulator } from "../lib/billingService";
 
 /* ── Tipos ────────────────────────────────────────────── */
 
@@ -16,12 +17,13 @@ export type EvaluatorInput = {
   objective: string;
   formulaName: string;
   formulaSymbolic: string;
-  expression: string;   // expressão MathJS final usada
+  expression: string;
   computedValue: number;
   resultUnit: string;
   resultLabel: string;
   strategy: "simple" | "complex";
   computedSteps?: { description: string; expression: string; label: string; value: number }[];
+  acc?: TokenAccumulator;
 };
 
 export type EvaluatorOutput = {
@@ -154,6 +156,8 @@ export async function runEvaluatorAgent(
       { role: "user", content: userContent },
     ],
   } as any);
+
+  input.acc?.add((response as any).usage);
 
   const raw = response.choices[0]?.message?.content ?? "";
   const parsed = parseJson(raw);

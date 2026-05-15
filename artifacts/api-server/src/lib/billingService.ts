@@ -12,6 +12,29 @@ export interface TokenUsage {
   model: string;
 }
 
+export interface TokenAccumulator {
+  inputTokens: number;
+  outputTokens: number;
+  model: string;
+  add(usage: { prompt_tokens?: number | null; completion_tokens?: number | null } | null | undefined): void;
+  toTokenUsage(): TokenUsage;
+}
+
+export function createTokenAccumulator(model = "gpt-5.1"): TokenAccumulator {
+  return {
+    inputTokens: 0,
+    outputTokens: 0,
+    model,
+    add(usage) {
+      this.inputTokens  += usage?.prompt_tokens     ?? 0;
+      this.outputTokens += usage?.completion_tokens ?? 0;
+    },
+    toTokenUsage() {
+      return { model: this.model, inputTokens: this.inputTokens, outputTokens: this.outputTokens };
+    },
+  };
+}
+
 export interface BillingResult {
   creditosDebitados: number;
   custoUsd: number;

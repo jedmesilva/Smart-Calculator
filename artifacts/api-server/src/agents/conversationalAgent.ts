@@ -11,6 +11,7 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 import { logger } from "../lib/logger";
 import { normalizeUnit, formatWithUnit } from "../lib/unitUtils";
 import type { ConversationMessage, ExpressionResult, FormulaInfo, ValidationResult } from "./types";
+import type { TokenAccumulator } from "../lib/billingService";
 
 export type GuidanceResponse = {
   message: string;
@@ -146,8 +147,9 @@ export async function runConversationalAgent(opts: {
   context?: ConversationMessage[];
   sessionSummary?: string;
   userName?: string;
+  acc?: TokenAccumulator;
 }): Promise<string> {
-  const { query, formula, expressionResult, computedValue, validation, context, sessionSummary, userName } = opts;
+  const { query, formula, expressionResult, computedValue, validation, context, sessionSummary, userName, acc } = opts;
 
   const normUnit = normalizeUnit(expressionResult.resultUnit);
   const resultWithUnit = formatWithUnit(computedValue, normUnit);
@@ -187,6 +189,8 @@ export async function runConversationalAgent(opts: {
       messages,
     } as any);
 
+    acc?.add((response as any).usage);
+
     let text = response.choices[0]?.message?.content?.trim() ?? "";
     if (/^["']+$/.test(text)) text = "";
     if (!text) throw new Error("empty response");
@@ -216,8 +220,9 @@ export async function runGuidanceAgent(opts: {
   sessionSummary?: string;
   failReason?: string;
   userName?: string;
+  acc?: TokenAccumulator;
 }): Promise<GuidanceResponse> {
-  const { query, context, sessionSummary, failReason, userName } = opts;
+  const { query, context, sessionSummary, failReason, userName, acc } = opts;
 
   const messages: any[] = [{ role: "system", content: buildGuidancePrompt(userName) }];
 
@@ -248,6 +253,8 @@ export async function runGuidanceAgent(opts: {
       max_completion_tokens: 350,
       messages,
     } as any);
+
+    acc?.add((response as any).usage);
 
     const raw = response.choices[0]?.message?.content?.trim() ?? "";
     if (!raw) throw new Error("empty response");

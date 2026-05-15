@@ -29,6 +29,8 @@ import {
 import type { ConversationMessage, ExpressionResult, ValidationResult, FormulaInfo } from "../agents/types";
 import type { ResultData } from "./explainBuilder";
 import type { TokenUsage } from "./billingService";
+import { createTokenAccumulator } from "./billingService";
+import type { TokenAccumulator } from "./billingService";
 
 const SUMMARY_EVERY = 8;
 
@@ -155,8 +157,9 @@ export async function runIntentAgent(opts: {
   context: ConversationMessage[];
   sessionSummary?: string;
   formulaHint?: string;
+  acc?: TokenAccumulator;
 }): Promise<IntentResult> {
-  const { query, context, sessionSummary, formulaHint } = opts;
+  const { query, context, sessionSummary, formulaHint, acc } = opts;
 
   const messages: any[] = [{ role: "system", content: INTENT_SYSTEM }];
 
@@ -183,6 +186,8 @@ export async function runIntentAgent(opts: {
     max_completion_tokens: 600,
     messages,
   } as any);
+
+  acc?.add((response as any).usage);
 
   const raw = response.choices[0]?.message?.content ?? "";
 
@@ -590,6 +595,7 @@ export async function runCalculationPipeline(opts: {
   } = opts;
 
   const pipelineStart = Date.now();
+  const acc = createTokenAccumulator();
 
   /* ══════════════════════════════════════════════════
      CACHE ESPECULATIVO — verifica antes de rodar pipeline
@@ -719,10 +725,10 @@ export async function runCalculationPipeline(opts: {
   } else {
     emit("Entendendo o pedido…");
     try {
-      intentResult = await runIntentAgent({ query, context, sessionSummary, formulaHint });
+      intentResult = await runIntentAgent({ query, context, sessionSummary, formulaHint, acc });
     } catch (err: any) {
       logger.warn({ err }, "orchestrator3: intentAgent failed, fallback guidance");
-      const guidance = await runGuidanceAgent({ query, context, sessionSummary, userName });
+      const guidance = await runGuidanceAgent({ query, context, sessionSummary, userName, acc });
       return {
         status: "conversational",
         message: guidance.message,
@@ -735,7 +741,7 @@ export async function runCalculationPipeline(opts: {
   /* ── Caso conversacional ── */
   if (intentResult.status === "conversational") {
     emit("Respondendo…");
-    const guidance = await runGuidanceAgent({ query, context, sessionSummary, userName });
+    const guidance = await runGuidanceAgent({ query, context, sessionSummary, userName, acc });
     return {
       status: "conversational",
       message: guidance.message,
@@ -794,6 +800,7 @@ export async function runCalculationPipeline(opts: {
           formulaHint: preloadedFormula
             ? `${preloadedFormula.name}: ${preloadedFormula.symbolic}${preloadedFormula.expression ? ` | MathJS: ${preloadedFormula.expression}` : ""}`
             : undefined,
+          acc,
         },
         emit
       );
@@ -808,6 +815,7 @@ export async function runCalculationPipeline(opts: {
           sessionSummary,
           failReason: err?.message,
           userName,
+          acc,
         });
         return { status: "conversational", message: guidance.message };
       }
@@ -834,6 +842,7 @@ export async function runCalculationPipeline(opts: {
         resultLabel: calcResult.resultLabel,
         strategy: calcResult.strategy,
         computedSteps: calcResult.computedSteps,
+        acc,
       });
 
       lastEvalScore = evalResult.score;
@@ -901,6 +910,7 @@ export async function runCalculationPipeline(opts: {
     context,
     sessionSummary,
     userName,
+    acc,
   });
 
   const symbolicForResult = (preloadedFormula?.symbolic?.trim())
@@ -968,10 +978,6 @@ export async function runCalculationPipeline(opts: {
   return {
     status: "success",
     result: finalResult,
-    tokenUsage: {
-      model: "gpt-4o",
-      inputTokens: 0,
-      outputTokens: 0,
-    },
+    tokenUsage: acc.toTokenUsage(),
   };
 }

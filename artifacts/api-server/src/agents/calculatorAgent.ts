@@ -19,6 +19,7 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 import { computeFormula } from "../lib/formulaCompute";
 import { logger } from "../lib/logger";
 import { normalizeUnit, UNIT_PROMPT_RULES, type UnitType } from "../lib/unitUtils";
+import type { TokenAccumulator } from "../lib/billingService";
 
 /* ── Tipos ────────────────────────────────────────────── */
 
@@ -69,7 +70,8 @@ export type CalculatorInput = {
     feedback: string;
     suggestion: string | null;
   };
-  formulaHint?: string; // nome/descrição de fórmula pré-selecionada
+  formulaHint?: string;
+  acc?: TokenAccumulator;
 };
 
 /* ── Prompt base do Agent 2 ──────────────────────────── */
@@ -357,6 +359,8 @@ export async function runCalculatorAgent(
       { role: "user", content: userContent },
     ],
   } as any);
+
+  input.acc?.add((response as any).usage);
 
   const raw = response.choices[0]?.message?.content ?? "";
   const parsed = parseJson(raw, feedback ? "retry" : "initial");
