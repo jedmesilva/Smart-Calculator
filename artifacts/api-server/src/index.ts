@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { atualizarCambio, recomputeSubsidio } from "./lib/billingService";
 
 const rawPort = process.env["PORT"];
 
@@ -26,6 +27,21 @@ async function initStripe() {
   }
 }
 
+// ── Tarefas periódicas de billing ──
+async function initBilling() {
+  // Câmbio e subsídio na inicialização
+  await Promise.allSettled([
+    atualizarCambio(),
+    recomputeSubsidio(),
+  ]);
+
+  // Câmbio: atualiza a cada 6 horas
+  setInterval(() => atualizarCambio(), 6 * 60 * 60 * 1000);
+
+  // Subsídio: recomputa a cada hora à medida que a base de usuários evolui
+  setInterval(() => recomputeSubsidio(), 60 * 60 * 1000);
+}
+
 app.listen(port, (err) => {
   if (err) {
     logger.error({ err }, "Error listening on port");
@@ -34,4 +50,5 @@ app.listen(port, (err) => {
   logger.info({ port }, "Server listening");
 
   initStripe();
+  initBilling();
 });

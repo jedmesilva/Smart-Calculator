@@ -183,23 +183,42 @@ export async function registerConsulta(opts: {
       ? parseFloat(modelRes.rows[0].preco_output_por_milhao)
       : fallback.output;
 
-    // 2. Busca configurações
+    // 2. Busca configurações (todas as chaves de precificação)
     const cfgRes = await client.query(
       `SELECT chave, valor FROM configuracoes
-       WHERE chave IN ('usd_brl', 'margem_multiplicador', 'credito_valor_brl')`
+       WHERE chave IN (
+         'usd_brl', 'margem_multiplicador', 'credito_valor_brl',
+         'taxa_imposto', 'taxa_processamento', 'taxa_subsidio_brl'
+       )`
     );
     const cfg: Record<string, number> = {};
     for (const row of cfgRes.rows) cfg[row.chave] = parseFloat(row.valor);
 
-    const cambio       = cfg["usd_brl"]             ?? FALLBACK_USD_BRL;
-    const margem       = cfg["margem_multiplicador"] ?? FALLBACK_MARGEM;
-    const creditoValor = cfg["credito_valor_brl"]   ?? FALLBACK_CREDITO_BRL;
+    const cambio           = cfg["usd_brl"]             ?? FALLBACK_USD_BRL;
+    const margemPlataforma = cfg["margem_multiplicador"] ?? FALLBACK_MARGEM;
+    const creditoValor     = cfg["credito_valor_brl"]   ?? FALLBACK_CREDITO_BRL;
+    const taxaImposto      = cfg["taxa_imposto"]         ?? 1.0;   // 100% sobre custo pós-margem
+    const taxaProcessamento= cfg["taxa_processamento"]  ?? 0.03;  // 3% de processamento
+    const subsidioFixo     = cfg["taxa_subsidio_brl"]   ?? 0;     // BRL fixo por consulta para subsidiar free
 
-    // 3. Calcula custo
-    const custoUsd = (opts.tokenUsage.inputTokens  / 1_000_000 * precoInput) +
-                     (opts.tokenUsage.outputTokens / 1_000_000 * precoOutput);
-    const custoBrl = custoUsd * cambio * margem;
-    const creditos = Math.max(1, Math.ceil(custoBrl / creditoValor));
+    // 3. Calcula custo com todos os componentes
+    const custoUsd        = (opts.tokenUsage.inputTokens  / 1_000_000 * precoInput) +
+                            (opts.tokenUsage.outputTokens / 1_000_000 * precoOutput);
+    const custoBase       = custoUsd * cambio;
+    const comMargem       = custoBase * margemPlataforma;          // +100% margem de plataforma
+    const comImposto      = comMargem * (1 + taxaImposto);         // +100% sobre total (imposto)
+    const comProcessamento= comImposto * (1 + taxaProcessamento);  // +3% de processamento
+    const custoFinal      = comProcessamento + subsidioFixo;       // + subsídio por consulta
+    const creditos        = Math.max(1, Math.ceil(custoFinal / creditoValor));
+
+    // custoBrl registrado = custo pós-margem (antes de imposto/processamento/subsídio)
+    // para manter compatibilidade histórica da coluna custo_brl
+    const custoBrl = comMargem;
+
+    logger.debug(
+      { custoUsd, custoBase, comMargem, comImposto, comProcessamento, subsidioFixo, custoFinal, creditos },
+      "billing: breakdown de custo"
+    );
 
     // 4. Garante carteira existe e faz lock
     const saldoAnterior = await ensureCarteira(client, opts.userId);
@@ -273,6 +292,57 @@ export async function registerConsulta(opts: {
     await client.query("ROLLBACK").catch(() => {});
     logger.warn({ err: err?.message, userId: opts.userId }, "billing: registerConsulta failed");
     return null;
+  } finally {
+    client.release();
+  }
+}
+
+/* ── Recomputa subsídio do plano gratuito ── */
+export async function recomputeSubsidio(): Promise<void> {
+  const client = await pool.connect();
+  try {
+    // Busca janela configurada (padrão 30 dias)
+    const cfgRes = await client.query(
+      `SELECT valor FROM configuracoes WHERE chave = 'subsidio_janela_dias'`
+    );
+    const janela = parseInt(cfgRes.rows[0]?.valor ?? "30", 10);
+
+    // Calcula consultas free vs pagas na janela, e custo médio real por consulta
+    const statsRes = await client.query(`
+      SELECT
+        COUNT(*) FILTER (WHERE COALESCE(p.plano, 'free') = 'free')  AS free_calcs,
+        COUNT(*) FILTER (WHERE COALESCE(p.plano, 'free') != 'free') AS paid_calcs,
+        AVG(c.custo_brl) FILTER (WHERE c.custo_usd > 0)             AS avg_custo_brl
+      FROM consultas c
+      LEFT JOIN profiles p ON p.id::text = c.usuario_id
+      WHERE c.criado_em >= now() - ($1 || ' days')::interval
+    `, [janela]);
+
+    const row = statsRes.rows[0];
+    const freeCalcs  = parseInt(row?.free_calcs  ?? "0", 10);
+    const paidCalcs  = parseInt(row?.paid_calcs  ?? "0", 10);
+    const avgCustoBrl= parseFloat(row?.avg_custo_brl ?? "0");
+
+    // subsidio_brl = (consultas_free × custo_médio) / consultas_pagas
+    // Só existe subsídio se houver consultas pagas — caso contrário é 0.
+    // Limitado a 5× o custo médio para evitar distorções extremas.
+    let subsidio = 0;
+    if (freeCalcs > 0 && paidCalcs > 0 && avgCustoBrl > 0) {
+      const raw = (freeCalcs * avgCustoBrl) / paidCalcs;
+      subsidio = Math.min(raw, avgCustoBrl * 5);
+    }
+
+    await client.query(
+      `UPDATE configuracoes SET valor = $1, atualizado_em = now() WHERE chave = 'taxa_subsidio_brl'`,
+      [subsidio.toFixed(6)]
+    );
+
+    logger.info(
+      { freeCalcs, paidCalcs, avgCustoBrl: avgCustoBrl.toFixed(4), subsidio: subsidio.toFixed(6), janela },
+      "billing: subsídio recomputado"
+    );
+  } catch (err) {
+    logger.warn({ err }, "billing: falha ao recomputar subsídio");
   } finally {
     client.release();
   }
