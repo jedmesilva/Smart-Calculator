@@ -661,10 +661,6 @@ export function PlansScreen({ onClose }: { onClose: () => void }) {
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 28 + insets.bottom, gap: 12 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.plansSubtitle}>
-          Cada cálculo consome créditos com base no custo real da IA — sem surpresas.
-        </Text>
-
         {PLANS.map((plan) => (
           <View
             key={plan.id}
@@ -837,13 +833,18 @@ export function PlanManagementScreen({
           </View>
         </View>
 
-        {/* Credit cost info */}
-        <View style={styles.mgmtInfoBox}>
-          <Feather name="info" size={13} color={c.ghost} style={{ marginTop: 1 }} />
-          <Text style={styles.mgmtInfoText}>
-            Cada cálculo consome em média 3 créditos, com base no custo real da IA (USD → BRL com margem de plataforma). 1 crédito = R$0,10.
-          </Text>
-        </View>
+        {/* Real average consumption */}
+        {totalConsultas > 0 && (
+          <View style={styles.mgmtInfoBox}>
+            <Feather name="trending-down" size={13} color={c.ghost} style={{ marginTop: 1 }} />
+            <Text style={styles.mgmtInfoText}>
+              Sua média real: <Text style={{ fontWeight: "600", color: c.text }}>
+                {(totalCreditosConsumidos / totalConsultas).toFixed(1)} créditos por cálculo
+              </Text>
+              {" "}(total de {totalCreditosConsumidos.toLocaleString("pt-BR")} créditos em {totalConsultas.toLocaleString("pt-BR")} cálculo{totalConsultas !== 1 ? "s" : ""})
+            </Text>
+          </View>
+        )}
 
         {/* Upgrade prompt */}
         <Pressable
