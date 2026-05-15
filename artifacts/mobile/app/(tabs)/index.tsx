@@ -386,8 +386,23 @@ export default function PhormulаScreen() {
           if (s) setSessionSummary(s);
         });
       }
-      // Atualiza créditos e estatísticas após qualquer cálculo processado pelo servidor
-      queryClient.invalidateQueries({ queryKey: ["carteira"] });
+      // Atualiza créditos diretamente com os valores retornados pelo servidor —
+      // sem request extra. O backend inclui billingInfo na própria resposta.
+      if (response.billingInfo) {
+        const { saldoAtualizado, creditosDebitados } = response.billingInfo;
+        queryClient.setQueryData(["carteira", userId], (old: any) =>
+          old
+            ? {
+                ...old,
+                saldo: saldoAtualizado,
+                totalConsultas: old.totalConsultas + 1,
+                totalCreditosConsumidos: old.totalCreditosConsumidos + creditosDebitados,
+              }
+            : old
+        );
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["carteira"] });
+      }
     } catch (err: any) {
       const errId = msgId + "_e";
       setChat((prev) => [

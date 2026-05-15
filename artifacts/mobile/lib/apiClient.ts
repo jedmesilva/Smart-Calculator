@@ -99,12 +99,17 @@ export type MissingVariable = {
   description: string;
 };
 
+export type BillingInfo = {
+  saldoAtualizado: number;
+  creditosDebitados: number;
+};
+
 export type CalcResponse =
-  | { status: "success"; result: ResultData; capturedName?: string }
-  | { status: "needs_input"; message: string; missing: MissingVariable[] }
-  | { status: "conversational"; message: string; capturedName?: string }
-  | { status: "formula_error"; message: string }
-  | { status: "wrong_formula"; message: string; suggestion: string | null };
+  | { status: "success"; result: ResultData; capturedName?: string; billingInfo?: BillingInfo }
+  | { status: "needs_input"; message: string; missing: MissingVariable[]; billingInfo?: BillingInfo }
+  | { status: "conversational"; message: string; capturedName?: string; billingInfo?: BillingInfo }
+  | { status: "formula_error"; message: string; billingInfo?: BillingInfo }
+  | { status: "wrong_formula"; message: string; suggestion: string | null; billingInfo?: BillingInfo };
 
 export type LlmVerifyResponse = {
   verdict: "approved" | "flagged";

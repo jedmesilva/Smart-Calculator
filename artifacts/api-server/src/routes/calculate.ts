@@ -67,17 +67,21 @@ router.post("/calculate", requireAuth, async (req, res) => {
       emit,
     });
 
-    // Débito de créditos — aguardado antes de enviar resposta ao cliente,
-    // para garantir que o saldo esteja atualizado no banco quando o mobile
-    // invalida a query de créditos logo após receber o resultado.
+    // Débito de créditos — aguardado antes de enviar resposta ao cliente.
+    // O resultado do billing é incluído na própria resposta para que o mobile
+    // atualize o cache diretamente, sem precisar de request extra ao /credits.
+    let billingInfo: { saldoAtualizado: number; creditosDebitados: number } | undefined;
     if ((result.status === "success" || result.status === "conversational") && result.tokenUsage) {
-      await registerConsulta({
+      const billing = await registerConsulta({
         userId,
         modelo: result.tokenUsage.model,
         tipo: result.status === "success" ? "calculo" : "conversacional",
         sessionId: sessionId ?? null,
         tokenUsage: result.tokenUsage,
-      }).catch((err) => logger.warn({ err }, "calculate: billing failed silently"));
+      }).catch((err) => { logger.warn({ err }, "calculate: billing failed silently"); return null; });
+      if (billing) {
+        billingInfo = { saldoAtualizado: billing.saldoPosterior, creditosDebitados: billing.creditosDebitados };
+      }
     }
 
     // Aquece cache do desenvolvimento em background antes de enviar ao cliente
@@ -88,7 +92,7 @@ router.post("/calculate", requireAuth, async (req, res) => {
     }
 
     try {
-      res.write(`data: ${JSON.stringify({ type: "result", data: result })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: "result", data: { ...result, billingInfo } })}\n\n`);
     } catch (writeErr) {
       logger.warn({ writeErr }, "calculate: falha ao escrever resultado (cliente desconectou?)");
     }
