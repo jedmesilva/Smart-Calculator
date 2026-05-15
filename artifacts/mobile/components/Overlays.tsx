@@ -108,20 +108,25 @@ export function CalcOverlay({
     if (!devKey || !data.desenvolvimentoInput) return;
 
     // 2. Cache de módulo — previne re-fetch em aberturas repetidas do mesmo resultado
+    // Só usa cache se tiver passos detalhados (tipo "resolucao") — ignora fallback de 3 passos
     const cached = _devCache.get(devKey);
-    if (cached) {
+    const isDetailedCache = cached?.steps.some(s => s.tipo === "resolucao" || s.tipo === "simplificacao" || s.tipo === "aplicacao" || s.tipo === "teorema");
+    if (cached && isDetailedCache) {
       setLazySteps(cached.steps);
       setInterpretacaoLazy(cached.interpretacao);
       return;
     }
 
-    // 3. Fetch único — armazena em cache e notifica pai para persistir nos items do chat
+    // 3. Fetch único — armazena em cache apenas se tiver passos detalhados
     setLoadingSteps(true);
     fetchDesenvolvimento(data.desenvolvimentoInput)
       .then((r) => {
         setLazySteps(r.steps);
         setInterpretacaoLazy(r.interpretacao);
-        _devCache.set(devKey, { steps: r.steps, interpretacao: r.interpretacao });
+        const isDetailed = r.steps.some(s => s.tipo === "resolucao" || s.tipo === "simplificacao" || s.tipo === "aplicacao" || s.tipo === "teorema");
+        if (isDetailed) {
+          _devCache.set(devKey, { steps: r.steps, interpretacao: r.interpretacao });
+        }
         onDesenvolvimentoLoaded?.(r.steps, r.interpretacao);
       })
       .catch(() => setLazySteps([]))
