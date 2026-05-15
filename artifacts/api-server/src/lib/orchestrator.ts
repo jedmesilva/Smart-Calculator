@@ -500,6 +500,7 @@ export async function runSpeculativePipeline(opts: {
       formulaExpression: calcResult.expression,
       formulaMeta: formulaInfo.expression_meta,
       interpretacao: null,
+      formulaLatex: calcResult.formulaLatex ?? null,
     }
   );
 
@@ -931,6 +932,7 @@ export async function runCalculationPipeline(opts: {
       formulaExpression: calcResult.expression,
       formulaMeta: formulaInfo.expression_meta,
       interpretacao: null,
+      formulaLatex: calcResult.formulaLatex ?? null,
     }
   );
 

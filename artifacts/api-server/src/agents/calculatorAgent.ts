@@ -47,6 +47,7 @@ export type CalculatorResult = {
   strategy: "simple" | "complex";
   formulaName: string;
   formulaSymbolic: string;
+  formulaLatex?: string | null;
   expression: string;
   computedValue: number;
   computedSteps?: ComputedStep[];
@@ -106,6 +107,7 @@ Estratégia SIMPLE:
   "strategy": "simple",
   "formulaName": "Nome da fórmula",
   "formulaSymbolic": "M = C × (1 + i)^n",
+  "formulaLatex": "M = C \\cdot (1 + i)^{n}",
   "solveFor": "M",
   "expression": "1000 * (1 + 0.01)^12",
   "resultUnit": "R$",
@@ -122,6 +124,7 @@ Estratégia COMPLEX:
   "strategy": "complex",
   "formulaName": "Nome da fórmula",
   "formulaSymbolic": "M = C × (1 + i)^n",
+  "formulaLatex": "M = C \\cdot (1 + i)^{n}",
   "solveFor": "M",
   "steps": [
     {
@@ -149,6 +152,25 @@ Em COMPLEX, use {label} para referenciar o resultado de um step anterior.
 O último step ou o step indicado em "resultStep" é o resultado final.
 REGRA: "numericValue" em cada variável DEVE ser o número puro (sem unidade, sem formatação pt-BR).
 REGRA: "expression" DEVE conter valores numéricos literais (substitua todos os símbolos).
+
+══════════════════════════════════════
+══════════════════════════════════════
+REGRAS OBRIGATÓRIAS PARA "formulaLatex"
+══════════════════════════════════════
+"formulaLatex" é o LaTeX KaTeX da fórmula GENÉRICA — com símbolos de variáveis, NUNCA valores numéricos.
+É exibido diretamente na seção "01 FÓRMULA" do app. Deve ser LaTeX válido para KaTeX.
+
+✅ CORRETO:
+  "formulaLatex": "IMC = \\dfrac{m}{h^{2}}"
+  "formulaLatex": "M = C \\cdot (1 + i)^{n}"
+  "formulaLatex": "v = \\dfrac{d}{t}"
+  "formulaLatex": "F = m \\cdot a"
+  "formulaLatex": "i_d = (1 + i_m)^{\\frac{1}{n_d}} - 1"
+
+❌ ERRADO — NUNCA faça isso:
+  "formulaLatex": "IMC = \\dfrac{70}{1.75^{2}}"   ← valores numéricos
+  "formulaLatex": "M = 1000 \\cdot 1.01^{12}"     ← valores concretos
+  "formulaLatex": null                              ← sempre forneça
 
 ══════════════════════════════════════
 REGRAS OBRIGATÓRIAS PARA "formulaSymbolic"
@@ -397,6 +419,7 @@ export async function runCalculatorAgent(
       strategy: "simple",
       formulaName: parsed.formulaName ?? "Cálculo",
       formulaSymbolic: cleanSymbolic,
+      formulaLatex: parsed.formulaLatex ?? null,
       expression: parsed.expression ?? "",
       computedValue,
       resultUnit: normUnit.symbol,
@@ -445,6 +468,7 @@ export async function runCalculatorAgent(
       strategy: "complex",
       formulaName: parsed.formulaName ?? "Cálculo",
       formulaSymbolic: cleanSymbolicComplex,
+      formulaLatex: parsed.formulaLatex ?? null,
       expression: finalExpression,
       computedValue: finalValue,
       computedSteps,

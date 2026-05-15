@@ -650,6 +650,7 @@ export function buildResult(
     formulaExpression?: string | null;
     formulaMeta?: FormulaExpressionMeta | null;
     interpretacao?: string | null;
+    formulaLatex?: string | null;
   } = {}
 ): Omit<ResultData, "conversationalResponse" | "desenvolvimento"> {
   const normUnit = normalizeUnit(vars.resultUnit);
@@ -687,10 +688,12 @@ export function buildResult(
     }))
     .filter((v) => v.valor !== "");
 
-  // Seção "01 FÓRMULA" deve sempre mostrar a fórmula simbólica (v = d/t),
-  // nunca a expressão numérica (v = 150/2). Usamos SOMENTE toLatexFromSymbolic;
-  // se falhar, retornamos null e o frontend exibe formula.abstrata como texto.
-  const latexSym = toLatexFromSymbolic(symbolic, vars.solveFor);
+  // Seção "01 FÓRMULA" deve sempre mostrar a fórmula simbólica (v = d/t), nunca valores numéricos.
+  // Preferimos o LaTeX gerado diretamente pelo LLM (options.formulaLatex); se não vier,
+  // tentamos converter a partir do campo symbolic via MathJS; se falhar, null → frontend usa abstrata.
+  const latexSym =
+    (options.formulaLatex?.trim() ? options.formulaLatex.trim() : null) ??
+    toLatexFromSymbolic(symbolic, vars.solveFor);
 
   const latexRes = options.formulaExpression
     ? toLatexResultado(options.formulaExpression, vars.extracted, vars.solveFor, computedValue, vars.resultUnit)
