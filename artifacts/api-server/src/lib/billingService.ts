@@ -71,8 +71,8 @@ const FALLBACK_PRICES: Record<string, { input: number; output: number }> = {
 const FALLBACK_USD_BRL     = 5.80;
 const FALLBACK_MARGEM      = 2.0; // margem 100% sobre custo = 2× custo
 const FALLBACK_CREDITO_BRL = 0.10;
-const WELCOME_CREDITS      = 100; // créditos de boas-vindas para novos usuários
-const FREE_DAILY_CREDITS   = 100; // créditos renovados diariamente para plano free
+const WELCOME_CREDITS      = 10; // créditos de boas-vindas para novos usuários
+const FREE_DAILY_CREDITS   = 10; // créditos renovados diariamente para plano free
 
 /* ── Busca ou cria carteira do usuário ── */
 async function ensureCarteira(client: any, userId: string): Promise<number> {

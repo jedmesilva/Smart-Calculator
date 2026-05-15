@@ -548,9 +548,9 @@ const PLANS = [
     name: "Gratuito",
     price: null,
     priceLabel: "Grátis",
-    credits: 100,
-    creditsLabel: "100 créditos",
-    creditsNote: "renovam todo dia às meia-noite",
+    credits: 10,
+    creditsLabel: "10 créditos",
+    creditsNote: "renovam todo dia à meia-noite",
     features: [
       "Acesso à biblioteca de fórmulas",
       "Histórico de cálculos",
@@ -758,8 +758,8 @@ export function PlanManagementScreen({
   const totalConsultas = carteira?.totalConsultas ?? 0;
   const totalCreditosConsumidos = carteira?.totalCreditosConsumidos ?? 0;
 
-  const usedCredits = 100 - (saldo ?? 100);
-  const usedPct = Math.min(100, Math.max(0, (usedCredits / 100) * 100));
+  const usedCredits = 10 - (saldo ?? 10);
+  const usedPct = Math.min(100, Math.max(0, (usedCredits / 10) * 100));
 
   return (
     <View style={[styles.overlay, { paddingTop: topPad }]}>
@@ -801,7 +801,7 @@ export function PlanManagementScreen({
                 <Text style={styles.mgmtCreditsNum}>
                   {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"}
                 </Text>
-                <Text style={styles.mgmtCreditsSuffix}> / 100</Text>
+                <Text style={styles.mgmtCreditsSuffix}> / 10</Text>
               </View>
               <Text style={styles.mgmtCreditsNote}>créditos de boas-vindas disponíveis</Text>
 
@@ -839,7 +839,7 @@ export function PlanManagementScreen({
           <View style={{ flex: 1 }}>
             <Text style={styles.mgmtUpgradeCardTitle}>Precisa de mais créditos?</Text>
             <Text style={styles.mgmtUpgradeCardSub}>
-              Starter: 500 cr/mês por R$19,90 · Pro: 2.000 cr/mês por R$59,90
+              Inicial: 500 cr/mês por R$19,90 · Pro: 2.000 cr/mês por R$59,90
             </Text>
           </View>
           <Feather name="arrow-right" size={16} color={c.text} />
