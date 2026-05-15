@@ -1,4 +1,4 @@
-import { parse } from "mathjs";
+import { parse, evaluate as mathEvaluate } from "mathjs";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import type { ExpressionResult, ValidationResult, FormulaExpressionMeta } from "../agents/types";
 import { logger } from "./logger";
@@ -202,7 +202,7 @@ function buildSubExpressionHints(
   solveFor: string,
 ): string {
   try {
-    const { evaluate } = require("mathjs") as typeof import("mathjs");
+    const evaluate = mathEvaluate;
     const scope = { ...extracted };
 
     // Remove a variável sendo calculada do scope
@@ -487,7 +487,7 @@ export async function buildDesenvolvimento(opts: {
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5.1",
       max_completion_tokens: 4000,
       messages: [
         { role: "system", content: DESENVOLV_SYSTEM },
