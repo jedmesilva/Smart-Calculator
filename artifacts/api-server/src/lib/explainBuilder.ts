@@ -688,13 +688,9 @@ export function buildResult(
     .filter((v) => v.valor !== "");
 
   // Seção "01 FÓRMULA" deve sempre mostrar a fórmula simbólica (v = d/t),
-  // nunca a expressão numérica (v = 150/2). Preferimos sempre toLatexFromSymbolic
-  // e só caímos para toLatexSymbolic (que converte a expressão MathJS) como último recurso.
-  const latexSym =
-    toLatexFromSymbolic(symbolic, vars.solveFor) ??
-    (options.formulaExpression
-      ? toLatexSymbolic(options.formulaExpression, vars.solveFor)
-      : null);
+  // nunca a expressão numérica (v = 150/2). Usamos SOMENTE toLatexFromSymbolic;
+  // se falhar, retornamos null e o frontend exibe formula.abstrata como texto.
+  const latexSym = toLatexFromSymbolic(symbolic, vars.solveFor);
 
   const latexRes = options.formulaExpression
     ? toLatexResultado(options.formulaExpression, vars.extracted, vars.solveFor, computedValue, vars.resultUnit)
