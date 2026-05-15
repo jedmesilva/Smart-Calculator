@@ -1,0 +1,2042 @@
+2026-05-15T03:09:43.091395466Z [inf]  copying path '/nix/store/0fml1xim5c5wdn32a5bm7wgwn1ai0am6-isl-0.20' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.102001473Z [inf]  copying path '/nix/store/vc3mb134w3cd0m1mh3kph079xr7mbvnn-mpfr-4.2.2' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.107904882Z [inf]  copying path '/nix/store/aisb0lgxik1sfq3c47x1xjab0rg9q0n0-nghttp2-1.67.1-dev' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.114168378Z [inf]  copying path '/nix/store/swqs30pymm3ymv2qnkzs353xmpgr80jr-xz-5.8.1' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.114188191Z [inf]  copying path '/nix/store/6qi8skh85ci2k9gvl27nnh3kiy32qnsz-zlib-1.3.1' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.115531011Z [inf]  copying path '/nix/store/n09s57l86zxyjydkxagawxpkhh3d3dlh-gnutar-1.35' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.137799684Z [inf]  copying path '/nix/store/9a4lmf0swjwjizlkv11ibhnmj0ql7p1s-binutils-2.44-lib' from 'https://cache.nixos.org'...
+copying path '/nix/store/5qm0vivgc7lmiyfbf5d5a55s40d996bd-file-5.45' from 'https://cache.nixos.org'...
+copying path '/nix/store/jqrf546vxc6nzf4575m4am3w4ywq765i-sqlite-3.50.4' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.139214425Z [inf]  copying path '/nix/store/7p5yg8li32wgxxsydbzblnjgs8hvl9wd-sqlite-3.50.4-bin' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.158284205Z [inf]  copying path '/nix/store/wd4i398mh329vhw93mvmamw3hrnhl257-gzip-1.14' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.162008956Z [inf]  copying path '/nix/store/f21qz37q6da2bwm4cngj21ia6ivq3v23-libmpc-1.3.1' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.164599075Z [inf]  copying path '/nix/store/0zv32kh0zb4s1v4ld6mc99vmzydj9nm9-glibc-2.40-66-dev' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.189548925Z [inf]  copying path '/nix/store/6q57mnfak3q8ss656qgp245qzqvnniyr-gnugrep-3.12' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.192050373Z [inf]  copying path '/nix/store/77jyjqy2b9l2a0139im9ds28zkdv0ybc-xz-5.8.1-bin' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.195558127Z [inf]  copying path '/nix/store/6fqij3sy1mlsnq1n679bzbl5bkqs7yvk-zlib-1.3.1-dev' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.312446918Z [inf]  copying path '/nix/store/3a7y8k7fh6xldnpvd3bx3ygnx5044xw6-sqlite-3.50.4-dev' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.432238911Z [inf]  copying path '/nix/store/7h3qnwgvkw6z2r8lq4j5mks4l6r5x2cq-binutils-2.44' from 'https://cache.nixos.org'...
+copying path '/nix/store/k6gpflj398qaxzx4bmqhnnj4l328vabk-gcc-14.3.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/hpyfq2n0qr4qj3z1f7d2diw8sql5m84f-icu4c-76.1' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.432266246Z [inf]  copying path '/nix/store/78xkc7z5m21chq7p6awrzgznz83xyml0-gmp-with-cxx-6.3.0' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.432392557Z [inf]  copying path '/nix/store/0032synbfqd0ylgf9szgp724nmw2fq89-patchelf-0.15.2' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.463201835Z [inf]  copying path '/nix/store/1h8fc0raix2hx3xh6z9bjk3n1pnhd7is-krb5-1.22.1-lib' from 'https://cache.nixos.org'...
+copying path '/nix/store/2sv91m724m3ydpzvyv89y40va91b4643-libssh2-1.11.1' from 'https://cache.nixos.org'...
+copying path '/nix/store/jr64633vy5ca03fdq4ymnrjcy1swvdii-openssl-3.5.2-bin' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.490551978Z [inf]  copying path '/nix/store/3kasb92ri5cmp7gwxgj8jgk87pr83y7p-openssl-3.5.2-bin' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.512215311Z [inf]  copying path '/nix/store/00bc157nm93q5fjz551fwk60ihlbilvj-coreutils-9.7' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.54077947Z [inf]  copying path '/nix/store/ln0p4bzkpmsgh0z49l3r1q96r6pgnz05-openssl-3.5.2-dev' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.585180444Z [inf]  copying path '/nix/store/cz9k6nhxjppa1kmyf5npd0g8l89xzilw-openssl-3.5.2-dev' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.64172935Z [inf]  copying path '/nix/store/di12yqc8952k9scn46kd48ii266v2yn8-curl-8.16.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/g6hcs7jbchxawmf1nvhchapn3mmxgl51-krb5-1.22.1' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.665770532Z [inf]  copying path '/nix/store/c7qlkpbivy2znqxd25prgh9pwjxdri6w-diffutils-3.12' from 'https://cache.nixos.org'...
+copying path '/nix/store/k2y9xpcdqxma66kag80nhbv0pq2bznzf-perl-5.40.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/wq1cxh4s8rz8vs4ssp2z49v96m0nhxhj-findutils-4.10.0' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.670240192Z [inf]  copying path '/nix/store/prfzs45jji50w53bri2d2xyk5vlqzqan-libssh2-1.11.1-dev' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.737385848Z [inf]  copying path '/nix/store/9bfd6c1f2nzrx7j5f0gc6i9n2clngndn-curl-8.16.0-bin' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.758367963Z [inf]  copying path '/nix/store/nl0asb7spb7z9q0kzi9yb3kf34z8pnnz-krb5-1.22.1-dev' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.766303554Z [inf]  copying path '/nix/store/x1d0ad98h92lp5g59pfryjzk4ca84i3r-stdenv-linux' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:43.998250955Z [inf]  building '/nix/store/r9gjz07l7wrgsbqnc6zwsv7qcpqhn4qw-libraries.drv'...
+
+2026-05-15T03:09:44.004463384Z [inf]  copying path '/nix/store/zqkjn730gir222v3mkp82c1pmqfb2j0l-readline-8.3p1' from 'https://cache.nixos.org'...
+copying path '/nix/store/n5d9hl0jb4gzd3p886rb4nrprym4gwkp-curl-8.16.0-dev' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:44.135575544Z [inf]  building '/nix/store/kip3gsm2grar4kjxcbs5lxsfg9bzmxya-pnpm-9.15.9.tgz.drv'...
+
+2026-05-15T03:09:44.238848161Z [inf]  copying path '/nix/store/2j7r5np0vaz4cnqkymp1mqivmjj1x9xl-bash-interactive-5.3p3' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:44.413649351Z [inf]  building '/nix/store/jmrzqcbvfbsq3cvgfsd7zxxajin2kvj1-23f9169c4ccce521379e602cc82ed873a1f1b52b-env.drv'...
+
+2026-05-15T03:09:44.413663821Z [inf]  
+trying https://registry.npmjs.org/pnpm/-/pnpm-9.15.9.tgz
+
+2026-05-15T03:09:44.413754306Z [inf]    % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+2026-05-15T03:09:44.43430999Z [inf]  100 4210k  100 4210k    0     0  40.9M      0 --:--:-- --:--:-- --:--:-- 40.7M
+
+2026-05-15T03:09:44.712432439Z [inf]  copying path '/nix/store/0fq1mnfqjl9ain4jg5j56kl6h8bbmy1h-binutils-wrapper-2.44' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:45.295871088Z [inf]  copying path '/nix/store/zc7w3ii28j4kagmlznjdajf0nzd0z60a-icu4c-76.1-dev' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:45.500710665Z [inf]  copying path '/nix/store/p2sk3402d788hqn5diy5gba8cskjffzz-nodejs-24.10.0' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:53.191618946Z [inf]  copying path '/nix/store/dmypp1h4ldn0vfk3fi6yfyf5yxp9yz0k-gcc-wrapper-14.3.0' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:53.234551081Z [inf]  copying path '/nix/store/87ds8jf53m7n8xscxgkfgwcc8dyj1qki-stdenv-linux' from 'https://cache.nixos.org'...
+
+2026-05-15T03:09:53.30926401Z [inf]  building '/nix/store/qa57g1rav1i96gmg7vg951xh60hxl376-pnpm.drv'...
+
+2026-05-15T03:09:53.456610547Z [inf]  Running phase: unpackPhase
+
+2026-05-15T03:09:53.462504501Z [inf]  unpacking source archive /nix/store/f4glllk86xq0kygag8bljhnazpa5q6w2-pnpm-9.15.9.tgz
+
+2026-05-15T03:09:53.659036889Z [inf]  source root is package
+
+2026-05-15T03:09:53.694714886Z [inf]  setting SOURCE_DATE_EPOCH to timestamp 499162500 of file "package/package.json"
+
+2026-05-15T03:09:53.714279402Z [inf]  Running phase: installPhase
+
+2026-05-15T03:09:54.464939919Z [inf]  building '/nix/store/bv8rs6qkj0hkfjgrfvln6q2nfs0gjyk7-23f9169c4ccce521379e602cc82ed873a1f1b52b-env.drv'...
+
+2026-05-15T03:09:54.710591646Z [inf]  created 460 symlinks in user environment
+
+2026-05-15T03:09:54.951144684Z [inf]  building '/nix/store/7a2vnwfckwn8a81bbrm8idsja7v42r0l-user-environment.drv'...
+
+2026-05-15T03:09:55.366291926Z [inf]  removing old generations of profile /nix/var/nix/profiles/per-user/root/profile
+
+2026-05-15T03:09:55.366321434Z [inf]  removing profile version 1
+
+2026-05-15T03:09:55.366440453Z [inf]  removing old generations of profile /nix/var/nix/profiles/per-user/root/channels
+
+2026-05-15T03:09:55.366669632Z [inf]  removing old generations of profile /nix/var/nix/profiles/per-user/root/profile
+removing old generations of profile /nix/var/nix/profiles/per-user/root/channels
+
+2026-05-15T03:09:55.374488997Z [inf]  finding garbage collector roots...
+
+2026-05-15T03:09:55.375733366Z [inf]  removing stale link from '/nix/var/nix/gcroots/auto/lzjbmb2ry0z7lma2fvpqprb12921pnb5' to '/nix/var/nix/profiles/per-user/root/profile-1-link'
+
+2026-05-15T03:09:55.387084272Z [inf]  deleting garbage...
+
+2026-05-15T03:09:55.398146402Z [inf]  deleting '/nix/store/a9qf4wwhympzs35ncp80r185j6a21w07-user-environment'
+
+2026-05-15T03:09:55.403416029Z [inf]  deleting '/nix/store/253kwn1730vnay87xkjgxa2v97w3y079-user-environment.drv'
+
+2026-05-15T03:09:55.432198994Z [inf]  deleting '/nix/store/hn5mrh362n52x8wwab9s1v6bgn4n5c94-env-manifest.nix'
+
+2026-05-15T03:09:55.432924245Z [inf]  deleting '/nix/store/n5d9hl0jb4gzd3p886rb4nrprym4gwkp-curl-8.16.0-dev'
+deleting '/nix/store/9vcd7xzvs6zbi42hywh7khvvy2pfnihq-curl-8.16.0-man'
+
+2026-05-15T03:09:55.433244045Z [inf]  deleting '/nix/store/f4glllk86xq0kygag8bljhnazpa5q6w2-pnpm-9.15.9.tgz'
+
+2026-05-15T03:09:55.433693885Z [inf]  deleting '/nix/store/87ds8jf53m7n8xscxgkfgwcc8dyj1qki-stdenv-linux'
+
+2026-05-15T03:09:55.433944626Z [inf]  deleting '/nix/store/dmypp1h4ldn0vfk3fi6yfyf5yxp9yz0k-gcc-wrapper-14.3.0'
+
+2026-05-15T03:09:55.434453196Z [inf]  deleting '/nix/store/0fq1mnfqjl9ain4jg5j56kl6h8bbmy1h-binutils-wrapper-2.44'
+
+2026-05-15T03:09:55.434824874Z [inf]  deleting '/nix/store/5ipaaiqy3dmngyp3a3yschy4g4kh1jl7-expand-response-params'
+
+2026-05-15T03:09:55.435079191Z [inf]  deleting '/nix/store/nl0asb7spb7z9q0kzi9yb3kf34z8pnnz-krb5-1.22.1-dev'
+
+2026-05-15T03:09:55.435888317Z [inf]  deleting '/nix/store/g6hcs7jbchxawmf1nvhchapn3mmxgl51-krb5-1.22.1'
+
+2026-05-15T03:09:55.437456053Z [inf]  deleting '/nix/store/x1d0ad98h92lp5g59pfryjzk4ca84i3r-stdenv-linux'
+
+2026-05-15T03:09:55.437761418Z [inf]  deleting '/nix/store/c7qlkpbivy2znqxd25prgh9pwjxdri6w-diffutils-3.12'
+
+2026-05-15T03:09:55.440123239Z [inf]  deleting '/nix/store/5qm0vivgc7lmiyfbf5d5a55s40d996bd-file-5.45'
+
+2026-05-15T03:09:55.440415531Z [inf]  deleting '/nix/store/7zy6jnnpqh16b18j6ar289vhwp17msh0-gnused-4.9'
+
+2026-05-15T03:09:55.460063466Z [inf]  deleting '/nix/store/k6gpflj398qaxzx4bmqhnnj4l328vabk-gcc-14.3.0'
+
+2026-05-15T03:09:55.495034394Z [inf]  deleting '/nix/store/f21qz37q6da2bwm4cngj21ia6ivq3v23-libmpc-1.3.1'
+deleting '/nix/store/vc3mb134w3cd0m1mh3kph079xr7mbvnn-mpfr-4.2.2'
+
+2026-05-15T03:09:55.495376858Z [inf]  deleting '/nix/store/ka03rs4a3bybjhqpvg388sdszbybvbff-update-autotools-gnu-config-scripts-hook'
+
+2026-05-15T03:09:55.495686279Z [inf]  deleting '/nix/store/i6c20krnakaiv6zbraxl2q60hn8rmjwq-exec.drv'
+
+2026-05-15T03:09:55.495837651Z [inf]  deleting '/nix/store/0fml1xim5c5wdn32a5bm7wgwn1ai0am6-isl-0.20'
+
+2026-05-15T03:09:55.511542956Z [inf]  deleting '/nix/store/szvrzng4wfxc9xljqjipxhrrayjfy0vj-gmp-6.3.0'
+deleting '/nix/store/0zv32kh0zb4s1v4ld6mc99vmzydj9nm9-glibc-2.40-66-dev'
+
+2026-05-15T03:09:55.515381076Z [inf]  deleting '/nix/store/qzkhd1k8dsdah1ja0wjj6q8bibxk5zq6-linux-headers-6.16.7'
+
+2026-05-15T03:09:55.536967489Z [inf]  deleting '/nix/store/k2y9xpcdqxma66kag80nhbv0pq2bznzf-perl-5.40.0'
+
+2026-05-15T03:09:55.584815036Z [inf]  deleting '/nix/store/r9lif1a0naanr8kdapwnbnr39lr7d56a-patch-2.8'
+
+2026-05-15T03:09:55.585256573Z [inf]  deleting '/nix/store/7h3qnwgvkw6z2r8lq4j5mks4l6r5x2cq-binutils-2.44'
+
+2026-05-15T03:09:55.58953409Z [inf]  deleting '/nix/store/9a4lmf0swjwjizlkv11ibhnmj0ql7p1s-binutils-2.44-lib'
+
+2026-05-15T03:09:55.589798437Z [inf]  deleting '/nix/store/2j08vib6rf81vwi6mv3s544wi8rj3xn7-gnu-config-2024-01-01'
+
+2026-05-15T03:09:55.590030878Z [inf]  deleting '/nix/store/6q57mnfak3q8ss656qgp245qzqvnniyr-gnugrep-3.12'
+
+2026-05-15T03:09:55.609062015Z [inf]  deleting '/nix/store/wqlkv0cjacnm7arca156p3d3vh0kdbmk-pcre2-10.46'
+
+2026-05-15T03:09:55.609626254Z [inf]  deleting '/nix/store/swbmnc2s8g2zxzxh62hx1vbbcg6i2r5b-gawk-5.3.2'
+
+2026-05-15T03:09:55.611498166Z [inf]  deleting '/nix/store/aisb0lgxik1sfq3c47x1xjab0rg9q0n0-nghttp2-1.67.1-dev'
+
+2026-05-15T03:09:55.611954159Z [inf]  deleting '/nix/store/9bfd6c1f2nzrx7j5f0gc6i9n2clngndn-curl-8.16.0-bin'
+
+2026-05-15T03:09:55.612174282Z [inf]  deleting '/nix/store/di12yqc8952k9scn46kd48ii266v2yn8-curl-8.16.0'
+
+2026-05-15T03:09:55.6123111Z [inf]  deleting '/nix/store/1h8fc0raix2hx3xh6z9bjk3n1pnhd7is-krb5-1.22.1-lib'
+
+2026-05-15T03:09:55.613294606Z [inf]  deleting '/nix/store/nkn950vf2i29k4v3z6w9717pjrg483ng-libxcrypt-4.4.38'
+
+2026-05-15T03:09:55.613549317Z [inf]  deleting '/nix/store/gf1xp3sizlc0nkq3man8ys0mwhs1bp44-glibc-2.40-66-bin'
+
+2026-05-15T03:09:55.614246599Z [inf]  deleting '/nix/store/prfzs45jji50w53bri2d2xyk5vlqzqan-libssh2-1.11.1-dev'
+
+2026-05-15T03:09:55.614392881Z [inf]  deleting '/nix/store/ln0p4bzkpmsgh0z49l3r1q96r6pgnz05-openssl-3.5.2-dev'
+
+2026-05-15T03:09:55.615911886Z [inf]  deleting '/nix/store/jr64633vy5ca03fdq4ymnrjcy1swvdii-openssl-3.5.2-bin'
+
+2026-05-15T03:09:55.616108267Z [inf]  deleting '/nix/store/2sv91m724m3ydpzvyv89y40va91b4643-libssh2-1.11.1'
+
+2026-05-15T03:09:55.616262091Z [inf]  deleting '/nix/store/h95q41jsmizcqk4iffkxm52q8lar13fm-openssl-3.5.2'
+
+2026-05-15T03:09:55.616584496Z [inf]  deleting '/nix/store/z93i9ql4kfv3a0zrs28lw93rxcaxqhki-source'
+
+2026-05-15T03:09:55.636226147Z [inf]  deleting '/nix/store/wq1cxh4s8rz8vs4ssp2z49v96m0nhxhj-findutils-4.10.0'
+
+2026-05-15T03:09:55.640550864Z [inf]  deleting '/nix/store/lmn1m0giq5bkgdqvdpiryb9a2ly28w6g-gnumake-4.4.1'
+
+2026-05-15T03:09:55.64338788Z [inf]  deleting '/nix/store/2bf6s3nngcrb4rh9hb57isam6k5xl9i6-nghttp2-1.67.1-lib'
+
+2026-05-15T03:09:55.64427173Z [inf]  deleting '/nix/store/xnd0ld68fzj1g1qr19gg0va486snwj22-bzip2-1.0.8-bin'
+
+2026-05-15T03:09:55.64469358Z [inf]  deleting '/nix/store/j59qq0cqb364kzzrx2r32swfljwklxlq-bzip2-1.0.8'
+
+2026-05-15T03:09:55.645048644Z [inf]  deleting '/nix/store/wgvx9p6h00aijb9jw95am7095wjzm9mv-ed-1.22.2'
+
+2026-05-15T03:09:55.645447709Z [inf]  deleting '/nix/store/a3jg8g5fam9klp5ila9javf2q4wgjish-keyutils-1.6.3-lib'
+
+2026-05-15T03:09:55.645881394Z [inf]  deleting '/nix/store/0032synbfqd0ylgf9szgp724nmw2fq89-patchelf-0.15.2'
+
+2026-05-15T03:09:55.646479729Z [inf]  deleting '/nix/store/n09s57l86zxyjydkxagawxpkhh3d3dlh-gnutar-1.35'
+
+2026-05-15T03:09:55.664862915Z [inf]  deleting '/nix/store/z6gs6c7h492l4zq99mrmbwfwkjykaf0d-source'
+
+2026-05-15T03:09:58.48889978Z [inf]  deleting '/nix/store/wd4i398mh329vhw93mvmamw3hrnhl257-gzip-1.14'
+
+2026-05-15T03:09:58.489201752Z [inf]  deleting '/nix/store/77jyjqy2b9l2a0139im9ds28zkdv0ybc-xz-5.8.1-bin'
+
+2026-05-15T03:09:58.489551782Z [inf]  deleting '/nix/store/swqs30pymm3ymv2qnkzs353xmpgr80jr-xz-5.8.1'
+
+2026-05-15T03:09:58.490890409Z [inf]  deleting '/nix/store/fzwylivnpgh93d0f86wczhqgyw4168z9-libraries'
+
+2026-05-15T03:09:58.491116375Z [inf]  deleting '/nix/store/dddyfnkixnqr8jy74rc2zs3bjfy55z6q-mirrors-list'
+deleting '/nix/store/1a7g7jhnbcdaqn3lfb8xdg755x0kw0bi-nghttp2-1.67.1'
+
+2026-05-15T03:09:58.491413818Z [inf]  deleting '/nix/store/1dw13nzqf9v8w7jcy205hkp7s7ggi0cc-builder.pl'
+
+2026-05-15T03:09:58.491553654Z [inf]  deleting unused links...
+
+2026-05-15T03:10:02.991027696Z [inf]  note: currently hard linking saves 1.13 MiB
+
+2026-05-15T03:10:03.084223503Z [inf]  62 store paths deleted, 561.53 MiB freed
+
+2026-05-15T03:10:03.893469140Z [inf]  [stage-0  4/11] RUN nix-env -if .nixpacks/nixpkgs-23f9169c4ccce521379e602cc82ed873a1f1b52b.nix && nix-collect-garbage -d
+2026-05-15T03:10:03.918377998Z [inf]  [stage-0  5/11] RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends chromium libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libgbm1 libasound2t64 libpangocairo-1.0-0 libxss1 libgtk-3-0 libxshmfence1 libglu1
+2026-05-15T03:10:39.011321795Z [inf]  Get:1 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+
+2026-05-15T03:10:39.109201783Z [inf]  Get:2 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+
+2026-05-15T03:10:39.287657494Z [inf]  Get:3 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [3610 kB]
+
+2026-05-15T03:10:39.353657532Z [inf]  Get:4 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [2038 kB]
+
+2026-05-15T03:10:39.381802804Z [inf]  Get:5 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1504 kB]
+
+2026-05-15T03:10:39.390359903Z [inf]  Get:6 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [34.2 kB]
+
+2026-05-15T03:10:39.682126066Z [inf]  Get:7 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+
+2026-05-15T03:10:39.857706168Z [inf]  Get:8 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+
+2026-05-15T03:10:39.891592567Z [inf]  Get:9 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+
+2026-05-15T03:10:39.912116778Z [inf]  Get:10 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+
+2026-05-15T03:10:40.192452575Z [inf]  Get:11 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+
+2026-05-15T03:10:40.221966065Z [inf]  Get:12 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [54.1 kB]
+
+2026-05-15T03:10:40.224814369Z [inf]  Get:14 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [2445 kB]
+
+2026-05-15T03:10:40.255915213Z [inf]  Get:15 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [3889 kB]
+
+2026-05-15T03:10:40.30836862Z [inf]  Get:16 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2147 kB]
+
+2026-05-15T03:10:40.338019672Z [inf]  Get:17 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.0 kB]
+
+2026-05-15T03:10:40.338542805Z [inf]  Get:18 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [35.9 kB]
+
+2026-05-15T03:10:40.340347672Z [inf]  Get:19 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [671 B]
+
+2026-05-15T03:10:43.613439406Z [inf]  Fetched 38.0 MB in 5s (8052 kB/s)
+Reading package lists...
+2026-05-15T03:10:47.516175873Z [inf]  
+2026-05-15T03:10:47.638076988Z [inf]  Reading package lists...
+2026-05-15T03:10:51.832690043Z [inf]  
+2026-05-15T03:10:51.935309915Z [inf]  Building dependency tree...
+2026-05-15T03:10:52.75881723Z [inf]  
+Reading state information...
+2026-05-15T03:10:52.759648845Z [inf]  
+2026-05-15T03:10:53.890095591Z [inf]  The following additional packages will be installed:
+
+2026-05-15T03:10:53.890162805Z [inf]    adduser adwaita-icon-theme apparmor at-spi2-common bsdutils dbus dbus-bin
+  dbus-daemon dbus-session-bus-common dbus-system-bus-common dbus-user-session
+  dconf-gsettings-backend dconf-service fontconfig fontconfig-config
+
+2026-05-15T03:10:53.890379963Z [inf]    fonts-dejavu-core fonts-dejavu-mono fuse3 gtk-update-icon-cache
+
+2026-05-15T03:10:53.890892654Z [inf]    hicolor-icon-theme humanity-icon-theme libapparmor1 libargon2-1
+  libasound2-data libatspi2.0-0t64 libavahi-client3 libavahi-common-data
+  libavahi-common3 libblkid1 libbsd0 libcairo-gobject2 libcairo2 libcap2
+
+2026-05-15T03:10:53.8909603Z [inf]    libcap2-bin libcbor0.10 libcolord2 libcryptsetup12 libdatrie1 libdbus-1-3
+  libdconf1 libdeflate0 libdevmapper1.02.1 libdrm-amdgpu1 libdrm-common
+  libdrm-intel1 libdrm2 libedit2 libelf1t64 libepoxy0 libfdisk1 libfido2-1
+  libfontconfig1 libfreetype6 libfribidi0 libfuse3-3 libgdk-pixbuf-2.0-0
+
+2026-05-15T03:10:53.891067896Z [inf]    libgdk-pixbuf2.0-common libglib2.0-0t64 libglvnd0 libgraphite2-3
+  libgtk-3-common libharfbuzz0b libicu74 libjbig0 libjpeg-turbo8 libjpeg8
+
+2026-05-15T03:10:53.891248802Z [inf]    libjson-c5 libkmod2 liblcms2-2 liblerc4 libllvm20 liblzo2-2 libmount1
+  libnspr4 libopengl0 libpam-systemd libpango-1.0-0 libpangoft2-1.0-0
+
+2026-05-15T03:10:53.899338717Z [inf]    libpciaccess0 libpixman-1-0 libpng16-16t64 libsensors-config libsensors5
+  libsharpyuv0 libsmartcols1 libsqlite3-0 libsystemd-shared libsystemd0
+  libthai-data libthai0 libtiff6 libudev1 libuuid1 libwayland-client0
+  libwayland-cursor0 libwayland-egl1 libwebp7 libx11-6 libx11-data libx11-xcb1
+  libxau6 libxcb-dri3-0 libxcb-present0 libxcb-randr0 libxcb-render0
+  libxcb-shm0 libxcb-sync1 libxcb-xfixes0 libxcb1 libxcomposite1 libxcursor1
+  libxdamage1 libxdmcp6 libxext6 libxfixes3 libxi6 libxinerama1 libxkbcommon0
+
+2026-05-15T03:10:53.900249941Z [inf]    libxml2 libxrandr2 libxrender1 mesa-libgallium mount openssh-client
+
+2026-05-15T03:10:53.900686903Z [inf]    shared-mime-info snapd squashfs-tools systemd systemd-dev systemd-sysv
+  ubuntu-mono udev util-linux x11-common xkb-data
+
+2026-05-15T03:10:53.903257615Z [inf]  Suggested packages:
+  liblocale-gettext-perl cron quota ecryptfs-utils apparmor-profiles-extra
+  apparmor-utils alsa-utils libasound2-plugins colord cups-common
+  low-memory-monitor gvfs liblcms2-utils cryptsetup-bin pciutils lm-sensors
+  nfs-common keychain libpam-ssh monkeysphere ssh-askpass zenity | kdialog
+  systemd-container systemd-homed systemd-userdbd systemd-boot libip4tc2
+  libqrencode4 libtss2-esys-3.0.2-0 libtss2-mu-4.0.1-0 libtss2-rc0
+  libtss2-tcti-device0 polkitd dosfstools kbd util-linux-extra
+  util-linux-locales
+Recommended packages:
+  librsvg2-common bsdextrautils alsa-ucm-conf alsa-topology-conf at-spi2-core
+  libpam-cap dmsetup libgdk-pixbuf2.0-bin libglib2.0-data xdg-user-dirs
+  libgtk-3-bin uuid-runtime xauth gnupg networkd-dispatcher systemd-timesyncd
+  | time-daemon systemd-resolved libnss-systemd systemd-hwe-hwdb
+
+2026-05-15T03:10:54.511656945Z [inf]  The following NEW packages will be installed:
+  adduser adwaita-icon-theme apparmor at-spi2-common chromium-browser dbus
+  dbus-bin dbus-daemon dbus-session-bus-common dbus-system-bus-common
+  dbus-user-session dconf-gsettings-backend dconf-service fontconfig
+  fontconfig-config fonts-dejavu-core fonts-dejavu-mono fuse3
+  gtk-update-icon-cache hicolor-icon-theme humanity-icon-theme libargon2-1
+  libasound2-data libasound2t64 libatk-bridge2.0-0t64 libatk1.0-0t64
+  libatspi2.0-0t64 libavahi-client3 libavahi-common-data libavahi-common3
+  libbsd0 libcairo-gobject2 libcairo2 libcap2-bin libcbor0.10 libcolord2
+  libcryptsetup12 libcups2t64 libdatrie1 libdbus-1-3 libdconf1 libdeflate0
+  libdevmapper1.02.1 libdrm-amdgpu1 libdrm-common libdrm-intel1 libdrm2
+  libedit2 libelf1t64 libepoxy0 libfdisk1 libfido2-1 libfontconfig1
+  libfreetype6 libfribidi0 libfuse3-3 libgbm1 libgdk-pixbuf-2.0-0
+  libgdk-pixbuf2.0-common libglib2.0-0t64 libglu1-mesa libglvnd0
+  libgraphite2-3 libgtk-3-0t64 libgtk-3-common libharfbuzz0b libicu74 libjbig0
+  libjpeg-turbo8 libjpeg8 libjson-c5 libkmod2 liblcms2-2 liblerc4 libllvm20
+  liblzo2-2 libnspr4 libnss3 libopengl0 libpam-systemd libpango-1.0-0
+  libpangocairo-1.0-0 libpangoft2-1.0-0 libpciaccess0 libpixman-1-0
+  libpng16-16t64 libsensors-config libsensors5 libsharpyuv0 libsqlite3-0
+  libsystemd-shared libthai-data libthai0 libtiff6 libwayland-client0
+  libwayland-cursor0 libwayland-egl1 libwebp7 libx11-6 libx11-data libx11-xcb1
+  libxau6 libxcb-dri3-0 libxcb-present0 libxcb-randr0 libxcb-render0
+  libxcb-shm0 libxcb-sync1 libxcb-xfixes0 libxcb1 libxcomposite1 libxcursor1
+  libxdamage1 libxdmcp6 libxext6 libxfixes3 libxi6 libxinerama1 libxkbcommon0
+  libxml2 libxrandr2 libxrender1 libxshmfence1 libxss1 mesa-libgallium
+
+2026-05-15T03:10:54.512033603Z [inf]    openssh-client shared-mime-info snapd squashfs-tools systemd systemd-dev
+
+2026-05-15T03:10:54.512123199Z [inf]    systemd-sysv ubuntu-mono udev x11-common xkb-data
+
+2026-05-15T03:10:54.513735305Z [inf]  The following packages will be upgraded:
+
+2026-05-15T03:10:54.515243997Z [inf]    bsdutils libapparmor1 libblkid1 libcap2 libmount1 libsmartcols1 libsystemd0
+
+2026-05-15T03:10:54.515987694Z [inf]    libudev1 libuuid1 mount util-linux
+
+2026-05-15T03:10:54.683618866Z [inf]  11 upgraded, 136 newly installed, 0 to remove and 41 not upgraded.
+Need to get 122 MB of archives.
+After this operation, 498 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 bsdutils amd64 1:2.39.3-9ubuntu6.5 [96.1 kB]
+
+2026-05-15T03:10:54.708082726Z [inf]  Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 util-linux amd64 2.39.3-9ubuntu6.5 [1128 kB]
+
+2026-05-15T03:10:54.738175896Z [inf]  Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 mount amd64 2.39.3-9ubuntu6.5 [118 kB]
+
+2026-05-15T03:10:54.739384198Z [inf]  Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libapparmor1 amd64 4.0.1really4.0.1-0ubuntu0.24.04.6 [51.2 kB]
+
+2026-05-15T03:10:54.740940691Z [inf]  Get:5 http://archive.ubuntu.com/ubuntu noble/main amd64 libargon2-1 amd64 0~20190702+dfsg-4build1 [20.8 kB]
+
+2026-05-15T03:10:54.763179159Z [inf]  Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libblkid1 amd64 2.39.3-9ubuntu6.5 [123 kB]
+
+2026-05-15T03:10:54.764391693Z [inf]  Get:7 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcap2 amd64 1:2.66-5ubuntu2.4 [30.5 kB]
+
+2026-05-15T03:10:54.766058401Z [inf]  Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libudev1 amd64 255.4-1ubuntu8.15 [177 kB]
+
+2026-05-15T03:10:54.786914868Z [inf]  Get:9 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libdevmapper1.02.1 amd64 2:1.02.185-3ubuntu3.2 [139 kB]
+
+2026-05-15T03:10:54.787380045Z [inf]  Get:10 http://archive.ubuntu.com/ubuntu noble/main amd64 libjson-c5 amd64 0.17-1build1 [35.3 kB]
+
+2026-05-15T03:10:54.81146674Z [inf]  Get:11 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libuuid1 amd64 2.39.3-9ubuntu6.5 [36.1 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcryptsetup12 amd64 2:2.7.0-1ubuntu4.2 [266 kB]
+
+2026-05-15T03:10:54.816512827Z [inf]  Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libfdisk1 amd64 2.39.3-9ubuntu6.5 [146 kB]
+
+2026-05-15T03:10:54.833839899Z [inf]  Get:14 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libkmod2 amd64 31+20240202-2ubuntu7.2 [51.8 kB]
+
+2026-05-15T03:10:54.834051985Z [inf]  Get:15 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libmount1 amd64 2.39.3-9ubuntu6.5 [134 kB]
+
+2026-05-15T03:10:54.840408885Z [inf]  Get:16 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libsystemd-shared amd64 255.4-1ubuntu8.15 [2076 kB]
+
+2026-05-15T03:10:54.89555803Z [inf]  Get:17 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libsystemd0 amd64 255.4-1ubuntu8.15 [435 kB]
+
+2026-05-15T03:10:54.933120375Z [inf]  Get:18 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 systemd-dev all 255.4-1ubuntu8.15 [106 kB]
+
+2026-05-15T03:10:54.93561392Z [inf]  Get:19 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 systemd amd64 255.4-1ubuntu8.15 [3475 kB]
+
+2026-05-15T03:10:54.986147974Z [inf]  Get:20 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 systemd-sysv amd64 255.4-1ubuntu8.15 [11.9 kB]
+
+2026-05-15T03:10:54.986476383Z [inf]  Get:21 http://archive.ubuntu.com/ubuntu noble/main amd64 adduser all 3.137ubuntu1 [101 kB]
+
+2026-05-15T03:10:55.008778612Z [inf]  Get:22 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 apparmor amd64 4.0.1really4.0.1-0ubuntu0.24.04.6 [639 kB]
+
+2026-05-15T03:10:55.014029991Z [inf]  Get:23 http://archive.ubuntu.com/ubuntu noble/main amd64 libfuse3-3 amd64 3.14.0-5build1 [83.1 kB]
+
+2026-05-15T03:10:55.014743591Z [inf]  Get:24 http://archive.ubuntu.com/ubuntu noble/main amd64 fuse3 amd64 3.14.0-5build1 [25.2 kB]
+
+2026-05-15T03:10:55.037000238Z [inf]  Get:25 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcap2-bin amd64 1:2.66-5ubuntu2.4 [34.1 kB]
+
+2026-05-15T03:10:55.037471805Z [inf]  Get:26 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libbsd0 amd64 0.12.1-1build1.1 [41.2 kB]
+
+2026-05-15T03:10:55.038034937Z [inf]  Get:27 http://archive.ubuntu.com/ubuntu noble/main amd64 libedit2 amd64 3.1-20230828-1build1 [97.6 kB]
+
+2026-05-15T03:10:55.045014042Z [inf]  Get:28 http://archive.ubuntu.com/ubuntu noble/main amd64 libcbor0.10 amd64 0.10.2-1.2ubuntu2 [25.8 kB]
+
+2026-05-15T03:10:55.061862061Z [inf]  Get:29 http://archive.ubuntu.com/ubuntu noble/main amd64 libfido2-1 amd64 1.14.0-1build3 [83.5 kB]
+
+2026-05-15T03:10:55.062750336Z [inf]  Get:30 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 openssh-client amd64 1:9.6p1-3ubuntu13.16 [907 kB]
+
+2026-05-15T03:10:55.075578106Z [inf]  Get:31 http://archive.ubuntu.com/ubuntu noble/main amd64 liblzo2-2 amd64 2.10-2build4 [54.1 kB]
+
+2026-05-15T03:10:55.085310065Z [inf]  Get:32 http://archive.ubuntu.com/ubuntu noble/main amd64 squashfs-tools amd64 1:4.6.1-1build1 [189 kB]
+
+2026-05-15T03:10:55.089243631Z [inf]  Get:33 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 udev amd64 255.4-1ubuntu8.15 [1875 kB]
+
+2026-05-15T03:10:55.131958396Z [inf]  Get:34 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libdbus-1-3 amd64 1.14.10-4ubuntu4.1 [210 kB]
+Get:35 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 dbus-bin amd64 1.14.10-4ubuntu4.1 [39.3 kB]
+Get:36 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 dbus-session-bus-common all 1.14.10-4ubuntu4.1 [80.5 kB]
+
+2026-05-15T03:10:55.132896369Z [inf]  Get:37 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 dbus-daemon amd64 1.14.10-4ubuntu4.1 [118 kB]
+
+2026-05-15T03:10:55.139986581Z [inf]  Get:38 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 dbus-system-bus-common all 1.14.10-4ubuntu4.1 [81.6 kB]
+
+2026-05-15T03:10:55.15818532Z [inf]  Get:39 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 dbus amd64 1.14.10-4ubuntu4.1 [24.3 kB]
+
+2026-05-15T03:10:55.160635906Z [inf]  Get:40 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpam-systemd amd64 255.4-1ubuntu8.15 [235 kB]
+
+2026-05-15T03:10:55.185549362Z [inf]  Get:41 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 dbus-user-session amd64 1.14.10-4ubuntu4.1 [9968 B]
+
+2026-05-15T03:10:55.187152185Z [inf]  Get:42 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 snapd amd64 2.74.1+ubuntu24.04.4 [35.2 MB]
+
+2026-05-15T03:10:55.822625923Z [inf]  Get:43 http://archive.ubuntu.com/ubuntu noble/universe amd64 chromium-browser amd64 2:1snap1-0ubuntu2 [50.0 kB]
+
+2026-05-15T03:10:55.825747821Z [inf]  Get:44 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libsmartcols1 amd64 2.39.3-9ubuntu6.5 [65.8 kB]
+Get:45 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libelf1t64 amd64 0.190-1.1ubuntu0.1 [57.8 kB]
+
+2026-05-15T03:10:55.83678683Z [inf]  Get:46 http://archive.ubuntu.com/ubuntu noble/main amd64 libfribidi0 amd64 1.0.13-3build1 [26.1 kB]
+
+2026-05-15T03:10:55.837352631Z [inf]  Get:47 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libglib2.0-0t64 amd64 2.80.0-6ubuntu3.8 [1545 kB]
+
+2026-05-15T03:10:55.864041568Z [inf]  Get:48 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libicu74 amd64 74.2-1ubuntu3.1 [10.9 MB]
+
+2026-05-15T03:10:56.090328603Z [inf]  Get:49 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libsqlite3-0 amd64 3.45.1-1ubuntu2.5 [701 kB]
+
+2026-05-15T03:10:56.107692329Z [inf]  Get:50 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libxml2 amd64 2.9.14+dfsg-1.3ubuntu3.7 [764 kB]
+
+2026-05-15T03:10:56.116570185Z [inf]  Get:51 http://archive.ubuntu.com/ubuntu noble/main amd64 shared-mime-info amd64 2.4-4 [474 kB]
+
+2026-05-15T03:10:56.124668264Z [inf]  Get:52 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 xkb-data all 2.41-2ubuntu1.1 [397 kB]
+
+2026-05-15T03:10:56.136654449Z [inf]  Get:53 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libdrm-common all 2.4.125-1ubuntu0.1~24.04.1 [9174 B]
+Get:54 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libdrm2 amd64 2.4.125-1ubuntu0.1~24.04.1 [41.3 kB]
+
+2026-05-15T03:10:56.153392727Z [inf]  Get:55 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpng16-16t64 amd64 1.6.43-5ubuntu0.6 [189 kB]
+
+2026-05-15T03:10:56.153418209Z [inf]  Get:56 http://archive.ubuntu.com/ubuntu noble/main amd64 libsensors-config all 1:3.6.0-9build1 [5546 B]
+
+2026-05-15T03:10:56.161088926Z [inf]  Get:57 http://archive.ubuntu.com/ubuntu noble/main amd64 libsensors5 amd64 1:3.6.0-9build1 [26.6 kB]
+
+2026-05-15T03:10:56.182110038Z [inf]  Get:58 http://archive.ubuntu.com/ubuntu noble/main amd64 libxau6 amd64 1:1.0.9-1build6 [7160 B]
+Get:59 http://archive.ubuntu.com/ubuntu noble/main amd64 libxdmcp6 amd64 1:1.1.3-0ubuntu6 [10.3 kB]
+
+2026-05-15T03:10:56.184982953Z [inf]  Get:60 http://archive.ubuntu.com/ubuntu noble/main amd64 libxcb1 amd64 1.15-1ubuntu2 [47.7 kB]
+
+2026-05-15T03:10:56.208420134Z [inf]  Get:61 http://archive.ubuntu.com/ubuntu noble/main amd64 libx11-data all 2:1.8.7-1build1 [115 kB]
+
+2026-05-15T03:10:56.210586967Z [inf]  Get:62 http://archive.ubuntu.com/ubuntu noble/main amd64 libx11-6 amd64 2:1.8.7-1build1 [650 kB]
+
+2026-05-15T03:10:56.23696296Z [inf]  Get:63 http://archive.ubuntu.com/ubuntu noble/main amd64 libxext6 amd64 2:1.3.4-1build2 [30.4 kB]
+
+2026-05-15T03:10:56.237750664Z [inf]  Get:64 http://archive.ubuntu.com/ubuntu noble/main amd64 libxkbcommon0 amd64 1.6.0-1build1 [122 kB]
+
+2026-05-15T03:10:56.240511733Z [inf]  Get:65 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgdk-pixbuf2.0-common all 2.42.10+dfsg-3ubuntu3.3 [8302 B]
+Get:66 http://archive.ubuntu.com/ubuntu noble/main amd64 libjpeg-turbo8 amd64 2.1.5-2ubuntu2 [150 kB]
+
+2026-05-15T03:10:56.262422386Z [inf]  Get:67 http://archive.ubuntu.com/ubuntu noble/main amd64 libjpeg8 amd64 8c-2ubuntu11 [2148 B]
+
+2026-05-15T03:10:56.26270919Z [inf]  Get:68 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libdeflate0 amd64 1.19-1build1.1 [43.9 kB]
+
+2026-05-15T03:10:56.26502581Z [inf]  Get:69 http://archive.ubuntu.com/ubuntu noble/main amd64 libjbig0 amd64 2.1-6.1ubuntu2 [29.7 kB]
+
+2026-05-15T03:10:56.273429018Z [inf]  Get:70 http://archive.ubuntu.com/ubuntu noble/main amd64 liblerc4 amd64 4.0.0+ds-4ubuntu2 [179 kB]
+
+2026-05-15T03:10:56.288664727Z [inf]  Get:71 http://archive.ubuntu.com/ubuntu noble/main amd64 libsharpyuv0 amd64 1.3.2-0.4build3 [15.8 kB]
+
+2026-05-15T03:10:56.28888823Z [inf]  Get:72 http://archive.ubuntu.com/ubuntu noble/main amd64 libwebp7 amd64 1.3.2-0.4build3 [230 kB]
+
+2026-05-15T03:10:56.306679642Z [inf]  Get:73 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libtiff6 amd64 4.5.1+git230720-4ubuntu2.5 [200 kB]
+
+2026-05-15T03:10:56.312288793Z [inf]  Get:74 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgdk-pixbuf-2.0-0 amd64 2.42.10+dfsg-3ubuntu3.3 [147 kB]
+
+2026-05-15T03:10:56.314742948Z [inf]  Get:75 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gtk-update-icon-cache amd64 3.24.41-4ubuntu1.3 [51.9 kB]
+
+2026-05-15T03:10:56.331922258Z [inf]  Get:76 http://archive.ubuntu.com/ubuntu noble/main amd64 hicolor-icon-theme all 0.17-2 [9976 B]
+
+2026-05-15T03:10:56.334171304Z [inf]  Get:77 http://archive.ubuntu.com/ubuntu noble/main amd64 humanity-icon-theme all 0.6.16 [1282 kB]
+
+2026-05-15T03:10:56.38710574Z [inf]  Get:78 http://archive.ubuntu.com/ubuntu noble/main amd64 ubuntu-mono all 24.04-0ubuntu1 [151 kB]
+
+2026-05-15T03:10:56.38868773Z [inf]  Get:79 http://archive.ubuntu.com/ubuntu noble/main amd64 adwaita-icon-theme all 46.0-1 [723 kB]
+
+2026-05-15T03:10:56.410063656Z [inf]  Get:80 http://archive.ubuntu.com/ubuntu noble/main amd64 at-spi2-common all 2.52.0-1build1 [8674 B]
+
+2026-05-15T03:10:56.410525266Z [inf]  Get:81 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libdconf1 amd64 0.40.0-4ubuntu0.1 [39.6 kB]
+
+2026-05-15T03:10:56.415316157Z [inf]  Get:82 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 dconf-service amd64 0.40.0-4ubuntu0.1 [27.6 kB]
+
+2026-05-15T03:10:56.434640745Z [inf]  Get:83 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 dconf-gsettings-backend amd64 0.40.0-4ubuntu0.1 [22.1 kB]
+
+2026-05-15T03:10:56.437144364Z [inf]  Get:84 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libfreetype6 amd64 2.13.2+dfsg-1ubuntu0.1 [402 kB]
+
+2026-05-15T03:10:56.450283202Z [inf]  Get:85 http://archive.ubuntu.com/ubuntu noble/main amd64 fonts-dejavu-mono all 2.37-8 [502 kB]
+
+2026-05-15T03:10:56.459166437Z [inf]  Get:86 http://archive.ubuntu.com/ubuntu noble/main amd64 fonts-dejavu-core all 2.37-8 [835 kB]
+
+2026-05-15T03:10:56.480331763Z [inf]  Get:87 http://archive.ubuntu.com/ubuntu noble/main amd64 fontconfig-config amd64 2.15.0-1.1ubuntu2 [37.3 kB]
+
+2026-05-15T03:10:56.482636563Z [inf]  Get:88 http://archive.ubuntu.com/ubuntu noble/main amd64 libfontconfig1 amd64 2.15.0-1.1ubuntu2 [139 kB]
+
+2026-05-15T03:10:56.490922197Z [inf]  Get:89 http://archive.ubuntu.com/ubuntu noble/main amd64 fontconfig amd64 2.15.0-1.1ubuntu2 [180 kB]
+
+2026-05-15T03:10:56.508422372Z [inf]  Get:90 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libasound2-data all 1.2.11-1ubuntu0.2 [21.3 kB]
+
+2026-05-15T03:10:56.508945815Z [inf]  Get:91 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libasound2t64 amd64 1.2.11-1ubuntu0.2 [398 kB]
+
+2026-05-15T03:10:56.535382012Z [inf]  Get:92 http://archive.ubuntu.com/ubuntu noble/main amd64 libatk1.0-0t64 amd64 2.52.0-1build1 [55.3 kB]
+
+2026-05-15T03:10:56.537359781Z [inf]  Get:93 http://archive.ubuntu.com/ubuntu noble/main amd64 libxi6 amd64 2:1.8.1-1build1 [32.4 kB]
+Get:94 http://archive.ubuntu.com/ubuntu noble/main amd64 libatspi2.0-0t64 amd64 2.52.0-1build1 [80.5 kB]
+
+2026-05-15T03:10:56.544491961Z [inf]  Get:95 http://archive.ubuntu.com/ubuntu noble/main amd64 libatk-bridge2.0-0t64 amd64 2.52.0-1build1 [66.0 kB]
+
+2026-05-15T03:10:56.562116034Z [inf]  Get:96 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libavahi-common-data amd64 0.8-13ubuntu6.2 [30.1 kB]
+
+2026-05-15T03:10:56.562311096Z [inf]  Get:97 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libavahi-common3 amd64 0.8-13ubuntu6.2 [23.4 kB]
+
+2026-05-15T03:10:56.570238172Z [inf]  Get:98 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libavahi-client3 amd64 0.8-13ubuntu6.2 [26.8 kB]
+
+2026-05-15T03:10:56.585869669Z [inf]  Get:99 http://archive.ubuntu.com/ubuntu noble/main amd64 libpixman-1-0 amd64 0.42.2-1build1 [279 kB]
+
+2026-05-15T03:10:56.588236351Z [inf]  Get:100 http://archive.ubuntu.com/ubuntu noble/main amd64 libxcb-render0 amd64 1.15-1ubuntu2 [16.2 kB]
+
+2026-05-15T03:10:56.599604429Z [inf]  Get:101 http://archive.ubuntu.com/ubuntu noble/main amd64 libxcb-shm0 amd64 1.15-1ubuntu2 [5756 B]
+
+2026-05-15T03:10:56.606394211Z [inf]  Get:102 http://archive.ubuntu.com/ubuntu noble/main amd64 libxrender1 amd64 1:0.9.10-1.1build1 [19.0 kB]
+
+2026-05-15T03:10:56.61447357Z [inf]  Get:103 http://archive.ubuntu.com/ubuntu noble/main amd64 libcairo2 amd64 1.18.0-3build1 [566 kB]
+
+2026-05-15T03:10:56.634761863Z [inf]  Get:104 http://archive.ubuntu.com/ubuntu noble/main amd64 libcairo-gobject2 amd64 1.18.0-3build1 [127 kB]
+
+2026-05-15T03:10:56.63925058Z [inf]  Get:105 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 liblcms2-2 amd64 2.14-2ubuntu0.1 [161 kB]
+
+2026-05-15T03:10:56.658733493Z [inf]  Get:106 http://archive.ubuntu.com/ubuntu noble/main amd64 libcolord2 amd64 1.4.7-1build2 [149 kB]
+
+2026-05-15T03:10:56.659807107Z [inf]  Get:107 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcups2t64 amd64 2.4.7-1.2ubuntu7.9 [273 kB]
+
+2026-05-15T03:10:56.665316324Z [inf]  Get:108 http://archive.ubuntu.com/ubuntu noble/main amd64 libdatrie1 amd64 0.2.13-3build1 [19.0 kB]
+
+2026-05-15T03:10:56.686232819Z [inf]  Get:109 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libdrm-amdgpu1 amd64 2.4.125-1ubuntu0.1~24.04.1 [21.4 kB]
+
+2026-05-15T03:10:56.687001974Z [inf]  Get:110 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpciaccess0 amd64 0.17-3ubuntu0.24.04.2 [18.9 kB]
+
+2026-05-15T03:10:56.693950642Z [inf]  Get:111 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libdrm-intel1 amd64 2.4.125-1ubuntu0.1~24.04.1 [63.8 kB]
+
+2026-05-15T03:10:56.711116268Z [inf]  Get:112 http://archive.ubuntu.com/ubuntu noble/main amd64 libepoxy0 amd64 1.5.10-1build1 [220 kB]
+
+2026-05-15T03:10:56.712604463Z [inf]  Get:113 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libllvm20 amd64 1:20.1.2-0ubuntu1~24.04.2 [30.6 MB]
+
+2026-05-15T03:10:57.381507891Z [inf]  Get:114 http://archive.ubuntu.com/ubuntu noble/main amd64 libx11-xcb1 amd64 2:1.8.7-1build1 [7800 B]
+Get:115 http://archive.ubuntu.com/ubuntu noble/main amd64 libxcb-dri3-0 amd64 1.15-1ubuntu2 [7142 B]
+Get:116 http://archive.ubuntu.com/ubuntu noble/main amd64 libxcb-present0 amd64 1.15-1ubuntu2 [5676 B]
+Get:117 http://archive.ubuntu.com/ubuntu noble/main amd64 libxcb-randr0 amd64 1.15-1ubuntu2 [17.9 kB]
+
+2026-05-15T03:10:57.3819821Z [inf]  Get:118 http://archive.ubuntu.com/ubuntu noble/main amd64 libxcb-sync1 amd64 1.15-1ubuntu2 [9312 B]
+
+2026-05-15T03:10:57.382225416Z [inf]  Get:119 http://archive.ubuntu.com/ubuntu noble/main amd64 libxcb-xfixes0 amd64 1.15-1ubuntu2 [10.2 kB]
+
+2026-05-15T03:10:57.382987276Z [inf]  Get:120 http://archive.ubuntu.com/ubuntu noble/main amd64 libxshmfence1 amd64 1.3-1build5 [4764 B]
+Get:121 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 mesa-libgallium amd64 25.2.8-0ubuntu0.24.04.1 [10.8 MB]
+
+2026-05-15T03:10:57.634227707Z [inf]  Get:122 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgbm1 amd64 25.2.8-0ubuntu0.24.04.1 [34.2 kB]
+
+2026-05-15T03:10:57.636809102Z [inf]  Get:123 http://archive.ubuntu.com/ubuntu noble/main amd64 libgraphite2-3 amd64 1.3.14-2build1 [73.0 kB]
+
+2026-05-15T03:10:57.63732371Z [inf]  Get:124 http://archive.ubuntu.com/ubuntu noble/main amd64 libharfbuzz0b amd64 8.3.0-2build2 [469 kB]
+
+2026-05-15T03:10:57.650573836Z [inf]  Get:125 http://archive.ubuntu.com/ubuntu noble/main amd64 libthai-data all 0.1.29-2build1 [158 kB]
+
+2026-05-15T03:10:57.663533941Z [inf]  Get:126 http://archive.ubuntu.com/ubuntu noble/main amd64 libthai0 amd64 0.1.29-2build1 [18.9 kB]
+
+2026-05-15T03:10:57.6646253Z [inf]  Get:127 http://archive.ubuntu.com/ubuntu noble/main amd64 libpango-1.0-0 amd64 1.52.1+ds-1build1 [231 kB]
+
+2026-05-15T03:10:57.682083581Z [inf]  Get:128 http://archive.ubuntu.com/ubuntu noble/main amd64 libpangoft2-1.0-0 amd64 1.52.1+ds-1build1 [42.5 kB]
+Get:129 http://archive.ubuntu.com/ubuntu noble/main amd64 libpangocairo-1.0-0 amd64 1.52.1+ds-1build1 [28.8 kB]
+Get:130 http://archive.ubuntu.com/ubuntu noble/main amd64 libwayland-client0 amd64 1.22.0-2.1build1 [26.4 kB]
+Get:131 http://archive.ubuntu.com/ubuntu noble/main amd64 libwayland-cursor0 amd64 1.22.0-2.1build1 [10.4 kB]
+Get:132 http://archive.ubuntu.com/ubuntu noble/main amd64 libwayland-egl1 amd64 1.22.0-2.1build1 [5628 B]
+
+2026-05-15T03:10:57.683144863Z [inf]  Get:133 http://archive.ubuntu.com/ubuntu noble/main amd64 libxcomposite1 amd64 1:0.4.5-1build3 [6320 B]
+
+2026-05-15T03:10:57.68629532Z [inf]  Get:134 http://archive.ubuntu.com/ubuntu noble/main amd64 libxfixes3 amd64 1:6.0.0-2build1 [10.8 kB]
+
+2026-05-15T03:10:57.708050356Z [inf]  Get:135 http://archive.ubuntu.com/ubuntu noble/main amd64 libxcursor1 amd64 1:1.2.1-1build1 [20.7 kB]
+
+2026-05-15T03:10:57.709615582Z [inf]  Get:136 http://archive.ubuntu.com/ubuntu noble/main amd64 libxdamage1 amd64 1:1.1.6-1build1 [6150 B]
+
+2026-05-15T03:10:57.713348286Z [inf]  Get:137 http://archive.ubuntu.com/ubuntu noble/main amd64 libxinerama1 amd64 2:1.1.4-3build1 [6396 B]
+
+2026-05-15T03:10:57.737452062Z [inf]  Get:138 http://archive.ubuntu.com/ubuntu noble/main amd64 libxrandr2 amd64 2:1.5.2-2build1 [19.7 kB]
+
+2026-05-15T03:10:57.737973718Z [inf]  Get:139 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgtk-3-common all 3.24.41-4ubuntu1.3 [1426 kB]
+
+2026-05-15T03:10:57.765512198Z [inf]  Get:140 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgtk-3-0t64 amd64 3.24.41-4ubuntu1.3 [2913 kB]
+
+2026-05-15T03:10:57.834761262Z [inf]  Get:141 http://archive.ubuntu.com/ubuntu noble/main amd64 libnspr4 amd64 2:4.35-1.1build1 [117 kB]
+
+2026-05-15T03:10:57.835821598Z [inf]  Get:142 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libnss3 amd64 2:3.98-1ubuntu0.1 [1445 kB]
+
+2026-05-15T03:10:57.865571608Z [inf]  Get:143 http://archive.ubuntu.com/ubuntu noble/main amd64 x11-common all 1:7.7+23ubuntu3 [21.7 kB]
+
+2026-05-15T03:10:57.881951391Z [inf]  Get:144 http://archive.ubuntu.com/ubuntu noble/main amd64 libxss1 amd64 1:1.2.3-1build3 [7204 B]
+
+2026-05-15T03:10:57.883020588Z [inf]  Get:145 http://archive.ubuntu.com/ubuntu noble/main amd64 libglvnd0 amd64 1.7.0-1build1 [69.6 kB]
+
+2026-05-15T03:10:57.888114522Z [inf]  Get:146 http://archive.ubuntu.com/ubuntu noble/main amd64 libopengl0 amd64 1.7.0-1build1 [32.8 kB]
+
+2026-05-15T03:10:57.888747318Z [inf]  Get:147 http://archive.ubuntu.com/ubuntu noble/main amd64 libglu1-mesa amd64 9.0.2-1.1build1 [152 kB]
+
+2026-05-15T03:10:58.866091671Z [inf]  debconf: delaying package configuration, since apt-utils is not installed
+
+2026-05-15T03:10:59.089560031Z [inf]  Fetched 122 MB in 3s (37.2 MB/s)
+
+2026-05-15T03:10:59.27087699Z [inf]  (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-05-15T03:10:59.304945376Z [inf]  (Reading database ... 75%
+2026-05-15T03:10:59.335655341Z [inf]  (Reading database ... 80%
+2026-05-15T03:10:59.363074218Z [inf]  (Reading database ... 85%
+2026-05-15T03:10:59.39580565Z [inf]  (Reading database ... 90%
+2026-05-15T03:10:59.426101237Z [inf]  (Reading database ... 95%
+2026-05-15T03:10:59.458522379Z [inf]  (Reading database ... 100%(Reading database ... 9511 files and directories currently installed.)
+
+2026-05-15T03:10:59.459486608Z [inf]  Preparing to unpack .../bsdutils_1%3a2.39.3-9ubuntu6.5_amd64.deb ...
+
+2026-05-15T03:10:59.489206089Z [inf]  Unpacking bsdutils (1:2.39.3-9ubuntu6.5) over (1:2.39.3-9ubuntu6.2) ...
+
+2026-05-15T03:10:59.844368563Z [inf]  Setting up bsdutils (1:2.39.3-9ubuntu6.5) ...
+
+2026-05-15T03:10:59.988149564Z [inf]  (Reading database ... 
+2026-05-15T03:10:59.989002354Z [inf]  (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-05-15T03:10:59.991595126Z [inf]  (Reading database ... 75%
+2026-05-15T03:10:59.992037156Z [inf]  (Reading database ... 80%
+2026-05-15T03:10:59.992527095Z [inf]  (Reading database ... 85%
+2026-05-15T03:10:59.992790031Z [inf]  (Reading database ... 90%
+2026-05-15T03:10:59.994523569Z [inf]  (Reading database ... 95%
+2026-05-15T03:10:59.996587453Z [inf]  (Reading database ... 100%(Reading database ... 9511 files and directories currently installed.)
+
+2026-05-15T03:11:00.011175154Z [inf]  Preparing to unpack .../util-linux_2.39.3-9ubuntu6.5_amd64.deb ...
+
+2026-05-15T03:11:00.050152674Z [inf]  Unpacking util-linux (2.39.3-9ubuntu6.5) over (2.39.3-9ubuntu6.2) ...
+
+2026-05-15T03:11:01.522405692Z [inf]  Setting up util-linux (2.39.3-9ubuntu6.5) ...
+
+2026-05-15T03:11:02.126420898Z [inf]  (Reading database ... 
+2026-05-15T03:11:02.136351679Z [inf]  (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-05-15T03:11:02.138215938Z [inf]  (Reading database ... 75%
+2026-05-15T03:11:02.138509797Z [inf]  (Reading database ... 80%
+2026-05-15T03:11:02.138755185Z [inf]  (Reading database ... 85%
+2026-05-15T03:11:02.139188191Z [inf]  (Reading database ... 90%
+2026-05-15T03:11:02.139864428Z [inf]  (Reading database ... 95%
+2026-05-15T03:11:02.141352298Z [inf]  (Reading database ... 100%(Reading database ... 9511 files and directories currently installed.)
+
+2026-05-15T03:11:02.152676702Z [inf]  Preparing to unpack .../mount_2.39.3-9ubuntu6.5_amd64.deb ...
+
+2026-05-15T03:11:02.181904459Z [inf]  Unpacking mount (2.39.3-9ubuntu6.5) over (2.39.3-9ubuntu6.2) ...
+
+2026-05-15T03:11:02.395691477Z [inf]  Preparing to unpack .../libapparmor1_4.0.1really4.0.1-0ubuntu0.24.04.6_amd64.deb ...
+
+2026-05-15T03:11:02.425856106Z [inf]  Unpacking libapparmor1:amd64 (4.0.1really4.0.1-0ubuntu0.24.04.6) over (4.0.1really4.0.1-0ubuntu0.24.04.3) ...
+
+2026-05-15T03:11:02.515119307Z [inf]  Selecting previously unselected package libargon2-1:amd64.
+
+2026-05-15T03:11:02.533772013Z [inf]  Preparing to unpack .../libargon2-1_0~20190702+dfsg-4build1_amd64.deb ...
+2026-05-15T03:11:02.53705255Z [inf]  
+2026-05-15T03:11:02.54118032Z [inf]  Unpacking libargon2-1:amd64 (0~20190702+dfsg-4build1) ...
+
+2026-05-15T03:11:02.628073846Z [inf]  Preparing to unpack .../libblkid1_2.39.3-9ubuntu6.5_amd64.deb ...
+
+2026-05-15T03:11:02.657382734Z [inf]  Unpacking libblkid1:amd64 (2.39.3-9ubuntu6.5) over (2.39.3-9ubuntu6.2) ...
+
+2026-05-15T03:11:02.763271775Z [inf]  Setting up libblkid1:amd64 (2.39.3-9ubuntu6.5) ...
+
+2026-05-15T03:11:02.886387311Z [inf]  (Reading database ... 
+2026-05-15T03:11:02.887149888Z [inf]  (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-05-15T03:11:02.889019707Z [inf]  (Reading database ... 75%
+2026-05-15T03:11:02.889341691Z [inf]  (Reading database ... 80%
+2026-05-15T03:11:02.889668088Z [inf]  (Reading database ... 85%
+2026-05-15T03:11:02.89017337Z [inf]  (Reading database ... 90%
+2026-05-15T03:11:02.890910647Z [inf]  (Reading database ... 95%
+2026-05-15T03:11:02.899878937Z [inf]  (Reading database ... 100%(Reading database ... 9515 files and directories currently installed.)
+
+2026-05-15T03:11:02.902605018Z [inf]  Preparing to unpack .../libcap2_1%3a2.66-5ubuntu2.4_amd64.deb ...
+
+2026-05-15T03:11:02.93358856Z [inf]  Unpacking libcap2:amd64 (1:2.66-5ubuntu2.4) over (1:2.66-5ubuntu2.2) ...
+
+2026-05-15T03:11:03.038296253Z [inf]  Setting up libcap2:amd64 (1:2.66-5ubuntu2.4) ...
+
+2026-05-15T03:11:03.145299278Z [inf]  (Reading database ... 
+2026-05-15T03:11:03.146016422Z [inf]  (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-05-15T03:11:03.16158884Z [inf]  (Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%
+2026-05-15T03:11:03.162543392Z [inf]  (Reading database ... 95%
+2026-05-15T03:11:03.164257091Z [inf]  (Reading database ... 100%(Reading database ... 9515 files and directories currently installed.)
+
+2026-05-15T03:11:03.16530024Z [inf]  Preparing to unpack .../libudev1_255.4-1ubuntu8.15_amd64.deb ...
+
+2026-05-15T03:11:03.190331771Z [inf]  Unpacking libudev1:amd64 (255.4-1ubuntu8.15) over (255.4-1ubuntu8.6) ...
+
+2026-05-15T03:11:03.31189151Z [inf]  Setting up libudev1:amd64 (255.4-1ubuntu8.15) ...
+
+2026-05-15T03:11:03.462560527Z [inf]  Selecting previously unselected package libdevmapper1.02.1:amd64.
+(Reading database ... 
+2026-05-15T03:11:03.463257323Z [inf]  (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-05-15T03:11:03.464984547Z [inf]  (Reading database ... 75%
+2026-05-15T03:11:03.465451202Z [inf]  (Reading database ... 80%
+2026-05-15T03:11:03.465788354Z [inf]  (Reading database ... 85%
+2026-05-15T03:11:03.466146458Z [inf]  (Reading database ... 90%
+2026-05-15T03:11:03.469090043Z [inf]  (Reading database ... 95%
+2026-05-15T03:11:03.470210021Z [inf]  (Reading database ... 100%(Reading database ... 9515 files and directories currently installed.)
+
+2026-05-15T03:11:03.471164567Z [inf]  Preparing to unpack .../libdevmapper1.02.1_2%3a1.02.185-3ubuntu3.2_amd64.deb ...
+
+2026-05-15T03:11:03.487384462Z [inf]  Unpacking libdevmapper1.02.1:amd64 (2:1.02.185-3ubuntu3.2) ...
+
+2026-05-15T03:11:03.592091457Z [inf]  Selecting previously unselected package libjson-c5:amd64.
+
+2026-05-15T03:11:03.59518309Z [inf]  Preparing to unpack .../libjson-c5_0.17-1build1_amd64.deb ...
+
+2026-05-15T03:11:03.614692488Z [inf]  Unpacking libjson-c5:amd64 (0.17-1build1) ...
+
+2026-05-15T03:11:03.70804696Z [inf]  Preparing to unpack .../libuuid1_2.39.3-9ubuntu6.5_amd64.deb ...
+
+2026-05-15T03:11:03.738322811Z [inf]  Unpacking libuuid1:amd64 (2.39.3-9ubuntu6.5) over (2.39.3-9ubuntu6.2) ...
+
+2026-05-15T03:11:03.834931834Z [inf]  Setting up libuuid1:amd64 (2.39.3-9ubuntu6.5) ...
+
+2026-05-15T03:11:03.950509913Z [inf]  Selecting previously unselected package libcryptsetup12:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-05-15T03:11:03.953035882Z [inf]  (Reading database ... 75%(Reading database ... 80%(Reading database ... 85%
+2026-05-15T03:11:03.953303514Z [inf]  (Reading database ... 90%(Reading database ... 95%
+2026-05-15T03:11:03.953955452Z [inf]  (Reading database ... 100%(Reading database ... 9526 files and directories currently installed.)
+
+2026-05-15T03:11:03.956014827Z [inf]  Preparing to unpack .../libcryptsetup12_2%3a2.7.0-1ubuntu4.2_amd64.deb ...
+
+2026-05-15T03:11:03.96407185Z [inf]  Unpacking libcryptsetup12:amd64 (2:2.7.0-1ubuntu4.2) ...
+
+2026-05-15T03:11:04.074395102Z [inf]  Selecting previously unselected package libfdisk1:amd64.
+
+2026-05-15T03:11:04.076216558Z [inf]  Preparing to unpack .../libfdisk1_2.39.3-9ubuntu6.5_amd64.deb ...
+
+2026-05-15T03:11:04.087956736Z [inf]  Unpacking libfdisk1:amd64 (2.39.3-9ubuntu6.5) ...
+
+2026-05-15T03:11:04.208014849Z [inf]  Selecting previously unselected package libkmod2:amd64.
+
+2026-05-15T03:11:04.21065727Z [inf]  Preparing to unpack .../libkmod2_31+20240202-2ubuntu7.2_amd64.deb ...
+
+2026-05-15T03:11:04.215105867Z [inf]  Unpacking libkmod2:amd64 (31+20240202-2ubuntu7.2) ...
+
+2026-05-15T03:11:04.283809191Z [inf]  Preparing to unpack .../libmount1_2.39.3-9ubuntu6.5_amd64.deb ...
+
+2026-05-15T03:11:04.310261525Z [inf]  Unpacking libmount1:amd64 (2.39.3-9ubuntu6.5) over (2.39.3-9ubuntu6.2) ...
+
+2026-05-15T03:11:04.432157888Z [inf]  Setting up libmount1:amd64 (2.39.3-9ubuntu6.5) ...
+
+2026-05-15T03:11:04.521549043Z [inf]  Selecting previously unselected package libsystemd-shared:amd64.
+(Reading database ... 
+2026-05-15T03:11:04.522070039Z [inf]  (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-05-15T03:11:04.523925929Z [inf]  (Reading database ... 75%
+2026-05-15T03:11:04.524211585Z [inf]  (Reading database ... 80%
+2026-05-15T03:11:04.524572924Z [inf]  (Reading database ... 85%
+2026-05-15T03:11:04.525248433Z [inf]  (Reading database ... 90%
+2026-05-15T03:11:04.526382063Z [inf]  (Reading database ... 95%
+2026-05-15T03:11:04.534077159Z [inf]  (Reading database ... 100%(Reading database ... 9546 files and directories currently installed.)
+
+2026-05-15T03:11:04.535718392Z [inf]  Preparing to unpack .../libsystemd-shared_255.4-1ubuntu8.15_amd64.deb ...
+
+2026-05-15T03:11:04.539990543Z [inf]  Unpacking libsystemd-shared:amd64 (255.4-1ubuntu8.15) ...
+
+2026-05-15T03:11:04.731590116Z [inf]  Preparing to unpack .../libsystemd0_255.4-1ubuntu8.15_amd64.deb ...
+
+2026-05-15T03:11:04.760253771Z [inf]  Unpacking libsystemd0:amd64 (255.4-1ubuntu8.15) over (255.4-1ubuntu8.6) ...
+
+2026-05-15T03:11:04.911676253Z [inf]  Setting up libsystemd0:amd64 (255.4-1ubuntu8.15) ...
+
+2026-05-15T03:11:05.062761263Z [inf]  Selecting previously unselected package systemd-dev.
+(Reading database ... 
+2026-05-15T03:11:05.063750035Z [inf]  (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-05-15T03:11:05.065773804Z [inf]  (Reading database ... 75%
+2026-05-15T03:11:05.066074817Z [inf]  (Reading database ... 80%
+2026-05-15T03:11:05.066330214Z [inf]  (Reading database ... 85%
+2026-05-15T03:11:05.085600906Z [inf]  (Reading database ... 90%
+2026-05-15T03:11:05.087148549Z [inf]  (Reading database ... 95%
+2026-05-15T03:11:05.087783536Z [inf]  (Reading database ... 100%(Reading database ... 9554 files and directories currently installed.)
+
+2026-05-15T03:11:05.088728582Z [inf]  Preparing to unpack .../systemd-dev_255.4-1ubuntu8.15_all.deb ...
+
+2026-05-15T03:11:05.093378543Z [inf]  Unpacking systemd-dev (255.4-1ubuntu8.15) ...
+
+2026-05-15T03:11:05.237380704Z [inf]  Selecting previously unselected package systemd.
+
+2026-05-15T03:11:05.238970413Z [inf]  Preparing to unpack .../systemd_255.4-1ubuntu8.15_amd64.deb ...
+
+2026-05-15T03:11:05.276260826Z [inf]  Unpacking systemd (255.4-1ubuntu8.15) ...
+
+2026-05-15T03:11:05.904173078Z [inf]  Setting up libapparmor1:amd64 (4.0.1really4.0.1-0ubuntu0.24.04.6) ...
+
+2026-05-15T03:11:05.933130823Z [inf]  Setting up libargon2-1:amd64 (0~20190702+dfsg-4build1) ...
+
+2026-05-15T03:11:05.962139721Z [inf]  Setting up libdevmapper1.02.1:amd64 (2:1.02.185-3ubuntu3.2) ...
+
+2026-05-15T03:11:05.994274254Z [inf]  Setting up libjson-c5:amd64 (0.17-1build1) ...
+
+2026-05-15T03:11:06.020695625Z [inf]  Setting up libcryptsetup12:amd64 (2:2.7.0-1ubuntu4.2) ...
+
+2026-05-15T03:11:06.063466471Z [inf]  Setting up libfdisk1:amd64 (2.39.3-9ubuntu6.5) ...
+
+2026-05-15T03:11:06.162515247Z [inf]  Setting up libkmod2:amd64 (31+20240202-2ubuntu7.2) ...
+
+2026-05-15T03:11:06.23885663Z [inf]  Setting up libsystemd-shared:amd64 (255.4-1ubuntu8.15) ...
+
+2026-05-15T03:11:06.265641908Z [inf]  Setting up systemd-dev (255.4-1ubuntu8.15) ...
+
+2026-05-15T03:11:06.309290765Z [inf]  Setting up mount (2.39.3-9ubuntu6.5) ...
+
+2026-05-15T03:11:06.32559998Z [inf]  Setting up systemd (255.4-1ubuntu8.15) ...
+
+2026-05-15T03:11:06.463625911Z [inf]  Created symlink /etc/systemd/system/getty.target.wants/getty@tty1.service → /usr/lib/systemd/system/getty@.service.
+
+2026-05-15T03:11:06.475018238Z [inf]  Created symlink /etc/systemd/system/multi-user.target.wants/remote-fs.target → /usr/lib/systemd/system/remote-fs.target.
+
+2026-05-15T03:11:06.484492487Z [inf]  Created symlink /etc/systemd/system/sysinit.target.wants/systemd-pstore.service → /usr/lib/systemd/system/systemd-pstore.service.
+
+2026-05-15T03:11:06.50308399Z [inf]  Initializing machine ID from random generator.
+
+2026-05-15T03:11:06.562075019Z [inf]  [0;1;31m/usr/lib/tmpfiles.d/systemd-network.conf:10: Failed to resolve user 'systemd-network': No such process[0m
+[0;1;31m/usr/lib/tmpfiles.d/systemd-network.conf:11: Failed to resolve user 'systemd-network': No such process[0m
+[0;1;31m/usr/lib/tmpfiles.d/systemd-network.conf:12: Failed to resolve user 'systemd-network': No such process[0m
+[0;1;31m/usr/lib/tmpfiles.d/systemd-network.conf:13: Failed to resolve user 'systemd-network': No such process[0m
+
+2026-05-15T03:11:06.56218537Z [inf]  [0;1;31m/usr/lib/tmpfiles.d/systemd.conf:22: Failed to resolve group 'systemd-journal': No such process[0m
+[0;1;31m/usr/lib/tmpfiles.d/systemd.conf:23: Failed to resolve group 'systemd-journal': No such process[0m
+
+2026-05-15T03:11:06.562409967Z [inf]  [0;1;31m/usr/lib/tmpfiles.d/systemd.conf:28: Failed to resolve group 'systemd-journal': No such process[0m
+[0;1;31m/usr/lib/tmpfiles.d/systemd.conf:29: Failed to resolve group 'systemd-journal': No such process[0m
+[0;1;31m/usr/lib/tmpfiles.d/systemd.conf:30: Failed to resolve group 'systemd-journal': No such process[0m
+
+2026-05-15T03:11:06.617417091Z [inf]  Creating group 'systemd-journal' with GID 999.
+Creating group 'systemd-network' with GID 998.
+Creating user 'systemd-network' (systemd Network Management) with UID 998 and GID 998.
+
+2026-05-15T03:11:06.859110326Z [inf]  Selecting previously unselected package systemd-sysv.
+(Reading database ... 
+2026-05-15T03:11:06.859869672Z [inf]  (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-05-15T03:11:06.861887335Z [inf]  (Reading database ... 75%
+2026-05-15T03:11:06.862099683Z [inf]  (Reading database ... 80%
+2026-05-15T03:11:06.862326465Z [inf]  (Reading database ... 85%
+2026-05-15T03:11:06.863324842Z [inf]  (Reading database ... 90%
+2026-05-15T03:11:06.864504529Z [inf]  (Reading database ... 95%
+2026-05-15T03:11:06.865247883Z [inf]  (Reading database ... 100%(Reading database ... 10533 files and directories currently installed.)
+
+2026-05-15T03:11:06.865969215Z [inf]  Preparing to unpack .../systemd-sysv_255.4-1ubuntu8.15_amd64.deb ...
+
+2026-05-15T03:11:06.888694989Z [inf]  Unpacking systemd-sysv (255.4-1ubuntu8.15) ...
+
+2026-05-15T03:11:06.956405544Z [inf]  Selecting previously unselected package adduser.
+
+2026-05-15T03:11:06.957332623Z [inf]  Preparing to unpack .../adduser_3.137ubuntu1_all.deb ...
+
+2026-05-15T03:11:06.964116672Z [inf]  Unpacking adduser (3.137ubuntu1) ...
+
+2026-05-15T03:11:07.073873419Z [inf]  Setting up adduser (3.137ubuntu1) ...
+
+2026-05-15T03:11:07.194639342Z [inf]  Selecting previously unselected package apparmor.
+(Reading database ... 
+2026-05-15T03:11:07.195677955Z [inf]  (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-05-15T03:11:07.211074955Z [inf]  (Reading database ... 75%(Reading database ... 80%
+2026-05-15T03:11:07.212162931Z [inf]  (Reading database ... 85%
+2026-05-15T03:11:07.212197676Z [inf]  (Reading database ... 90%
+2026-05-15T03:11:07.21381906Z [inf]  (Reading database ... 95%
+2026-05-15T03:11:07.214868921Z [inf]  (Reading database ... 100%(Reading database ... 10599 files and directories currently installed.)
+
+2026-05-15T03:11:07.215764776Z [inf]  Preparing to unpack .../00-apparmor_4.0.1really4.0.1-0ubuntu0.24.04.6_amd64.deb ...
+
+2026-05-15T03:11:07.912180946Z [inf]  Unpacking apparmor (4.0.1really4.0.1-0ubuntu0.24.04.6) ...
+
+2026-05-15T03:11:08.115818658Z [inf]  Selecting previously unselected package libfuse3-3:amd64.
+
+2026-05-15T03:11:08.119582872Z [inf]  Preparing to unpack .../01-libfuse3-3_3.14.0-5build1_amd64.deb ...
+
+2026-05-15T03:11:08.125377154Z [inf]  Unpacking libfuse3-3:amd64 (3.14.0-5build1) ...
+
+2026-05-15T03:11:08.210820265Z [inf]  Selecting previously unselected package fuse3.
+
+2026-05-15T03:11:08.212393169Z [inf]  Preparing to unpack .../02-fuse3_3.14.0-5build1_amd64.deb ...
+
+2026-05-15T03:11:08.237595104Z [inf]  Unpacking fuse3 (3.14.0-5build1) ...
+
+2026-05-15T03:11:08.304505968Z [inf]  Selecting previously unselected package libcap2-bin.
+
+2026-05-15T03:11:08.306044268Z [inf]  Preparing to unpack .../03-libcap2-bin_1%3a2.66-5ubuntu2.4_amd64.deb ...
+
+2026-05-15T03:11:08.309820786Z [inf]  Unpacking libcap2-bin (1:2.66-5ubuntu2.4) ...
+
+2026-05-15T03:11:08.414190556Z [inf]  Selecting previously unselected package libbsd0:amd64.
+
+2026-05-15T03:11:08.416076663Z [inf]  Preparing to unpack .../04-libbsd0_0.12.1-1build1.1_amd64.deb ...
+
+2026-05-15T03:11:08.421258298Z [inf]  Unpacking libbsd0:amd64 (0.12.1-1build1.1) ...
+
+2026-05-15T03:11:08.51345113Z [inf]  Selecting previously unselected package libedit2:amd64.
+
+2026-05-15T03:11:08.514899002Z [inf]  Preparing to unpack .../05-libedit2_3.1-20230828-1build1_amd64.deb ...
+
+2026-05-15T03:11:08.537863876Z [inf]  Unpacking libedit2:amd64 (3.1-20230828-1build1) ...
+
+2026-05-15T03:11:08.609635687Z [inf]  Selecting previously unselected package libcbor0.10:amd64.
+Preparing to unpack .../06-libcbor0.10_0.10.2-1.2ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:08.61341056Z [inf]  Unpacking libcbor0.10:amd64 (0.10.2-1.2ubuntu2) ...
+
+2026-05-15T03:11:08.712540145Z [inf]  Selecting previously unselected package libfido2-1:amd64.
+
+2026-05-15T03:11:08.713922096Z [inf]  Preparing to unpack .../07-libfido2-1_1.14.0-1build3_amd64.deb ...
+
+2026-05-15T03:11:08.721690296Z [inf]  Unpacking libfido2-1:amd64 (1.14.0-1build3) ...
+
+2026-05-15T03:11:08.809445211Z [inf]  Selecting previously unselected package openssh-client.
+
+2026-05-15T03:11:08.812058154Z [inf]  Preparing to unpack .../08-openssh-client_1%3a9.6p1-3ubuntu13.16_amd64.deb ...
+
+2026-05-15T03:11:08.844560015Z [inf]  Unpacking openssh-client (1:9.6p1-3ubuntu13.16) ...
+
+2026-05-15T03:11:09.015196435Z [inf]  Selecting previously unselected package liblzo2-2:amd64.
+
+2026-05-15T03:11:09.016598758Z [inf]  Preparing to unpack .../09-liblzo2-2_2.10-2build4_amd64.deb ...
+
+2026-05-15T03:11:09.026256634Z [inf]  Unpacking liblzo2-2:amd64 (2.10-2build4) ...
+
+2026-05-15T03:11:09.113414299Z [inf]  Selecting previously unselected package squashfs-tools.
+
+2026-05-15T03:11:09.115159995Z [inf]  Preparing to unpack .../10-squashfs-tools_1%3a4.6.1-1build1_amd64.deb ...
+
+2026-05-15T03:11:09.137336894Z [inf]  Unpacking squashfs-tools (1:4.6.1-1build1) ...
+
+2026-05-15T03:11:09.21545845Z [inf]  Selecting previously unselected package udev.
+
+2026-05-15T03:11:09.218481854Z [inf]  Preparing to unpack .../11-udev_255.4-1ubuntu8.15_amd64.deb ...
+
+2026-05-15T03:11:09.25925762Z [inf]  Unpacking udev (255.4-1ubuntu8.15) ...
+
+2026-05-15T03:11:09.532902963Z [inf]  Selecting previously unselected package libdbus-1-3:amd64.
+
+2026-05-15T03:11:09.534872988Z [inf]  Preparing to unpack .../12-libdbus-1-3_1.14.10-4ubuntu4.1_amd64.deb ...
+
+2026-05-15T03:11:09.538533217Z [inf]  Unpacking libdbus-1-3:amd64 (1.14.10-4ubuntu4.1) ...
+
+2026-05-15T03:11:09.632210757Z [inf]  Selecting previously unselected package dbus-bin.
+
+2026-05-15T03:11:09.635219112Z [inf]  Preparing to unpack .../13-dbus-bin_1.14.10-4ubuntu4.1_amd64.deb ...
+
+2026-05-15T03:11:09.638894905Z [inf]  Unpacking dbus-bin (1.14.10-4ubuntu4.1) ...
+
+2026-05-15T03:11:09.737073911Z [inf]  Selecting previously unselected package dbus-session-bus-common.
+
+2026-05-15T03:11:09.739080984Z [inf]  Preparing to unpack .../14-dbus-session-bus-common_1.14.10-4ubuntu4.1_all.deb ...
+
+2026-05-15T03:11:09.744586256Z [inf]  Unpacking dbus-session-bus-common (1.14.10-4ubuntu4.1) ...
+
+2026-05-15T03:11:09.812962986Z [inf]  Selecting previously unselected package dbus-daemon.
+
+2026-05-15T03:11:09.814480756Z [inf]  Preparing to unpack .../15-dbus-daemon_1.14.10-4ubuntu4.1_amd64.deb ...
+
+2026-05-15T03:11:09.829682153Z [inf]  Unpacking dbus-daemon (1.14.10-4ubuntu4.1) ...
+
+2026-05-15T03:11:09.91520301Z [inf]  Selecting previously unselected package dbus-system-bus-common.
+
+2026-05-15T03:11:09.916632069Z [inf]  Preparing to unpack .../16-dbus-system-bus-common_1.14.10-4ubuntu4.1_all.deb ...
+
+2026-05-15T03:11:09.920839098Z [inf]  Unpacking dbus-system-bus-common (1.14.10-4ubuntu4.1) ...
+
+2026-05-15T03:11:10.012463109Z [inf]  Selecting previously unselected package dbus.
+
+2026-05-15T03:11:10.014118932Z [inf]  Preparing to unpack .../17-dbus_1.14.10-4ubuntu4.1_amd64.deb ...
+
+2026-05-15T03:11:10.038521285Z [inf]  Unpacking dbus (1.14.10-4ubuntu4.1) ...
+
+2026-05-15T03:11:10.114140323Z [inf]  Selecting previously unselected package libpam-systemd:amd64.
+
+2026-05-15T03:11:10.115495273Z [inf]  Preparing to unpack .../18-libpam-systemd_255.4-1ubuntu8.15_amd64.deb ...
+
+2026-05-15T03:11:10.132277764Z [inf]  Unpacking libpam-systemd:amd64 (255.4-1ubuntu8.15) ...
+
+2026-05-15T03:11:10.225768964Z [inf]  Selecting previously unselected package dbus-user-session.
+
+2026-05-15T03:11:10.237102462Z [inf]  Preparing to unpack .../19-dbus-user-session_1.14.10-4ubuntu4.1_amd64.deb ...
+
+2026-05-15T03:11:10.240181817Z [inf]  Unpacking dbus-user-session (1.14.10-4ubuntu4.1) ...
+
+2026-05-15T03:11:10.337846487Z [inf]  Selecting previously unselected package snapd.
+
+2026-05-15T03:11:10.339565096Z [inf]  Preparing to unpack .../20-snapd_2.74.1+ubuntu24.04.4_amd64.deb ...
+
+2026-05-15T03:11:10.39154805Z [inf]  Unpacking snapd (2.74.1+ubuntu24.04.4) ...
+
+2026-05-15T03:11:12.840082617Z [inf]  Setting up apparmor (4.0.1really4.0.1-0ubuntu0.24.04.6) ...
+
+2026-05-15T03:11:16.014535284Z [inf]  debconf: unable to initialize frontend: Dialog
+debconf: (Dialog frontend will not work on a dumb terminal, an emacs shell buffer, or without a controlling terminal.)
+debconf: falling back to frontend: Readline
+
+2026-05-15T03:11:16.063434285Z [inf]  debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+
+2026-05-15T03:11:17.508954503Z [inf]  Created symlink /etc/systemd/system/sysinit.target.wants/apparmor.service → /usr/lib/systemd/system/apparmor.service.
+
+2026-05-15T03:11:17.587094855Z [inf]  Setting up libfuse3-3:amd64 (3.14.0-5build1) ...
+
+2026-05-15T03:11:17.659209919Z [inf]  Setting up fuse3 (3.14.0-5build1) ...
+
+2026-05-15T03:11:17.725777311Z [inf]  Setting up libcap2-bin (1:2.66-5ubuntu2.4) ...
+
+2026-05-15T03:11:17.761864498Z [inf]  Setting up libbsd0:amd64 (0.12.1-1build1.1) ...
+
+2026-05-15T03:11:17.788685179Z [inf]  Setting up libedit2:amd64 (3.1-20230828-1build1) ...
+
+2026-05-15T03:11:17.814485463Z [inf]  Setting up libcbor0.10:amd64 (0.10.2-1.2ubuntu2) ...
+
+2026-05-15T03:11:17.845217955Z [inf]  Setting up libfido2-1:amd64 (1.14.0-1build3) ...
+
+2026-05-15T03:11:17.874513602Z [inf]  Setting up openssh-client (1:9.6p1-3ubuntu13.16) ...
+
+2026-05-15T03:11:18.112652061Z [inf]  Setting up liblzo2-2:amd64 (2.10-2build4) ...
+
+2026-05-15T03:11:18.14131893Z [inf]  Setting up squashfs-tools (1:4.6.1-1build1) ...
+
+2026-05-15T03:11:18.17224575Z [inf]  Setting up udev (255.4-1ubuntu8.15) ...
+
+2026-05-15T03:11:19.461009325Z [inf]  Creating group 'input' with GID 997.
+Creating group 'sgx' with GID 996.
+Creating group 'kvm' with GID 995.
+Creating group 'render' with GID 994.
+
+2026-05-15T03:11:19.586634654Z [inf]  Setting up libdbus-1-3:amd64 (1.14.10-4ubuntu4.1) ...
+
+2026-05-15T03:11:19.637954961Z [inf]  Setting up dbus-bin (1.14.10-4ubuntu4.1) ...
+
+2026-05-15T03:11:19.683286772Z [inf]  Setting up dbus-session-bus-common (1.14.10-4ubuntu4.1) ...
+
+2026-05-15T03:11:19.732684476Z [inf]  Setting up dbus-daemon (1.14.10-4ubuntu4.1) ...
+
+2026-05-15T03:11:19.809625971Z [inf]  [0;1;31m/usr/lib/tmpfiles.d/dbus.conf:13: Failed to resolve user 'messagebus': No such process[0m
+
+2026-05-15T03:11:19.815888451Z [inf]  Setting up dbus-system-bus-common (1.14.10-4ubuntu4.1) ...
+
+2026-05-15T03:11:20.213843394Z [inf]  Setting up dbus (1.14.10-4ubuntu4.1) ...
+
+2026-05-15T03:11:20.365002627Z [inf]  Setting up systemd-sysv (255.4-1ubuntu8.15) ...
+
+2026-05-15T03:11:20.487656854Z [inf]  Setting up libpam-systemd:amd64 (255.4-1ubuntu8.15) ...
+
+2026-05-15T03:11:20.845951443Z [inf]  debconf: unable to initialize frontend: Dialog
+debconf: (Dialog frontend will not work on a dumb terminal, an emacs shell buffer, or without a controlling terminal.)
+debconf: falling back to frontend: Readline
+
+2026-05-15T03:11:20.889638334Z [inf]  debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+
+2026-05-15T03:11:21.293195249Z [inf]  Setting up dbus-user-session (1.14.10-4ubuntu4.1) ...
+
+2026-05-15T03:11:21.335078514Z [inf]  Setting up snapd (2.74.1+ubuntu24.04.4) ...
+
+2026-05-15T03:11:21.812964706Z [inf]  Created symlink /etc/systemd/system/multi-user.target.wants/snapd.apparmor.service → /usr/lib/systemd/system/snapd.apparmor.service.
+
+2026-05-15T03:11:22.315485872Z [inf]  Created symlink /etc/systemd/system/multi-user.target.wants/snapd.autoimport.service → /usr/lib/systemd/system/snapd.autoimport.service.
+
+2026-05-15T03:11:22.739592167Z [inf]  Created symlink /etc/systemd/system/multi-user.target.wants/snapd.core-fixup.service → /usr/lib/systemd/system/snapd.core-fixup.service.
+
+2026-05-15T03:11:23.120703208Z [inf]  Created symlink /etc/systemd/system/multi-user.target.wants/snapd.recovery-chooser-trigger.service → /usr/lib/systemd/system/snapd.recovery-chooser-trigger.service.
+
+2026-05-15T03:11:23.48730574Z [inf]  Created symlink /etc/systemd/system/multi-user.target.wants/snapd.seeded.service → /usr/lib/systemd/system/snapd.seeded.service.
+Created symlink /etc/systemd/system/cloud-final.service.wants/snapd.seeded.service → /usr/lib/systemd/system/snapd.seeded.service.
+Unit /usr/lib/systemd/system/snapd.seeded.service is added as a dependency to a non-existent unit cloud-final.service.
+
+2026-05-15T03:11:23.938164113Z [inf]  Created symlink /etc/systemd/system/multi-user.target.wants/snapd.service → /usr/lib/systemd/system/snapd.service.
+
+2026-05-15T03:11:24.512028226Z [inf]  Created symlink /etc/systemd/system/timers.target.wants/snapd.snap-repair.timer → /usr/lib/systemd/system/snapd.snap-repair.timer.
+
+2026-05-15T03:11:25.08402378Z [inf]  Created symlink /etc/systemd/system/sockets.target.wants/snapd.socket → /usr/lib/systemd/system/snapd.socket.
+
+2026-05-15T03:11:25.538715754Z [inf]  Created symlink /etc/systemd/system/final.target.wants/snapd.system-shutdown.service → /usr/lib/systemd/system/snapd.system-shutdown.service.
+
+2026-05-15T03:11:25.777691041Z [inf]  Selecting previously unselected package chromium-browser.
+(Reading database ... 
+2026-05-15T03:11:25.787354261Z [inf]  (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-05-15T03:11:25.788458422Z [inf]  (Reading database ... 75%
+2026-05-15T03:11:25.788807142Z [inf]  (Reading database ... 80%
+2026-05-15T03:11:25.789476999Z [inf]  (Reading database ... 85%
+2026-05-15T03:11:25.790440536Z [inf]  (Reading database ... 90%
+2026-05-15T03:11:25.792619632Z [inf]  (Reading database ... 95%
+2026-05-15T03:11:25.792697093Z [inf]  (Reading database ... 100%(Reading database ... 11367 files and directories currently installed.)
+
+2026-05-15T03:11:25.793491643Z [inf]  Preparing to unpack .../chromium-browser_2%3a1snap1-0ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:26.05840464Z [inf]  debconf: unable to initialize frontend: Dialog
+debconf: (Dialog frontend will not work on a dumb terminal, an emacs shell buffer, or without a controlling terminal.)
+debconf: falling back to frontend: Readline
+
+2026-05-15T03:11:26.085878497Z [inf]  debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+
+2026-05-15T03:11:26.111825402Z [inf]  => Installing the chromium snap
+==> Checking connectivity with the snap store
+===> System doesn't have a working snapd, skipping
+
+2026-05-15T03:11:26.157671513Z [inf]  Unpacking chromium-browser (2:1snap1-0ubuntu2) ...
+
+2026-05-15T03:11:26.298179411Z [inf]  Preparing to unpack .../libsmartcols1_2.39.3-9ubuntu6.5_amd64.deb ...
+
+2026-05-15T03:11:26.332720412Z [inf]  Unpacking libsmartcols1:amd64 (2.39.3-9ubuntu6.5) over (2.39.3-9ubuntu6.2) ...
+
+2026-05-15T03:11:26.486324473Z [inf]  Setting up libsmartcols1:amd64 (2.39.3-9ubuntu6.5) ...
+
+2026-05-15T03:11:26.635634529Z [inf]  Selecting previously unselected package libelf1t64:amd64.
+(Reading database ... 
+2026-05-15T03:11:26.636919491Z [inf]  (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-05-15T03:11:26.639545835Z [inf]  (Reading database ... 75%
+2026-05-15T03:11:26.639924297Z [inf]  (Reading database ... 80%
+2026-05-15T03:11:26.640469603Z [inf]  (Reading database ... 85%
+2026-05-15T03:11:26.641114947Z [inf]  (Reading database ... 90%
+2026-05-15T03:11:26.659305448Z [inf]  (Reading database ... 95%
+2026-05-15T03:11:26.659744247Z [inf]  (Reading database ... 100%(Reading database ... 11395 files and directories currently installed.)
+
+2026-05-15T03:11:26.66079231Z [inf]  Preparing to unpack .../000-libelf1t64_0.190-1.1ubuntu0.1_amd64.deb ...
+
+2026-05-15T03:11:26.684103137Z [inf]  Unpacking libelf1t64:amd64 (0.190-1.1ubuntu0.1) ...
+
+2026-05-15T03:11:26.785639991Z [inf]  Selecting previously unselected package libfribidi0:amd64.
+
+2026-05-15T03:11:26.787509179Z [inf]  Preparing to unpack .../001-libfribidi0_1.0.13-3build1_amd64.deb ...
+
+2026-05-15T03:11:26.80872654Z [inf]  Unpacking libfribidi0:amd64 (1.0.13-3build1) ...
+
+2026-05-15T03:11:26.957618196Z [inf]  Selecting previously unselected package libglib2.0-0t64:amd64.
+
+2026-05-15T03:11:26.960655431Z [inf]  Preparing to unpack .../002-libglib2.0-0t64_2.80.0-6ubuntu3.8_amd64.deb ...
+
+2026-05-15T03:11:27.022763298Z [inf]  Unpacking libglib2.0-0t64:amd64 (2.80.0-6ubuntu3.8) ...
+
+2026-05-15T03:11:27.233049791Z [inf]  Selecting previously unselected package libicu74:amd64.
+
+2026-05-15T03:11:27.234392677Z [inf]  Preparing to unpack .../003-libicu74_74.2-1ubuntu3.1_amd64.deb ...
+
+2026-05-15T03:11:27.239132008Z [inf]  Unpacking libicu74:amd64 (74.2-1ubuntu3.1) ...
+
+2026-05-15T03:11:27.957131698Z [inf]  Selecting previously unselected package libsqlite3-0:amd64.
+
+2026-05-15T03:11:27.961859714Z [inf]  Preparing to unpack .../004-libsqlite3-0_3.45.1-1ubuntu2.5_amd64.deb ...
+
+2026-05-15T03:11:27.965578394Z [inf]  Unpacking libsqlite3-0:amd64 (3.45.1-1ubuntu2.5) ...
+
+2026-05-15T03:11:28.091229309Z [inf]  Selecting previously unselected package libxml2:amd64.
+
+2026-05-15T03:11:28.099679839Z [inf]  Preparing to unpack .../005-libxml2_2.9.14+dfsg-1.3ubuntu3.7_amd64.deb ...
+
+2026-05-15T03:11:28.108016314Z [inf]  Unpacking libxml2:amd64 (2.9.14+dfsg-1.3ubuntu3.7) ...
+
+2026-05-15T03:11:28.235413519Z [inf]  Selecting previously unselected package shared-mime-info.
+
+2026-05-15T03:11:28.236465511Z [inf]  Preparing to unpack .../006-shared-mime-info_2.4-4_amd64.deb ...
+
+2026-05-15T03:11:28.240599502Z [inf]  Unpacking shared-mime-info (2.4-4) ...
+
+2026-05-15T03:11:28.372303573Z [inf]  Selecting previously unselected package xkb-data.
+Preparing to unpack .../007-xkb-data_2.41-2ubuntu1.1_all.deb ...
+
+2026-05-15T03:11:28.375412744Z [inf]  Unpacking xkb-data (2.41-2ubuntu1.1) ...
+
+2026-05-15T03:11:28.63672885Z [inf]  Selecting previously unselected package libdrm-common.
+
+2026-05-15T03:11:28.638985155Z [inf]  Preparing to unpack .../008-libdrm-common_2.4.125-1ubuntu0.1~24.04.1_all.deb ...
+
+2026-05-15T03:11:28.643665918Z [inf]  Unpacking libdrm-common (2.4.125-1ubuntu0.1~24.04.1) ...
+
+2026-05-15T03:11:28.738645677Z [inf]  Selecting previously unselected package libdrm2:amd64.
+
+2026-05-15T03:11:28.740352205Z [inf]  Preparing to unpack .../009-libdrm2_2.4.125-1ubuntu0.1~24.04.1_amd64.deb ...
+
+2026-05-15T03:11:28.762515243Z [inf]  Unpacking libdrm2:amd64 (2.4.125-1ubuntu0.1~24.04.1) ...
+
+2026-05-15T03:11:28.851460837Z [inf]  Selecting previously unselected package libpng16-16t64:amd64.
+
+2026-05-15T03:11:28.862187631Z [inf]  Preparing to unpack .../010-libpng16-16t64_1.6.43-5ubuntu0.6_amd64.deb ...
+
+2026-05-15T03:11:28.862591701Z [inf]  Unpacking libpng16-16t64:amd64 (1.6.43-5ubuntu0.6) ...
+
+2026-05-15T03:11:28.970573179Z [inf]  Selecting previously unselected package libsensors-config.
+
+2026-05-15T03:11:28.974761448Z [inf]  Preparing to unpack .../011-libsensors-config_1%3a3.6.0-9build1_all.deb ...
+
+2026-05-15T03:11:28.988609093Z [inf]  Unpacking libsensors-config (1:3.6.0-9build1) ...
+
+2026-05-15T03:11:29.137481794Z [inf]  Selecting previously unselected package libsensors5:amd64.
+
+2026-05-15T03:11:29.13973416Z [inf]  Preparing to unpack .../012-libsensors5_1%3a3.6.0-9build1_amd64.deb ...
+
+2026-05-15T03:11:29.165143399Z [inf]  Unpacking libsensors5:amd64 (1:3.6.0-9build1) ...
+
+2026-05-15T03:11:29.287060286Z [inf]  Selecting previously unselected package libxau6:amd64.
+
+2026-05-15T03:11:29.288990649Z [inf]  Preparing to unpack .../013-libxau6_1%3a1.0.9-1build6_amd64.deb ...
+
+2026-05-15T03:11:29.306236748Z [inf]  Unpacking libxau6:amd64 (1:1.0.9-1build6) ...
+
+2026-05-15T03:11:29.414935682Z [inf]  Selecting previously unselected package libxdmcp6:amd64.
+
+2026-05-15T03:11:29.423098792Z [inf]  Preparing to unpack .../014-libxdmcp6_1%3a1.1.3-0ubuntu6_amd64.deb ...
+
+2026-05-15T03:11:29.437576333Z [inf]  Unpacking libxdmcp6:amd64 (1:1.1.3-0ubuntu6) ...
+
+2026-05-15T03:11:29.537073202Z [inf]  Selecting previously unselected package libxcb1:amd64.
+Preparing to unpack .../015-libxcb1_1.15-1ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:29.540797513Z [inf]  Unpacking libxcb1:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:29.637600496Z [inf]  Selecting previously unselected package libx11-data.
+
+2026-05-15T03:11:29.639271281Z [inf]  Preparing to unpack .../016-libx11-data_2%3a1.8.7-1build1_all.deb ...
+
+2026-05-15T03:11:29.659639702Z [inf]  Unpacking libx11-data (2:1.8.7-1build1) ...
+
+2026-05-15T03:11:29.861943287Z [inf]  Selecting previously unselected package libx11-6:amd64.
+Preparing to unpack .../017-libx11-6_2%3a1.8.7-1build1_amd64.deb ...
+
+2026-05-15T03:11:29.866085371Z [inf]  Unpacking libx11-6:amd64 (2:1.8.7-1build1) ...
+
+2026-05-15T03:11:30.022123113Z [inf]  Selecting previously unselected package libxext6:amd64.
+Preparing to unpack .../018-libxext6_2%3a1.3.4-1build2_amd64.deb ...
+
+2026-05-15T03:11:30.036581859Z [inf]  Unpacking libxext6:amd64 (2:1.3.4-1build2) ...
+
+2026-05-15T03:11:30.14146772Z [inf]  Selecting previously unselected package libxkbcommon0:amd64.
+
+2026-05-15T03:11:30.144350617Z [inf]  Preparing to unpack .../019-libxkbcommon0_1.6.0-1build1_amd64.deb ...
+
+2026-05-15T03:11:30.165226256Z [inf]  Unpacking libxkbcommon0:amd64 (1.6.0-1build1) ...
+
+2026-05-15T03:11:30.286480399Z [inf]  Selecting previously unselected package libgdk-pixbuf2.0-common.
+
+2026-05-15T03:11:30.288938302Z [inf]  Preparing to unpack .../020-libgdk-pixbuf2.0-common_2.42.10+dfsg-3ubuntu3.3_all.deb ...
+
+2026-05-15T03:11:30.294708095Z [inf]  Unpacking libgdk-pixbuf2.0-common (2.42.10+dfsg-3ubuntu3.3) ...
+
+2026-05-15T03:11:30.382251717Z [inf]  Selecting previously unselected package libjpeg-turbo8:amd64.
+
+2026-05-15T03:11:30.383990933Z [inf]  Preparing to unpack .../021-libjpeg-turbo8_2.1.5-2ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:30.389578942Z [inf]  Unpacking libjpeg-turbo8:amd64 (2.1.5-2ubuntu2) ...
+
+2026-05-15T03:11:30.490282256Z [inf]  Selecting previously unselected package libjpeg8:amd64.
+
+2026-05-15T03:11:30.497875479Z [inf]  Preparing to unpack .../022-libjpeg8_8c-2ubuntu11_amd64.deb ...
+
+2026-05-15T03:11:30.509145838Z [inf]  Unpacking libjpeg8:amd64 (8c-2ubuntu11) ...
+
+2026-05-15T03:11:30.634825688Z [inf]  Selecting previously unselected package libdeflate0:amd64.
+Preparing to unpack .../023-libdeflate0_1.19-1build1.1_amd64.deb ...
+
+2026-05-15T03:11:30.640934835Z [inf]  Unpacking libdeflate0:amd64 (1.19-1build1.1) ...
+
+2026-05-15T03:11:30.745908366Z [inf]  Selecting previously unselected package libjbig0:amd64.
+
+2026-05-15T03:11:30.758749337Z [inf]  Preparing to unpack .../024-libjbig0_2.1-6.1ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:30.775736073Z [inf]  Unpacking libjbig0:amd64 (2.1-6.1ubuntu2) ...
+
+2026-05-15T03:11:30.938782855Z [inf]  Selecting previously unselected package liblerc4:amd64.
+
+2026-05-15T03:11:30.940124374Z [inf]  Preparing to unpack .../025-liblerc4_4.0.0+ds-4ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:30.952244611Z [inf]  Unpacking liblerc4:amd64 (4.0.0+ds-4ubuntu2) ...
+
+2026-05-15T03:11:31.09051417Z [inf]  Selecting previously unselected package libsharpyuv0:amd64.
+
+2026-05-15T03:11:31.10494438Z [inf]  Preparing to unpack .../026-libsharpyuv0_1.3.2-0.4build3_amd64.deb ...
+
+2026-05-15T03:11:31.111919138Z [inf]  Unpacking libsharpyuv0:amd64 (1.3.2-0.4build3) ...
+
+2026-05-15T03:11:31.21478139Z [inf]  Selecting previously unselected package libwebp7:amd64.
+
+2026-05-15T03:11:31.216639203Z [inf]  Preparing to unpack .../027-libwebp7_1.3.2-0.4build3_amd64.deb ...
+
+2026-05-15T03:11:31.236878091Z [inf]  Unpacking libwebp7:amd64 (1.3.2-0.4build3) ...
+
+2026-05-15T03:11:31.382838691Z [inf]  Selecting previously unselected package libtiff6:amd64.
+
+2026-05-15T03:11:31.383669218Z [inf]  Preparing to unpack .../028-libtiff6_4.5.1+git230720-4ubuntu2.5_amd64.deb ...
+
+2026-05-15T03:11:31.402564547Z [inf]  Unpacking libtiff6:amd64 (4.5.1+git230720-4ubuntu2.5) ...
+
+2026-05-15T03:11:31.551912321Z [inf]  Selecting previously unselected package libgdk-pixbuf-2.0-0:amd64.
+
+2026-05-15T03:11:31.55936688Z [inf]  Preparing to unpack .../029-libgdk-pixbuf-2.0-0_2.42.10+dfsg-3ubuntu3.3_amd64.deb ...
+
+2026-05-15T03:11:31.564843316Z [inf]  Unpacking libgdk-pixbuf-2.0-0:amd64 (2.42.10+dfsg-3ubuntu3.3) ...
+
+2026-05-15T03:11:31.73348696Z [inf]  Selecting previously unselected package gtk-update-icon-cache.
+
+2026-05-15T03:11:31.735010612Z [inf]  Preparing to unpack .../030-gtk-update-icon-cache_3.24.41-4ubuntu1.3_amd64.deb ...
+
+2026-05-15T03:11:31.758169635Z [inf]  Unpacking gtk-update-icon-cache (3.24.41-4ubuntu1.3) ...
+
+2026-05-15T03:11:31.894591838Z [inf]  Selecting previously unselected package hicolor-icon-theme.
+
+2026-05-15T03:11:31.90386973Z [inf]  Preparing to unpack .../031-hicolor-icon-theme_0.17-2_all.deb ...
+
+2026-05-15T03:11:31.915457306Z [inf]  Unpacking hicolor-icon-theme (0.17-2) ...
+
+2026-05-15T03:11:32.18588708Z [inf]  Selecting previously unselected package humanity-icon-theme.
+
+2026-05-15T03:11:32.187654008Z [inf]  Preparing to unpack .../032-humanity-icon-theme_0.6.16_all.deb ...
+
+2026-05-15T03:11:32.207996931Z [inf]  Unpacking humanity-icon-theme (0.6.16) ...
+
+2026-05-15T03:11:34.944754821Z [inf]  Selecting previously unselected package ubuntu-mono.
+
+2026-05-15T03:11:34.964917049Z [inf]  Preparing to unpack .../033-ubuntu-mono_24.04-0ubuntu1_all.deb ...
+
+2026-05-15T03:11:34.971750213Z [inf]  Unpacking ubuntu-mono (24.04-0ubuntu1) ...
+
+2026-05-15T03:11:36.323754226Z [inf]  Selecting previously unselected package adwaita-icon-theme.
+
+2026-05-15T03:11:36.332916619Z [inf]  Preparing to unpack .../034-adwaita-icon-theme_46.0-1_all.deb ...
+
+2026-05-15T03:11:36.338687464Z [inf]  Unpacking adwaita-icon-theme (46.0-1) ...
+
+2026-05-15T03:11:36.740426936Z [inf]  Selecting previously unselected package at-spi2-common.
+
+2026-05-15T03:11:36.743407992Z [inf]  Preparing to unpack .../035-at-spi2-common_2.52.0-1build1_all.deb ...
+
+2026-05-15T03:11:36.759523549Z [inf]  Unpacking at-spi2-common (2.52.0-1build1) ...
+
+2026-05-15T03:11:36.838167628Z [inf]  Selecting previously unselected package libdconf1:amd64.
+
+2026-05-15T03:11:36.839826119Z [inf]  Preparing to unpack .../036-libdconf1_0.40.0-4ubuntu0.1_amd64.deb ...
+
+2026-05-15T03:11:36.858796784Z [inf]  Unpacking libdconf1:amd64 (0.40.0-4ubuntu0.1) ...
+
+2026-05-15T03:11:36.92441283Z [inf]  Selecting previously unselected package dconf-service.
+
+2026-05-15T03:11:36.934413771Z [inf]  Preparing to unpack .../037-dconf-service_0.40.0-4ubuntu0.1_amd64.deb ...
+
+2026-05-15T03:11:36.93895961Z [inf]  Unpacking dconf-service (0.40.0-4ubuntu0.1) ...
+
+2026-05-15T03:11:37.037007864Z [inf]  Selecting previously unselected package dconf-gsettings-backend:amd64.
+
+2026-05-15T03:11:37.038408952Z [inf]  Preparing to unpack .../038-dconf-gsettings-backend_0.40.0-4ubuntu0.1_amd64.deb ...
+
+2026-05-15T03:11:37.042406539Z [inf]  Unpacking dconf-gsettings-backend:amd64 (0.40.0-4ubuntu0.1) ...
+
+2026-05-15T03:11:37.135082547Z [inf]  Selecting previously unselected package libfreetype6:amd64.
+
+2026-05-15T03:11:37.137755533Z [inf]  Preparing to unpack .../039-libfreetype6_2.13.2+dfsg-1ubuntu0.1_amd64.deb ...
+
+2026-05-15T03:11:37.141282738Z [inf]  Unpacking libfreetype6:amd64 (2.13.2+dfsg-1ubuntu0.1) ...
+
+2026-05-15T03:11:37.237001041Z [inf]  Selecting previously unselected package fonts-dejavu-mono.
+
+2026-05-15T03:11:37.239409109Z [inf]  Preparing to unpack .../040-fonts-dejavu-mono_2.37-8_all.deb ...
+
+2026-05-15T03:11:37.256619789Z [inf]  Unpacking fonts-dejavu-mono (2.37-8) ...
+
+2026-05-15T03:11:37.376587662Z [inf]  Selecting previously unselected package fonts-dejavu-core.
+
+2026-05-15T03:11:37.383553068Z [inf]  Preparing to unpack .../041-fonts-dejavu-core_2.37-8_all.deb ...
+
+2026-05-15T03:11:37.4165546Z [inf]  Unpacking fonts-dejavu-core (2.37-8) ...
+
+2026-05-15T03:11:37.701265128Z [inf]  Selecting previously unselected package fontconfig-config.
+
+2026-05-15T03:11:37.7033414Z [inf]  Preparing to unpack .../042-fontconfig-config_2.15.0-1.1ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:38.185005294Z [inf]  Unpacking fontconfig-config (2.15.0-1.1ubuntu2) ...
+
+2026-05-15T03:11:38.299320025Z [inf]  Selecting previously unselected package libfontconfig1:amd64.
+
+2026-05-15T03:11:38.30173615Z [inf]  Preparing to unpack .../043-libfontconfig1_2.15.0-1.1ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:38.308828452Z [inf]  Unpacking libfontconfig1:amd64 (2.15.0-1.1ubuntu2) ...
+
+2026-05-15T03:11:38.41224964Z [inf]  Selecting previously unselected package fontconfig.
+
+2026-05-15T03:11:38.414951243Z [inf]  Preparing to unpack .../044-fontconfig_2.15.0-1.1ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:38.422693094Z [inf]  Unpacking fontconfig (2.15.0-1.1ubuntu2) ...
+
+2026-05-15T03:11:38.487694866Z [inf]  Selecting previously unselected package libasound2-data.
+
+2026-05-15T03:11:38.490101569Z [inf]  Preparing to unpack .../045-libasound2-data_1.2.11-1ubuntu0.2_all.deb ...
+
+2026-05-15T03:11:38.510474844Z [inf]  Unpacking libasound2-data (1.2.11-1ubuntu0.2) ...
+
+2026-05-15T03:11:38.602559426Z [inf]  Selecting previously unselected package libasound2t64:amd64.
+
+2026-05-15T03:11:38.605788361Z [inf]  Preparing to unpack .../046-libasound2t64_1.2.11-1ubuntu0.2_amd64.deb ...
+
+2026-05-15T03:11:38.609895277Z [inf]  Unpacking libasound2t64:amd64 (1.2.11-1ubuntu0.2) ...
+
+2026-05-15T03:11:38.721362565Z [inf]  Selecting previously unselected package libatk1.0-0t64:amd64.
+
+2026-05-15T03:11:38.723379597Z [inf]  Preparing to unpack .../047-libatk1.0-0t64_2.52.0-1build1_amd64.deb ...
+
+2026-05-15T03:11:38.733518807Z [inf]  Unpacking libatk1.0-0t64:amd64 (2.52.0-1build1) ...
+
+2026-05-15T03:11:38.837995548Z [inf]  Selecting previously unselected package libxi6:amd64.
+
+2026-05-15T03:11:38.841054461Z [inf]  Preparing to unpack .../048-libxi6_2%3a1.8.1-1build1_amd64.deb ...
+
+2026-05-15T03:11:38.84594989Z [inf]  Unpacking libxi6:amd64 (2:1.8.1-1build1) ...
+
+2026-05-15T03:11:38.928681522Z [inf]  Selecting previously unselected package libatspi2.0-0t64:amd64.
+
+2026-05-15T03:11:38.930470379Z [inf]  Preparing to unpack .../049-libatspi2.0-0t64_2.52.0-1build1_amd64.deb ...
+
+2026-05-15T03:11:38.937518878Z [inf]  Unpacking libatspi2.0-0t64:amd64 (2.52.0-1build1) ...
+
+2026-05-15T03:11:39.03321054Z [inf]  Selecting previously unselected package libatk-bridge2.0-0t64:amd64.
+
+2026-05-15T03:11:39.035530999Z [inf]  Preparing to unpack .../050-libatk-bridge2.0-0t64_2.52.0-1build1_amd64.deb ...
+
+2026-05-15T03:11:39.040106689Z [inf]  Unpacking libatk-bridge2.0-0t64:amd64 (2.52.0-1build1) ...
+
+2026-05-15T03:11:39.137703344Z [inf]  Selecting previously unselected package libavahi-common-data:amd64.
+
+2026-05-15T03:11:39.140097956Z [inf]  Preparing to unpack .../051-libavahi-common-data_0.8-13ubuntu6.2_amd64.deb ...
+
+2026-05-15T03:11:39.145229802Z [inf]  Unpacking libavahi-common-data:amd64 (0.8-13ubuntu6.2) ...
+
+2026-05-15T03:11:39.215332464Z [inf]  Selecting previously unselected package libavahi-common3:amd64.
+
+2026-05-15T03:11:39.230075441Z [inf]  Preparing to unpack .../052-libavahi-common3_0.8-13ubuntu6.2_amd64.deb ...
+
+2026-05-15T03:11:39.234167235Z [inf]  Unpacking libavahi-common3:amd64 (0.8-13ubuntu6.2) ...
+
+2026-05-15T03:11:39.323211784Z [inf]  Selecting previously unselected package libavahi-client3:amd64.
+
+2026-05-15T03:11:39.323630437Z [inf]  Preparing to unpack .../053-libavahi-client3_0.8-13ubuntu6.2_amd64.deb ...
+
+2026-05-15T03:11:39.333096457Z [inf]  Unpacking libavahi-client3:amd64 (0.8-13ubuntu6.2) ...
+
+2026-05-15T03:11:39.413812266Z [inf]  Selecting previously unselected package libpixman-1-0:amd64.
+
+2026-05-15T03:11:39.416532822Z [inf]  Preparing to unpack .../054-libpixman-1-0_0.42.2-1build1_amd64.deb ...
+
+2026-05-15T03:11:39.439830614Z [inf]  Unpacking libpixman-1-0:amd64 (0.42.2-1build1) ...
+
+2026-05-15T03:11:39.51300957Z [inf]  Selecting previously unselected package libxcb-render0:amd64.
+
+2026-05-15T03:11:39.515508624Z [inf]  Preparing to unpack .../055-libxcb-render0_1.15-1ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:39.533486878Z [inf]  Unpacking libxcb-render0:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:39.638894112Z [inf]  Selecting previously unselected package libxcb-shm0:amd64.
+
+2026-05-15T03:11:39.641381019Z [inf]  Preparing to unpack .../056-libxcb-shm0_1.15-1ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:39.653517018Z [inf]  Unpacking libxcb-shm0:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:39.743710666Z [inf]  Selecting previously unselected package libxrender1:amd64.
+
+2026-05-15T03:11:39.746193641Z [inf]  Preparing to unpack .../057-libxrender1_1%3a0.9.10-1.1build1_amd64.deb ...
+
+2026-05-15T03:11:39.76367165Z [inf]  Unpacking libxrender1:amd64 (1:0.9.10-1.1build1) ...
+
+2026-05-15T03:11:39.838601226Z [inf]  Selecting previously unselected package libcairo2:amd64.
+
+2026-05-15T03:11:39.841044225Z [inf]  Preparing to unpack .../058-libcairo2_1.18.0-3build1_amd64.deb ...
+
+2026-05-15T03:11:39.861236306Z [inf]  Unpacking libcairo2:amd64 (1.18.0-3build1) ...
+
+2026-05-15T03:11:39.964204339Z [inf]  Selecting previously unselected package libcairo-gobject2:amd64.
+
+2026-05-15T03:11:39.979206583Z [inf]  Preparing to unpack .../059-libcairo-gobject2_1.18.0-3build1_amd64.deb ...
+
+2026-05-15T03:11:39.984917006Z [inf]  Unpacking libcairo-gobject2:amd64 (1.18.0-3build1) ...
+
+2026-05-15T03:11:40.087621003Z [inf]  Selecting previously unselected package liblcms2-2:amd64.
+
+2026-05-15T03:11:40.090269814Z [inf]  Preparing to unpack .../060-liblcms2-2_2.14-2ubuntu0.1_amd64.deb ...
+
+2026-05-15T03:11:40.102601579Z [inf]  Unpacking liblcms2-2:amd64 (2.14-2ubuntu0.1) ...
+
+2026-05-15T03:11:40.216604437Z [inf]  Selecting previously unselected package libcolord2:amd64.
+
+2026-05-15T03:11:40.221451668Z [inf]  Preparing to unpack .../061-libcolord2_1.4.7-1build2_amd64.deb ...
+
+2026-05-15T03:11:40.224930984Z [inf]  Unpacking libcolord2:amd64 (1.4.7-1build2) ...
+
+2026-05-15T03:11:40.308206536Z [inf]  Selecting previously unselected package libcups2t64:amd64.
+
+2026-05-15T03:11:40.311076425Z [inf]  Preparing to unpack .../062-libcups2t64_2.4.7-1.2ubuntu7.9_amd64.deb ...
+
+2026-05-15T03:11:40.314676585Z [inf]  Unpacking libcups2t64:amd64 (2.4.7-1.2ubuntu7.9) ...
+
+2026-05-15T03:11:40.414005819Z [inf]  Selecting previously unselected package libdatrie1:amd64.
+
+2026-05-15T03:11:40.427214179Z [inf]  Preparing to unpack .../063-libdatrie1_0.2.13-3build1_amd64.deb ...
+
+2026-05-15T03:11:40.435269915Z [inf]  Unpacking libdatrie1:amd64 (0.2.13-3build1) ...
+
+2026-05-15T03:11:40.52198669Z [inf]  Selecting previously unselected package libdrm-amdgpu1:amd64.
+
+2026-05-15T03:11:40.522448297Z [inf]  Preparing to unpack .../064-libdrm-amdgpu1_2.4.125-1ubuntu0.1~24.04.1_amd64.deb ...
+
+2026-05-15T03:11:40.526593471Z [inf]  Unpacking libdrm-amdgpu1:amd64 (2.4.125-1ubuntu0.1~24.04.1) ...
+
+2026-05-15T03:11:40.61424625Z [inf]  Selecting previously unselected package libpciaccess0:amd64.
+
+2026-05-15T03:11:40.638544648Z [inf]  Preparing to unpack .../065-libpciaccess0_0.17-3ubuntu0.24.04.2_amd64.deb ...
+
+2026-05-15T03:11:40.642335738Z [inf]  Unpacking libpciaccess0:amd64 (0.17-3ubuntu0.24.04.2) ...
+
+2026-05-15T03:11:40.731364411Z [inf]  Selecting previously unselected package libdrm-intel1:amd64.
+
+2026-05-15T03:11:40.733949151Z [inf]  Preparing to unpack .../066-libdrm-intel1_2.4.125-1ubuntu0.1~24.04.1_amd64.deb ...
+
+2026-05-15T03:11:40.737473646Z [inf]  Unpacking libdrm-intel1:amd64 (2.4.125-1ubuntu0.1~24.04.1) ...
+
+2026-05-15T03:11:40.839410356Z [inf]  Selecting previously unselected package libepoxy0:amd64.
+
+2026-05-15T03:11:40.850759279Z [inf]  Preparing to unpack .../067-libepoxy0_1.5.10-1build1_amd64.deb ...
+
+2026-05-15T03:11:40.856621428Z [inf]  Unpacking libepoxy0:amd64 (1.5.10-1build1) ...
+
+2026-05-15T03:11:40.968341073Z [inf]  Selecting previously unselected package libllvm20:amd64.
+
+2026-05-15T03:11:40.971820086Z [inf]  Preparing to unpack .../068-libllvm20_1%3a20.1.2-0ubuntu1~24.04.2_amd64.deb ...
+
+2026-05-15T03:11:40.976557264Z [inf]  Unpacking libllvm20:amd64 (1:20.1.2-0ubuntu1~24.04.2) ...
+
+2026-05-15T03:11:43.373548495Z [inf]  Selecting previously unselected package libx11-xcb1:amd64.
+
+2026-05-15T03:11:43.375020531Z [inf]  Preparing to unpack .../069-libx11-xcb1_2%3a1.8.7-1build1_amd64.deb ...
+
+2026-05-15T03:11:43.385748789Z [inf]  Unpacking libx11-xcb1:amd64 (2:1.8.7-1build1) ...
+
+2026-05-15T03:11:43.46456402Z [inf]  Selecting previously unselected package libxcb-dri3-0:amd64.
+
+2026-05-15T03:11:43.487653587Z [inf]  Preparing to unpack .../070-libxcb-dri3-0_1.15-1ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:43.490896141Z [inf]  Unpacking libxcb-dri3-0:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:43.55320072Z [inf]  Selecting previously unselected package libxcb-present0:amd64.
+
+2026-05-15T03:11:43.55410856Z [inf]  Preparing to unpack .../071-libxcb-present0_1.15-1ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:43.561998754Z [inf]  Unpacking libxcb-present0:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:43.659464894Z [inf]  Selecting previously unselected package libxcb-randr0:amd64.
+
+2026-05-15T03:11:43.66420231Z [inf]  Preparing to unpack .../072-libxcb-randr0_1.15-1ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:43.669459648Z [inf]  Unpacking libxcb-randr0:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:43.763664452Z [inf]  Selecting previously unselected package libxcb-sync1:amd64.
+
+2026-05-15T03:11:43.788164106Z [inf]  Preparing to unpack .../073-libxcb-sync1_1.15-1ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:43.791545338Z [inf]  Unpacking libxcb-sync1:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:43.891015288Z [inf]  Selecting previously unselected package libxcb-xfixes0:amd64.
+
+2026-05-15T03:11:43.910103644Z [inf]  Preparing to unpack .../074-libxcb-xfixes0_1.15-1ubuntu2_amd64.deb ...
+
+2026-05-15T03:11:43.914184028Z [inf]  Unpacking libxcb-xfixes0:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:44.003387975Z [inf]  Selecting previously unselected package libxshmfence1:amd64.
+
+2026-05-15T03:11:44.00535764Z [inf]  Preparing to unpack .../075-libxshmfence1_1.3-1build5_amd64.deb ...
+
+2026-05-15T03:11:44.011577475Z [inf]  Unpacking libxshmfence1:amd64 (1.3-1build5) ...
+
+2026-05-15T03:11:44.107407696Z [inf]  Selecting previously unselected package mesa-libgallium:amd64.
+
+2026-05-15T03:11:44.112067495Z [inf]  Preparing to unpack .../076-mesa-libgallium_25.2.8-0ubuntu0.24.04.1_amd64.deb ...
+
+2026-05-15T03:11:44.115466422Z [inf]  Unpacking mesa-libgallium:amd64 (25.2.8-0ubuntu0.24.04.1) ...
+
+2026-05-15T03:11:44.862062126Z [inf]  Selecting previously unselected package libgbm1:amd64.
+
+2026-05-15T03:11:44.86506911Z [inf]  Preparing to unpack .../077-libgbm1_25.2.8-0ubuntu0.24.04.1_amd64.deb ...
+
+2026-05-15T03:11:44.874659239Z [inf]  Unpacking libgbm1:amd64 (25.2.8-0ubuntu0.24.04.1) ...
+
+2026-05-15T03:11:44.990202829Z [inf]  Selecting previously unselected package libgraphite2-3:amd64.
+
+2026-05-15T03:11:44.993368912Z [inf]  Preparing to unpack .../078-libgraphite2-3_1.3.14-2build1_amd64.deb ...
+
+2026-05-15T03:11:45.011985759Z [inf]  Unpacking libgraphite2-3:amd64 (1.3.14-2build1) ...
+
+2026-05-15T03:11:45.110019012Z [inf]  Selecting previously unselected package libharfbuzz0b:amd64.
+
+2026-05-15T03:11:45.112571843Z [inf]  Preparing to unpack .../079-libharfbuzz0b_8.3.0-2build2_amd64.deb ...
+
+2026-05-15T03:11:45.116579709Z [inf]  Unpacking libharfbuzz0b:amd64 (8.3.0-2build2) ...
+
+2026-05-15T03:11:45.212520321Z [inf]  Selecting previously unselected package libthai-data.
+
+2026-05-15T03:11:45.214963269Z [inf]  Preparing to unpack .../080-libthai-data_0.1.29-2build1_all.deb ...
+
+2026-05-15T03:11:45.232465239Z [inf]  Unpacking libthai-data (0.1.29-2build1) ...
+
+2026-05-15T03:11:45.324881719Z [inf]  Selecting previously unselected package libthai0:amd64.
+
+2026-05-15T03:11:45.334704992Z [inf]  Preparing to unpack .../081-libthai0_0.1.29-2build1_amd64.deb ...
+
+2026-05-15T03:11:45.339090192Z [inf]  Unpacking libthai0:amd64 (0.1.29-2build1) ...
+
+2026-05-15T03:11:45.464958447Z [inf]  Selecting previously unselected package libpango-1.0-0:amd64.
+
+2026-05-15T03:11:45.467832968Z [inf]  Preparing to unpack .../082-libpango-1.0-0_1.52.1+ds-1build1_amd64.deb ...
+
+2026-05-15T03:11:45.476073137Z [inf]  Unpacking libpango-1.0-0:amd64 (1.52.1+ds-1build1) ...
+
+2026-05-15T03:11:45.590067865Z [inf]  Selecting previously unselected package libpangoft2-1.0-0:amd64.
+
+2026-05-15T03:11:45.593415961Z [inf]  Preparing to unpack .../083-libpangoft2-1.0-0_1.52.1+ds-1build1_amd64.deb ...
+
+2026-05-15T03:11:45.613833473Z [inf]  Unpacking libpangoft2-1.0-0:amd64 (1.52.1+ds-1build1) ...
+
+2026-05-15T03:11:45.736494261Z [inf]  Selecting previously unselected package libpangocairo-1.0-0:amd64.
+
+2026-05-15T03:11:45.739709527Z [inf]  Preparing to unpack .../084-libpangocairo-1.0-0_1.52.1+ds-1build1_amd64.deb ...
+
+2026-05-15T03:11:45.744373289Z [inf]  Unpacking libpangocairo-1.0-0:amd64 (1.52.1+ds-1build1) ...
+
+2026-05-15T03:11:45.840012086Z [inf]  Selecting previously unselected package libwayland-client0:amd64.
+
+2026-05-15T03:11:45.858679318Z [inf]  Preparing to unpack .../085-libwayland-client0_1.22.0-2.1build1_amd64.deb ...
+
+2026-05-15T03:11:45.862495871Z [inf]  Unpacking libwayland-client0:amd64 (1.22.0-2.1build1) ...
+
+2026-05-15T03:11:45.959315411Z [inf]  Selecting previously unselected package libwayland-cursor0:amd64.
+
+2026-05-15T03:11:45.963305756Z [inf]  Preparing to unpack .../086-libwayland-cursor0_1.22.0-2.1build1_amd64.deb ...
+
+2026-05-15T03:11:45.980243614Z [inf]  Unpacking libwayland-cursor0:amd64 (1.22.0-2.1build1) ...
+
+2026-05-15T03:11:46.046521506Z [inf]  Selecting previously unselected package libwayland-egl1:amd64.
+
+2026-05-15T03:11:46.060874951Z [inf]  Preparing to unpack .../087-libwayland-egl1_1.22.0-2.1build1_amd64.deb ...
+
+2026-05-15T03:11:46.064664098Z [inf]  Unpacking libwayland-egl1:amd64 (1.22.0-2.1build1) ...
+
+2026-05-15T03:11:46.116571832Z [inf]  Selecting previously unselected package libxcomposite1:amd64.
+
+2026-05-15T03:11:46.12999932Z [inf]  Preparing to unpack .../088-libxcomposite1_1%3a0.4.5-1build3_amd64.deb ...
+
+2026-05-15T03:11:46.134422891Z [inf]  Unpacking libxcomposite1:amd64 (1:0.4.5-1build3) ...
+
+2026-05-15T03:11:46.235603724Z [inf]  Selecting previously unselected package libxfixes3:amd64.
+
+2026-05-15T03:11:46.237979609Z [inf]  Preparing to unpack .../089-libxfixes3_1%3a6.0.0-2build1_amd64.deb ...
+
+2026-05-15T03:11:46.247193758Z [inf]  Unpacking libxfixes3:amd64 (1:6.0.0-2build1) ...
+
+2026-05-15T03:11:46.33916095Z [inf]  Selecting previously unselected package libxcursor1:amd64.
+
+2026-05-15T03:11:46.342607307Z [inf]  Preparing to unpack .../090-libxcursor1_1%3a1.2.1-1build1_amd64.deb ...
+
+2026-05-15T03:11:46.361818128Z [inf]  Unpacking libxcursor1:amd64 (1:1.2.1-1build1) ...
+
+2026-05-15T03:11:46.433530488Z [inf]  Selecting previously unselected package libxdamage1:amd64.
+
+2026-05-15T03:11:46.437270774Z [inf]  Preparing to unpack .../091-libxdamage1_1%3a1.1.6-1build1_amd64.deb ...
+
+2026-05-15T03:11:46.440341801Z [inf]  Unpacking libxdamage1:amd64 (1:1.1.6-1build1) ...
+
+2026-05-15T03:11:46.538250351Z [inf]  Selecting previously unselected package libxinerama1:amd64.
+
+2026-05-15T03:11:46.541277468Z [inf]  Preparing to unpack .../092-libxinerama1_2%3a1.1.4-3build1_amd64.deb ...
+
+2026-05-15T03:11:46.556298446Z [inf]  Unpacking libxinerama1:amd64 (2:1.1.4-3build1) ...
+
+2026-05-15T03:11:46.646433504Z [inf]  Selecting previously unselected package libxrandr2:amd64.
+
+2026-05-15T03:11:46.663316627Z [inf]  Preparing to unpack .../093-libxrandr2_2%3a1.5.2-2build1_amd64.deb ...
+
+2026-05-15T03:11:46.675873838Z [inf]  Unpacking libxrandr2:amd64 (2:1.5.2-2build1) ...
+
+2026-05-15T03:11:46.740540306Z [inf]  Selecting previously unselected package libgtk-3-common.
+
+2026-05-15T03:11:46.760028333Z [inf]  Preparing to unpack .../094-libgtk-3-common_3.24.41-4ubuntu1.3_all.deb ...
+
+2026-05-15T03:11:46.763537862Z [inf]  Unpacking libgtk-3-common (3.24.41-4ubuntu1.3) ...
+
+2026-05-15T03:11:46.976079251Z [inf]  Selecting previously unselected package libgtk-3-0t64:amd64.
+
+2026-05-15T03:11:46.984505183Z [inf]  Preparing to unpack .../095-libgtk-3-0t64_3.24.41-4ubuntu1.3_amd64.deb ...
+
+2026-05-15T03:11:47.003536892Z [inf]  Unpacking libgtk-3-0t64:amd64 (3.24.41-4ubuntu1.3) ...
+
+2026-05-15T03:11:47.303410634Z [inf]  Selecting previously unselected package libnspr4:amd64.
+
+2026-05-15T03:11:47.30440468Z [inf]  Preparing to unpack .../096-libnspr4_2%3a4.35-1.1build1_amd64.deb ...
+
+2026-05-15T03:11:47.31491813Z [inf]  Unpacking libnspr4:amd64 (2:4.35-1.1build1) ...
+
+2026-05-15T03:11:47.423273167Z [inf]  Selecting previously unselected package libnss3:amd64.
+
+2026-05-15T03:11:47.435227337Z [inf]  Preparing to unpack .../097-libnss3_2%3a3.98-1ubuntu0.1_amd64.deb ...
+
+2026-05-15T03:11:47.439735635Z [inf]  Unpacking libnss3:amd64 (2:3.98-1ubuntu0.1) ...
+
+2026-05-15T03:11:47.632044104Z [inf]  Selecting previously unselected package x11-common.
+
+2026-05-15T03:11:47.634687834Z [inf]  Preparing to unpack .../098-x11-common_1%3a7.7+23ubuntu3_all.deb ...
+
+2026-05-15T03:11:47.640284616Z [inf]  Unpacking x11-common (1:7.7+23ubuntu3) ...
+
+2026-05-15T03:11:47.748128933Z [inf]  Selecting previously unselected package libxss1:amd64.
+
+2026-05-15T03:11:47.750542028Z [inf]  Preparing to unpack .../099-libxss1_1%3a1.2.3-1build3_amd64.deb ...
+
+2026-05-15T03:11:47.761948742Z [inf]  Unpacking libxss1:amd64 (1:1.2.3-1build3) ...
+
+2026-05-15T03:11:47.869437987Z [inf]  Selecting previously unselected package libglvnd0:amd64.
+
+2026-05-15T03:11:47.875591759Z [inf]  Preparing to unpack .../100-libglvnd0_1.7.0-1build1_amd64.deb ...
+
+2026-05-15T03:11:47.887230981Z [inf]  Unpacking libglvnd0:amd64 (1.7.0-1build1) ...
+
+2026-05-15T03:11:48.008222499Z [inf]  Selecting previously unselected package libopengl0:amd64.
+
+2026-05-15T03:11:48.011539722Z [inf]  Preparing to unpack .../101-libopengl0_1.7.0-1build1_amd64.deb ...
+
+2026-05-15T03:11:48.014628574Z [inf]  Unpacking libopengl0:amd64 (1.7.0-1build1) ...
+
+2026-05-15T03:11:48.080988594Z [inf]  Selecting previously unselected package libglu1-mesa:amd64.
+
+2026-05-15T03:11:48.083010393Z [inf]  Preparing to unpack .../102-libglu1-mesa_9.0.2-1.1build1_amd64.deb ...
+
+2026-05-15T03:11:48.087031117Z [inf]  Unpacking libglu1-mesa:amd64 (9.0.2-1.1build1) ...
+
+2026-05-15T03:11:48.212079911Z [inf]  Setting up libgraphite2-3:amd64 (1.3.14-2build1) ...
+
+2026-05-15T03:11:48.235121184Z [inf]  Setting up liblcms2-2:amd64 (2.14-2ubuntu0.1) ...
+
+2026-05-15T03:11:48.261639242Z [inf]  Setting up libpixman-1-0:amd64 (0.42.2-1build1) ...
+
+2026-05-15T03:11:48.291130347Z [inf]  Setting up libsharpyuv0:amd64 (1.3.2-0.4build3) ...
+
+2026-05-15T03:11:48.321157054Z [inf]  Setting up libpciaccess0:amd64 (0.17-3ubuntu0.24.04.2) ...
+
+2026-05-15T03:11:48.340800266Z [inf]  Setting up libxau6:amd64 (1:1.0.9-1build6) ...
+
+2026-05-15T03:11:48.361556279Z [inf]  Setting up libxdmcp6:amd64 (1:1.1.3-0ubuntu6) ...
+
+2026-05-15T03:11:48.385315336Z [inf]  Setting up libxcb1:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:48.411362389Z [inf]  Setting up libxcb-xfixes0:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:48.439813956Z [inf]  Setting up liblerc4:amd64 (4.0.0+ds-4ubuntu2) ...
+
+2026-05-15T03:11:48.46416642Z [inf]  Setting up hicolor-icon-theme (0.17-2) ...
+
+2026-05-15T03:11:48.537952036Z [inf]  Setting up libdatrie1:amd64 (0.2.13-3build1) ...
+
+2026-05-15T03:11:48.564538636Z [inf]  Setting up libxcb-render0:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:48.594833839Z [inf]  Setting up libglvnd0:amd64 (1.7.0-1build1) ...
+
+2026-05-15T03:11:48.621570304Z [inf]  Setting up libsqlite3-0:amd64 (3.45.1-1ubuntu2.5) ...
+
+2026-05-15T03:11:48.653359149Z [inf]  Setting up libgdk-pixbuf2.0-common (2.42.10+dfsg-3ubuntu3.3) ...
+
+2026-05-15T03:11:48.680369756Z [inf]  Setting up x11-common (1:7.7+23ubuntu3) ...
+
+2026-05-15T03:11:49.194830211Z [inf]  debconf: unable to initialize frontend: Dialog
+debconf: (Dialog frontend will not work on a dumb terminal, an emacs shell buffer, or without a controlling terminal.)
+debconf: falling back to frontend: Readline
+
+2026-05-15T03:11:49.222229406Z [inf]  debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+
+2026-05-15T03:11:49.291669673Z [inf]  invoke-rc.d: could not determine current runlevel
+
+2026-05-15T03:11:49.315513258Z [inf]  invoke-rc.d: policy-rc.d denied execution of start.
+
+2026-05-15T03:11:49.343672953Z [inf]  Setting up libsensors-config (1:3.6.0-9build1) ...
+
+2026-05-15T03:11:49.389415309Z [inf]  Setting up libdeflate0:amd64 (1.19-1build1.1) ...
+
+2026-05-15T03:11:49.413822601Z [inf]  Setting up xkb-data (2.41-2ubuntu1.1) ...
+
+2026-05-15T03:11:49.438223269Z [inf]  Setting up libxcb-shm0:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:49.464897482Z [inf]  Setting up libjbig0:amd64 (2.1-6.1ubuntu2) ...
+
+2026-05-15T03:11:49.507951332Z [inf]  Setting up libopengl0:amd64 (1.7.0-1build1) ...
+
+2026-05-15T03:11:49.519155773Z [inf]  Setting up libelf1t64:amd64 (0.190-1.1ubuntu0.1) ...
+
+2026-05-15T03:11:49.539284251Z [inf]  Setting up libxcb-present0:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:49.56636885Z [inf]  Setting up libasound2-data (1.2.11-1ubuntu0.2) ...
+
+2026-05-15T03:11:49.590730327Z [inf]  Setting up libglib2.0-0t64:amd64 (2.80.0-6ubuntu3.8) ...
+
+2026-05-15T03:11:49.645815753Z [inf]  Setting up libasound2t64:amd64 (1.2.11-1ubuntu0.2) ...
+
+2026-05-15T03:11:49.670337324Z [inf]  Setting up libx11-data (2:1.8.7-1build1) ...
+
+2026-05-15T03:11:49.68754887Z [inf]  Setting up libepoxy0:amd64 (1.5.10-1build1) ...
+
+2026-05-15T03:11:49.703282354Z [inf]  Setting up libnspr4:amd64 (2:4.35-1.1build1) ...
+
+2026-05-15T03:11:49.715109203Z [inf]  Setting up libxcb-sync1:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:49.737396278Z [inf]  Setting up libavahi-common-data:amd64 (0.8-13ubuntu6.2) ...
+
+2026-05-15T03:11:49.762869243Z [inf]  Setting up libfribidi0:amd64 (1.0.13-3build1) ...
+
+2026-05-15T03:11:49.79101727Z [inf]  Setting up fonts-dejavu-mono (2.37-8) ...
+
+2026-05-15T03:11:49.839302328Z [inf]  Setting up libpng16-16t64:amd64 (1.6.43-5ubuntu0.6) ...
+
+2026-05-15T03:11:49.857157214Z [inf]  Setting up fonts-dejavu-core (2.37-8) ...
+
+2026-05-15T03:11:50.008014393Z [inf]  Setting up libsensors5:amd64 (1:3.6.0-9build1) ...
+
+2026-05-15T03:11:50.032949515Z [inf]  Setting up libjpeg-turbo8:amd64 (2.1.5-2ubuntu2) ...
+
+2026-05-15T03:11:50.060206776Z [inf]  Setting up libwebp7:amd64 (1.3.2-0.4build3) ...
+
+2026-05-15T03:11:50.090600106Z [inf]  Setting up libicu74:amd64 (74.2-1ubuntu3.1) ...
+
+2026-05-15T03:11:50.1152477Z [inf]  Setting up libxshmfence1:amd64 (1.3-1build5) ...
+
+2026-05-15T03:11:50.125964697Z [inf]  Setting up chromium-browser (2:1snap1-0ubuntu2) ...
+
+2026-05-15T03:11:50.163421123Z [inf]  update-alternatives: using /usr/bin/chromium-browser to provide /usr/bin/x-www-browser (x-www-browser) in auto mode
+
+2026-05-15T03:11:50.182785739Z [inf]  update-alternatives: using /usr/bin/chromium-browser to provide /usr/bin/gnome-www-browser (gnome-www-browser) in auto mode
+
+2026-05-15T03:11:50.21302022Z [inf]  Setting up at-spi2-common (2.52.0-1build1) ...
+
+2026-05-15T03:11:50.242533059Z [inf]  Setting up libxcb-randr0:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:50.265612392Z [inf]  Setting up libx11-6:amd64 (2:1.8.7-1build1) ...
+
+2026-05-15T03:11:50.285487506Z [inf]  Setting up libthai-data (0.1.29-2build1) ...
+
+2026-05-15T03:11:50.307040802Z [inf]  Setting up libglu1-mesa:amd64 (9.0.2-1.1build1) ...
+
+2026-05-15T03:11:50.333469889Z [inf]  Setting up libwayland-egl1:amd64 (1.22.0-2.1build1) ...
+
+2026-05-15T03:11:50.360002541Z [inf]  Setting up libdrm-common (2.4.125-1ubuntu0.1~24.04.1) ...
+
+2026-05-15T03:11:50.389756091Z [inf]  Setting up libxcomposite1:amd64 (1:0.4.5-1build3) ...
+
+2026-05-15T03:11:50.41456649Z [inf]  Setting up libxml2:amd64 (2.9.14+dfsg-1.3ubuntu3.7) ...
+
+2026-05-15T03:11:50.437778034Z [inf]  Setting up libxkbcommon0:amd64 (1.6.0-1build1) ...
+
+2026-05-15T03:11:50.460900523Z [inf]  Setting up libwayland-client0:amd64 (1.22.0-2.1build1) ...
+
+2026-05-15T03:11:50.488221398Z [inf]  Setting up libjpeg8:amd64 (8c-2ubuntu11) ...
+
+2026-05-15T03:11:50.515040531Z [inf]  Setting up libxcb-dri3-0:amd64 (1.15-1ubuntu2) ...
+
+2026-05-15T03:11:50.557960848Z [inf]  Setting up libx11-xcb1:amd64 (2:1.8.7-1build1) ...
+
+2026-05-15T03:11:50.571684239Z [inf]  Setting up libxdamage1:amd64 (1:1.1.6-1build1) ...
+
+2026-05-15T03:11:50.600860877Z [inf]  Setting up libatk1.0-0t64:amd64 (2.52.0-1build1) ...
+
+2026-05-15T03:11:50.632927669Z [inf]  Setting up libxrender1:amd64 (1:0.9.10-1.1build1) ...
+
+2026-05-15T03:11:50.663117183Z [inf]  Setting up fontconfig-config (2.15.0-1.1ubuntu2) ...
+
+2026-05-15T03:11:51.190155137Z [inf]  Setting up libavahi-common3:amd64 (0.8-13ubuntu6.2) ...
+
+2026-05-15T03:11:51.211172105Z [inf]  Setting up libxext6:amd64 (2:1.3.4-1build2) ...
+
+2026-05-15T03:11:51.238548921Z [inf]  Setting up libnss3:amd64 (2:3.98-1ubuntu0.1) ...
+
+2026-05-15T03:11:51.285335797Z [inf]  Setting up libcolord2:amd64 (1.4.7-1build2) ...
+
+2026-05-15T03:11:51.313496836Z [inf]  Setting up libdconf1:amd64 (0.40.0-4ubuntu0.1) ...
+
+2026-05-15T03:11:51.332734371Z [inf]  Setting up libthai0:amd64 (0.1.29-2build1) ...
+
+2026-05-15T03:11:51.351339494Z [inf]  Setting up libfreetype6:amd64 (2.13.2+dfsg-1ubuntu0.1) ...
+
+2026-05-15T03:11:51.36387414Z [inf]  Setting up libxfixes3:amd64 (1:6.0.0-2build1) ...
+
+2026-05-15T03:11:51.385948499Z [inf]  Setting up shared-mime-info (2.4-4) ...
+
+2026-05-15T03:11:56.752483805Z [inf]  Setting up libxinerama1:amd64 (2:1.1.4-3build1) ...
+
+2026-05-15T03:11:56.765719347Z [inf]  Setting up libxrandr2:amd64 (2:1.5.2-2build1) ...
+
+2026-05-15T03:11:56.790587943Z [inf]  Setting up libllvm20:amd64 (1:20.1.2-0ubuntu1~24.04.2) ...
+
+2026-05-15T03:11:56.840181396Z [inf]  Setting up libdrm2:amd64 (2.4.125-1ubuntu0.1~24.04.1) ...
+
+2026-05-15T03:11:56.911815127Z [inf]  Setting up libtiff6:amd64 (4.5.1+git230720-4ubuntu2.5) ...
+
+2026-05-15T03:11:56.936503731Z [inf]  Setting up libwayland-cursor0:amd64 (1.22.0-2.1build1) ...
+
+2026-05-15T03:11:56.963024277Z [inf]  Setting up libharfbuzz0b:amd64 (8.3.0-2build2) ...
+
+2026-05-15T03:11:56.989444946Z [inf]  Setting up libgdk-pixbuf-2.0-0:amd64 (2.42.10+dfsg-3ubuntu3.3) ...
+
+2026-05-15T03:11:57.040014372Z [inf]  Setting up libxss1:amd64 (1:1.2.3-1build3) ...
+
+2026-05-15T03:11:57.063723365Z [inf]  Setting up libfontconfig1:amd64 (2.15.0-1.1ubuntu2) ...
+
+2026-05-15T03:11:57.089401577Z [inf]  Setting up libavahi-client3:amd64 (0.8-13ubuntu6.2) ...
+
+2026-05-15T03:11:57.116405298Z [inf]  Setting up libdrm-amdgpu1:amd64 (2.4.125-1ubuntu0.1~24.04.1) ...
+
+2026-05-15T03:11:57.159792578Z [inf]  Setting up gtk-update-icon-cache (3.24.41-4ubuntu1.3) ...
+
+2026-05-15T03:11:57.170498232Z [inf]  Setting up fontconfig (2.15.0-1.1ubuntu2) ...
+
+2026-05-15T03:11:57.188220203Z [inf]  Regenerating fonts cache... 
+2026-05-15T03:11:59.238261049Z [inf]  done.
+
+2026-05-15T03:11:59.262045293Z [inf]  Setting up libxi6:amd64 (2:1.8.1-1build1) ...
+
+2026-05-15T03:11:59.284660675Z [inf]  Setting up libxcursor1:amd64 (1:1.2.1-1build1) ...
+
+2026-05-15T03:11:59.311369237Z [inf]  Setting up libpango-1.0-0:amd64 (1.52.1+ds-1build1) ...
+
+2026-05-15T03:11:59.384110139Z [inf]  Setting up libdrm-intel1:amd64 (2.4.125-1ubuntu0.1~24.04.1) ...
+
+2026-05-15T03:11:59.440257025Z [inf]  Setting up dconf-service (0.40.0-4ubuntu0.1) ...
+
+2026-05-15T03:11:59.484532471Z [inf]  Setting up libcairo2:amd64 (1.18.0-3build1) ...
+
+2026-05-15T03:11:59.510724002Z [inf]  Setting up libatspi2.0-0t64:amd64 (2.52.0-1build1) ...
+
+2026-05-15T03:11:59.542732367Z [inf]  Setting up libcairo-gobject2:amd64 (1.18.0-3build1) ...
+
+2026-05-15T03:11:59.572172045Z [inf]  Setting up libpangoft2-1.0-0:amd64 (1.52.1+ds-1build1) ...
+
+2026-05-15T03:11:59.632105225Z [inf]  Setting up libcups2t64:amd64 (2.4.7-1.2ubuntu7.9) ...
+
+2026-05-15T03:11:59.662104172Z [inf]  Setting up libpangocairo-1.0-0:amd64 (1.52.1+ds-1build1) ...
+
+2026-05-15T03:11:59.715360651Z [inf]  Setting up libatk-bridge2.0-0t64:amd64 (2.52.0-1build1) ...
+
+2026-05-15T03:11:59.738464193Z [inf]  Setting up mesa-libgallium:amd64 (25.2.8-0ubuntu0.24.04.1) ...
+
+2026-05-15T03:11:59.764341157Z [inf]  Setting up dconf-gsettings-backend:amd64 (0.40.0-4ubuntu0.1) ...
+
+2026-05-15T03:11:59.808187053Z [inf]  Setting up libgbm1:amd64 (25.2.8-0ubuntu0.24.04.1) ...
+
+2026-05-15T03:11:59.841240153Z [inf]  Setting up libgtk-3-common (3.24.41-4ubuntu1.3) ...
+
+2026-05-15T03:11:59.887847231Z [inf]  Setting up adwaita-icon-theme (46.0-1) ...
+
+2026-05-15T03:11:59.995299799Z [inf]  update-alternatives: using /usr/share/icons/Adwaita/cursor.theme to provide /usr/share/icons/default/index.theme (x-cursor-theme) in auto mode
+
+2026-05-15T03:12:00.019406965Z [inf]  Setting up libgtk-3-0t64:amd64 (3.24.41-4ubuntu1.3) ...
+
+2026-05-15T03:12:00.139997212Z [inf]  Setting up humanity-icon-theme (0.6.16) ...
+
+2026-05-15T03:12:00.982127236Z [inf]  Setting up ubuntu-mono (24.04-0ubuntu1) ...
+
+2026-05-15T03:12:01.312337374Z [inf]  Processing triggers for libc-bin (2.39-0ubuntu8.4) ...
+
+2026-05-15T03:12:02.844339484Z [inf]  [stage-0  5/11] RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends chromium libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libgbm1 libasound2t64 libpangocairo-1.0-0 libxss1 libgtk-3-0 libxshmfence1 libglu1
+2026-05-15T03:12:02.874093779Z [inf]  [stage-0  6/11] COPY . /app/.
+2026-05-15T03:12:04.716344975Z [inf]  [stage-0  6/11] COPY . /app/.
+2026-05-15T03:12:04.760499205Z [inf]  [stage-0  7/11] RUN --mount=type=cache,id=s/99a13602-ac9b-4e23-a2e8-af5910932f75-/root/local/share/pnpm/store/v3,target=/root/.local/share/pnpm/store/v3 pnpm i --frozen-lockfile
+2026-05-15T03:12:08.488107052Z [inf]  (node:1) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+2026-05-15T03:12:08.537192521Z [inf]  Scope: all 9 workspace projects
+
+2026-05-15T03:12:08.764266543Z [inf]   ERR_PNPM_LOCKFILE_CONFIG_MISMATCH  Cannot proceed with the frozen installation. The current "overrides" configuration doesn't match the value found in the lockfile
+
+Update your lockfile using "pnpm install --no-frozen-lockfile"
+
+2026-05-15T03:12:09.083792899Z [err]  [stage-0  7/11] RUN --mount=type=cache,id=s/99a13602-ac9b-4e23-a2e8-af5910932f75-/root/local/share/pnpm/store/v3,target=/root/.local/share/pnpm/store/v3 pnpm i --frozen-lockfile
+2026-05-15T03:12:09.232350443Z [err]  Build Failed: build daemon returned an error < failed to solve: process "/bin/bash -ol pipefail -c pnpm i --frozen-lockfile" did not complete successfully: exit code: 1 >
