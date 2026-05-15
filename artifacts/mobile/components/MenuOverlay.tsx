@@ -64,7 +64,9 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgr
   const displayName = userName ?? undefined;
   const initials = displayName
     ? displayName.split(" ").map((w: string) => w[0]).slice(0, 2).join("").toUpperCase()
-    : (userId ?? "").slice(0, 2).toUpperCase();
+    : email
+    ? email.split("@")[0].slice(0, 2).toUpperCase()
+    : "?";
 
   const handleSignOut = () => {
     Alert.alert(
