@@ -8,14 +8,15 @@ App mobile de calculadora inteligente com chat em português — o usuário desc
 - `pnpm --filter @workspace/api-server run dev` — API server (porta 8080)
 - `pnpm install --no-frozen-lockfile` — instalar dependências
 - Required env (mobile): `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_DOMAIN`
-- Required env (server): `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `AI_INTEGRATIONS_OPENAI_BASE_URL`, `AI_INTEGRATIONS_OPENAI_API_KEY`
-- Railway deploy: `railway.json` na raiz configura build/start do monorepo
+- Required env (server/Replit): `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `AI_INTEGRATIONS_OPENAI_BASE_URL`, `AI_INTEGRATIONS_OPENAI_API_KEY`
+- Required env (server/Railway): `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `DATABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NODE_ENV=production`, `PORT` (Railway injeta automaticamente)
+- Railway deploy: `railway.json` + `nixpacks.toml` na raiz configuram build/start/chromium do monorepo
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
 - Mobile: Expo SDK 54, expo-router 6, React Native 0.81, @tanstack/react-query
-- API: Express 5, OpenAI via Replit AI Integration (proxy)
+- API: Express 5, OpenAI via Replit AI Integration (proxy no Replit) ou `OPENAI_API_KEY` direto (Railway)
 - DB/Auth: Supabase (PostgreSQL + RLS + Supabase Auth)
 - AI: `@workspace/integrations-openai-ai-server` → gpt-5.1
 - Fonts: Inter via @expo-google-fonts/inter; Icons: Feather

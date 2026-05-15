@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import { Router, type IRouter } from "express";
 import puppeteer from "puppeteer-core";
 import katex from "katex";
@@ -6,9 +7,20 @@ import { checkAndIncrementPdfQuota } from "../lib/billingService";
 
 const router: IRouter = Router();
 
-const CHROMIUM_PATH =
-  process.env.CHROMIUM_PATH ??
-  "/nix/store/qa9cnw4v5xkxyip6mb9kxqfq1z4x2dx1-chromium-138.0.7204.100/bin/chromium";
+function resolveChromiumPath(): string {
+  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
+  try {
+    const found = execSync(
+      "which chromium 2>/dev/null || which chromium-browser 2>/dev/null || which google-chrome-stable 2>/dev/null",
+      { encoding: "utf8" }
+    ).trim();
+    if (found) return found;
+  } catch {}
+  // Fallback: path padrão do Replit (Nix store)
+  return "/nix/store/qa9cnw4v5xkxyip6mb9kxqfq1z4x2dx1-chromium-138.0.7204.100/bin/chromium";
+}
+
+const CHROMIUM_PATH = resolveChromiumPath();
 
 function renderLatex(latex: string, inline = false): string {
   try {
