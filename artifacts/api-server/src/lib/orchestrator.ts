@@ -970,8 +970,8 @@ export async function runCalculationPipeline(opts: {
     result: finalResult,
     tokenUsage: {
       model: "gpt-4o",
-      input_tokens: 0,  // contabilizado globalmente pelo billing service
-      output_tokens: 0,
+      inputTokens: 0,
+      outputTokens: 0,
     },
   };
 }
