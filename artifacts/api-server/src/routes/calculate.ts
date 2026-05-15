@@ -67,20 +67,14 @@ router.post("/calculate", requireAuth, async (req, res) => {
       emit,
     });
 
-    // Débito de créditos — fire-and-forget (não bloqueia resposta)
-    if (result.status === "success" && result.tokenUsage) {
-      registerConsulta({
+    // Débito de créditos — aguardado antes de enviar resposta ao cliente,
+    // para garantir que o saldo esteja atualizado no banco quando o mobile
+    // invalida a query de créditos logo após receber o resultado.
+    if ((result.status === "success" || result.status === "conversational") && result.tokenUsage) {
+      await registerConsulta({
         userId,
         modelo: result.tokenUsage.model,
-        tipo: "calculo",
-        sessionId: sessionId ?? null,
-        tokenUsage: result.tokenUsage,
-      }).catch((err) => logger.warn({ err }, "calculate: billing failed silently"));
-    } else if (result.status === "conversational" && result.tokenUsage) {
-      registerConsulta({
-        userId,
-        modelo: result.tokenUsage.model,
-        tipo: "conversacional",
+        tipo: result.status === "success" ? "calculo" : "conversacional",
         sessionId: sessionId ?? null,
         tokenUsage: result.tokenUsage,
       }).catch((err) => logger.warn({ err }, "calculate: billing failed silently"));
