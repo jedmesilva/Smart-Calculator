@@ -1,0 +1,67 @@
+2026-05-15T03:26:56.827346713Z [inf]  Starting Container
+2026-05-15T03:26:57.630305476Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:377:25)
+2026-05-15T03:26:57.630316794Z [err]      at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:691:26)
+2026-05-15T03:26:57.630323468Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-05-15T03:26:57.630329388Z [err]  
+2026-05-15T03:26:57.630335893Z [err]  Node.js v24.10.0
+2026-05-15T03:26:57.630381065Z [err]  /app/lib/integrations-openai-ai-server/src/client.ts:13
+2026-05-15T03:26:57.630388800Z [err]    throw new Error(
+2026-05-15T03:26:57.630395534Z [err]          ^
+2026-05-15T03:26:57.630401938Z [err]  
+2026-05-15T03:26:57.630408401Z [err]  Error: OpenAI API key não configurada. Defina AI_INTEGRATIONS_OPENAI_API_KEY (Replit) ou OPENAI_API_KEY (Railway/produção).
+2026-05-15T03:26:57.630414648Z [err]      at <anonymous> (/app/lib/integrations-openai-ai-server/src/client.ts:13:9)
+2026-05-15T03:26:58.053189862Z [err]  /app/lib/integrations-openai-ai-server/src/client.ts:13
+2026-05-15T03:26:58.053204981Z [err]    throw new Error(
+2026-05-15T03:26:58.053211206Z [err]          ^
+2026-05-15T03:26:58.053216985Z [err]  
+2026-05-15T03:26:58.053223652Z [err]  Error: OpenAI API key não configurada. Defina AI_INTEGRATIONS_OPENAI_API_KEY (Replit) ou OPENAI_API_KEY (Railway/produção).
+2026-05-15T03:26:58.053229254Z [err]      at <anonymous> (/app/lib/integrations-openai-ai-server/src/client.ts:13:9)
+2026-05-15T03:26:58.053234946Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:377:25)
+2026-05-15T03:26:58.053242181Z [err]      at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:691:26)
+2026-05-15T03:26:58.053248326Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-05-15T03:26:58.053254535Z [err]  
+2026-05-15T03:26:58.053260957Z [err]  Node.js v24.10.0
+2026-05-15T03:26:59.394633624Z [err]  /app/lib/integrations-openai-ai-server/src/client.ts:13
+2026-05-15T03:26:59.394644126Z [err]    throw new Error(
+2026-05-15T03:26:59.394650219Z [err]          ^
+2026-05-15T03:26:59.394658610Z [err]  
+2026-05-15T03:26:59.394663871Z [err]  Error: OpenAI API key não configurada. Defina AI_INTEGRATIONS_OPENAI_API_KEY (Replit) ou OPENAI_API_KEY (Railway/produção).
+2026-05-15T03:26:59.394670254Z [err]      at <anonymous> (/app/lib/integrations-openai-ai-server/src/client.ts:13:9)
+2026-05-15T03:26:59.394675534Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:377:25)
+2026-05-15T03:26:59.394680567Z [err]      at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:691:26)
+2026-05-15T03:26:59.394685505Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-05-15T03:26:59.394691211Z [err]  
+2026-05-15T03:26:59.394697187Z [err]  Node.js v24.10.0
+2026-05-15T03:27:00.727035289Z [err]  /app/lib/integrations-openai-ai-server/src/client.ts:13
+2026-05-15T03:27:00.727041474Z [err]    throw new Error(
+2026-05-15T03:27:00.727047468Z [err]          ^
+2026-05-15T03:27:00.727055045Z [err]  
+2026-05-15T03:27:00.727066038Z [err]  Error: OpenAI API key não configurada. Defina AI_INTEGRATIONS_OPENAI_API_KEY (Replit) ou OPENAI_API_KEY (Railway/produção).
+2026-05-15T03:27:00.727074060Z [err]      at <anonymous> (/app/lib/integrations-openai-ai-server/src/client.ts:13:9)
+2026-05-15T03:27:00.727080484Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:377:25)
+2026-05-15T03:27:00.727086431Z [err]      at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:691:26)
+2026-05-15T03:27:00.727092316Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-05-15T03:27:00.727099169Z [err]  
+2026-05-15T03:27:00.727106045Z [err]  Node.js v24.10.0
+2026-05-15T03:27:02.087042601Z [err]  Node.js v24.10.0
+2026-05-15T03:27:02.087062619Z [err]  /app/lib/integrations-openai-ai-server/src/client.ts:13
+2026-05-15T03:27:02.087068740Z [err]    throw new Error(
+2026-05-15T03:27:02.087074152Z [err]          ^
+2026-05-15T03:27:02.087079863Z [err]  
+2026-05-15T03:27:02.087085140Z [err]  Error: OpenAI API key não configurada. Defina AI_INTEGRATIONS_OPENAI_API_KEY (Replit) ou OPENAI_API_KEY (Railway/produção).
+2026-05-15T03:27:02.087090901Z [err]      at <anonymous> (/app/lib/integrations-openai-ai-server/src/client.ts:13:9)
+2026-05-15T03:27:02.087097410Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:377:25)
+2026-05-15T03:27:02.087103625Z [err]      at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:691:26)
+2026-05-15T03:27:02.087108904Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-05-15T03:27:02.087114134Z [err]  
+2026-05-15T03:27:03.628300663Z [err]  /app/lib/integrations-openai-ai-server/src/client.ts:13
+2026-05-15T03:27:03.628305256Z [err]    throw new Error(
+2026-05-15T03:27:03.628310926Z [err]          ^
+2026-05-15T03:27:03.628316213Z [err]  
+2026-05-15T03:27:03.628322623Z [err]  Error: OpenAI API key não configurada. Defina AI_INTEGRATIONS_OPENAI_API_KEY (Replit) ou OPENAI_API_KEY (Railway/produção).
+2026-05-15T03:27:03.628328742Z [err]      at <anonymous> (/app/lib/integrations-openai-ai-server/src/client.ts:13:9)
+2026-05-15T03:27:03.628395070Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:377:25)
+2026-05-15T03:27:03.628409050Z [err]      at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:691:26)
+2026-05-15T03:27:03.628416896Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-05-15T03:27:03.628425014Z [err]  
+2026-05-15T03:27:03.628432206Z [err]  Node.js v24.10.0
