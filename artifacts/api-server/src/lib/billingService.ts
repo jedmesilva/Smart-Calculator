@@ -47,7 +47,17 @@ export interface CarteiraInfo {
   totalConsultas: number;
   totalGastoBrl: number;
   totalCreditosConsumidos: number;
+  plano: string;
+  pdfUsadosHoje: number;
+  pdfLimite: number;
 }
+
+// Limites de PDF por plano por dia
+export const PDF_LIMITS: Record<string, number> = {
+  free: 0,
+  starter: 2,
+  pro: 10,
+};
 
 // Preços fallback quando o modelo não está na tabela
 const FALLBACK_PRICES: Record<string, { input: number; output: number }> = {
@@ -116,22 +126,116 @@ export async function getCarteira(userId: string): Promise<CarteiraInfo | null> 
               COALESCE((
                 SELECT SUM(-t.creditos) FROM transacoes t
                 WHERE t.usuario_id = $1 AND t.tipo = 'debito'
-              ), 0) AS total_creditos_consumidos
-       FROM carteira c WHERE c.usuario_id = $1`,
+              ), 0) AS total_creditos_consumidos,
+              COALESCE(p.plano, 'free') AS plano,
+              COALESCE(c.pdf_downloads_hoje, 0) AS pdf_downloads_hoje,
+              c.pdf_ultima_renovacao_pdf
+       FROM carteira c
+       LEFT JOIN profiles p ON p.id::text = $1
+       WHERE c.usuario_id = $1`,
       [userId]
     );
     if (res.rows.length === 0) {
-      return { saldo: WELCOME_CREDITS, totalConsultas: 0, totalGastoBrl: 0, totalCreditosConsumidos: 0 };
+      return { saldo: WELCOME_CREDITS, totalConsultas: 0, totalGastoBrl: 0, totalCreditosConsumidos: 0, plano: "free", pdfUsadosHoje: 0, pdfLimite: PDF_LIMITS["free"] };
     }
+    const row = res.rows[0];
+    const plano: string = row.plano ?? "free";
+    const hoje = new Date().toISOString().slice(0, 10);
+    const ultimaRenovacao = row.pdf_ultima_renovacao_pdf;
+    const ultimaRenovacaoStr = ultimaRenovacao
+      ? (ultimaRenovacao instanceof Date ? ultimaRenovacao.toISOString().slice(0, 10) : String(ultimaRenovacao).slice(0, 10))
+      : null;
+    const pdfUsadosHoje = ultimaRenovacaoStr === hoje ? parseInt(row.pdf_downloads_hoje ?? "0", 10) : 0;
     return {
-      saldo: res.rows[0].saldo_creditos,
-      totalConsultas: res.rows[0].total_consultas,
-      totalGastoBrl: parseFloat(res.rows[0].total_gasto_brl ?? "0"),
-      totalCreditosConsumidos: parseInt(res.rows[0].total_creditos_consumidos ?? "0", 10),
+      saldo: row.saldo_creditos,
+      totalConsultas: row.total_consultas,
+      totalGastoBrl: parseFloat(row.total_gasto_brl ?? "0"),
+      totalCreditosConsumidos: parseInt(row.total_creditos_consumidos ?? "0", 10),
+      plano,
+      pdfUsadosHoje,
+      pdfLimite: PDF_LIMITS[plano] ?? 0,
     };
   } catch (err) {
     logger.warn({ err, userId }, "billing: getCarteira failed");
     return null;
+  } finally {
+    client.release();
+  }
+}
+
+/* ── Auto-migração: garante colunas de cota de PDF na carteira ── */
+export async function ensurePdfQuotaColumns(): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query(`
+      ALTER TABLE carteira
+        ADD COLUMN IF NOT EXISTS pdf_downloads_hoje INTEGER NOT NULL DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS pdf_ultima_renovacao_pdf DATE
+    `);
+    logger.info("billing: colunas pdf_quota garantidas");
+  } catch (err) {
+    logger.warn({ err }, "billing: erro ao garantir colunas pdf_quota");
+  } finally {
+    client.release();
+  }
+}
+
+/* ── Verifica e incrementa cota diária de PDF ── */
+export async function checkAndIncrementPdfQuota(userId: string): Promise<{
+  allowed: boolean;
+  plano: string;
+  limite: number;
+  usados: number;
+}> {
+  const client = await pool.connect();
+  try {
+    const planoRes = await client.query(
+      `SELECT COALESCE(plano, 'free') AS plano FROM profiles WHERE id::text = $1 LIMIT 1`,
+      [userId]
+    );
+    const plano: string = planoRes.rows[0]?.plano ?? "free";
+    const limite = PDF_LIMITS[plano] ?? 0;
+
+    if (limite === 0) {
+      return { allowed: false, plano, limite: 0, usados: 0 };
+    }
+
+    await client.query("BEGIN");
+
+    const cartRes = await client.query(
+      `SELECT COALESCE(pdf_downloads_hoje, 0) AS pdf_downloads_hoje, pdf_ultima_renovacao_pdf
+       FROM carteira WHERE usuario_id = $1 FOR UPDATE`,
+      [userId]
+    );
+
+    const hoje = new Date().toISOString().slice(0, 10);
+    const ultimaRenovacao = cartRes.rows[0]?.pdf_ultima_renovacao_pdf;
+    const ultimaRenovacaoStr = ultimaRenovacao
+      ? (ultimaRenovacao instanceof Date ? ultimaRenovacao.toISOString().slice(0, 10) : String(ultimaRenovacao).slice(0, 10))
+      : null;
+
+    let usados = ultimaRenovacaoStr === hoje ? parseInt(cartRes.rows[0]?.pdf_downloads_hoje ?? "0", 10) : 0;
+
+    if (usados >= limite) {
+      await client.query("ROLLBACK");
+      return { allowed: false, plano, limite, usados };
+    }
+
+    await client.query(
+      `UPDATE carteira SET
+         pdf_downloads_hoje = $1,
+         pdf_ultima_renovacao_pdf = $2::date,
+         atualizado_em = now()
+       WHERE usuario_id = $3`,
+      [usados + 1, hoje, userId]
+    );
+
+    await client.query("COMMIT");
+    return { allowed: true, plano, limite, usados: usados + 1 };
+  } catch (err) {
+    await client.query("ROLLBACK").catch(() => {});
+    logger.warn({ err, userId }, "billing: checkAndIncrementPdfQuota falhou");
+    return { allowed: true, plano: "unknown", limite: 99, usados: 0 };
   } finally {
     client.release();
   }

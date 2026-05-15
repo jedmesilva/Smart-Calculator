@@ -417,6 +417,9 @@ export type CarteiraInfo = {
   totalConsultas: number;
   totalGastoBrl: number;
   totalCreditosConsumidos: number;
+  plano: string;
+  pdfUsadosHoje: number;
+  pdfLimite: number;
 };
 
 export async function fetchDesenvolvimento(

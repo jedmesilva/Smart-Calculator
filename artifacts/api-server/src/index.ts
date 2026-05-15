@@ -1,6 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { atualizarCambio, recomputeSubsidio } from "./lib/billingService";
+import { atualizarCambio, recomputeSubsidio, ensurePdfQuotaColumns } from "./lib/billingService";
 
 const rawPort = process.env["PORT"];
 
@@ -50,4 +50,5 @@ app.listen(port, (err) => {
 
   initStripe();
   initBilling();
+  ensurePdfQuotaColumns();
 });

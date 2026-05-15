@@ -342,7 +342,19 @@ export async function exportAsPDF(data: ResultData): Promise<void> {
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(err?.error ?? "Erro ao gerar PDF no servidor");
+    const code = err?.error ?? "";
+    if (code === "plano_insuficiente") {
+      const e = new Error(err?.message ?? "Plano não suporta exportação de PDF") as any;
+      e.code = "plano_insuficiente";
+      throw e;
+    }
+    if (code === "limite_pdf_atingido") {
+      const e = new Error(err?.message ?? "Limite diário de PDF atingido") as any;
+      e.code = "limite_pdf_atingido";
+      e.limite = err?.limite;
+      throw e;
+    }
+    throw new Error(err?.message ?? "Erro ao gerar PDF no servidor");
   }
 
   // Converte a resposta para base64 e salva no filesystem

@@ -85,6 +85,12 @@ export function CalcOverlay({
   const [exporting, setExporting] = useState(false);
   const [exportStatus, setExportStatus] = useState<"idle" | "ok" | "err">("idle");
   const [copied, setCopied] = useState(false);
+  const { data: carteira } = useCarteira();
+  const plano = carteira?.plano ?? "free";
+  const pdfLimite = carteira?.pdfLimite ?? 0;
+  const pdfUsados = carteira?.pdfUsadosHoje ?? 0;
+  const isPdfBloqueado = plano === "free";
+  const isPdfEsgotado = !isPdfBloqueado && pdfUsados >= pdfLimite;
   const [lazySteps, setLazySteps] = useState<DesenvolvimentoStep[] | null>(null);
   const [loadingSteps, setLoadingSteps] = useState(false);
   const [interpretacaoLazy, setInterpretacaoLazy] = useState<string | null>(null);
@@ -124,6 +130,22 @@ export function CalcOverlay({
 
   const handleExportPDF = async () => {
     if (exporting) return;
+    if (isPdfBloqueado) {
+      Alert.alert(
+        "Recurso exclusivo",
+        "O plano Gratuito não inclui exportação de PDF. Faça upgrade para o plano Inicial (2/dia) ou Pro (10/dia).",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+    if (isPdfEsgotado) {
+      Alert.alert(
+        "Limite atingido",
+        `Você usou todos os ${pdfLimite} PDF${pdfLimite > 1 ? "s" : ""} disponíveis hoje no plano ${plano === "starter" ? "Inicial" : "Pro"}. O limite renova à meia-noite.`,
+        [{ text: "OK" }]
+      );
+      return;
+    }
     setExporting(true);
     setExportStatus("idle");
     try {
@@ -135,7 +157,14 @@ export function CalcOverlay({
       setTimeout(() => setExportStatus("idle"), 3000);
     } catch (err: any) {
       console.error("[exportAsPDF]", err);
-      Alert.alert("Erro ao exportar", err?.message ?? "Tente novamente.");
+      const code = (err as any)?.code;
+      if (code === "plano_insuficiente") {
+        Alert.alert("Recurso exclusivo", "Faça upgrade para o plano Inicial ou Pro para exportar PDFs.");
+      } else if (code === "limite_pdf_atingido") {
+        Alert.alert("Limite atingido", err?.message ?? "Limite diário de PDF atingido. Tente novamente amanhã.");
+      } else {
+        Alert.alert("Erro ao exportar", err?.message ?? "Tente novamente.");
+      }
     } finally {
       setExporting(false);
     }
@@ -215,6 +244,7 @@ export function CalcOverlay({
               styles.exportBtn,
               styles.exportBtnPDF,
               exporting && { opacity: 0.6 },
+              (isPdfBloqueado || isPdfEsgotado) && { opacity: 0.55 },
               exportStatus === "ok" && { backgroundColor: "#4CAF50" },
               exportStatus === "err" && { backgroundColor: "#E53935" },
             ]}
@@ -226,11 +256,15 @@ export function CalcOverlay({
               <Feather name="check" size={13} color="#fff" />
             ) : exportStatus === "err" ? (
               <Feather name="alert-circle" size={13} color="#fff" />
+            ) : isPdfBloqueado ? (
+              <Feather name="lock" size={13} color="#fff" />
+            ) : isPdfEsgotado ? (
+              <Feather name="slash" size={13} color="#fff" />
             ) : (
               <Feather name="share" size={13} color="#fff" />
             )}
             <Text style={[styles.exportBtnText, styles.exportBtnTextActive]}>
-              {exporting ? "gerando…" : exportStatus === "ok" ? "baixado!" : exportStatus === "err" ? "erro" : "salvar"}
+              {exporting ? "gerando…" : exportStatus === "ok" ? "baixado!" : exportStatus === "err" ? "erro" : isPdfBloqueado ? "bloqueado" : isPdfEsgotado ? `${pdfUsados}/${pdfLimite}` : "salvar"}
             </Text>
           </Pressable>
           <Pressable onPress={onClose} style={styles.iconBtn} hitSlop={12}>
@@ -529,7 +563,7 @@ const PLANS = [
   },
   {
     id: "starter",
-    name: "Starter",
+    name: "Inicial",
     price: 19.90,
     priceLabel: "R$\u202F19,90",
     credits: 500,
@@ -537,12 +571,12 @@ const PLANS = [
     creditsNote: "por mês, renovam todo mês",
     features: [
       "Tudo do Gratuito",
+      "2 exportações PDF por dia",
       "Créditos mensais recorrentes",
-      "Prioridade no processamento",
       "Suporte por e-mail",
     ],
     highlight: false,
-    cta: "Assinar Starter",
+    cta: "Assinar Inicial",
     ctaDisabled: false,
   },
   {
@@ -554,9 +588,9 @@ const PLANS = [
     creditsLabel: "2.000 créditos",
     creditsNote: "por mês, renovam todo mês",
     features: [
-      "Tudo do Starter",
+      "Tudo do Inicial",
+      "10 exportações PDF por dia",
       "4× mais créditos",
-      "Exportação PDF ilimitada",
       "Suporte prioritário",
     ],
     highlight: true,

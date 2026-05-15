@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import puppeteer from "puppeteer-core";
 import katex from "katex";
 import { requireAuth } from "../middlewares/auth";
+import { checkAndIncrementPdfQuota } from "../lib/billingService";
 
 const router: IRouter = Router();
 
@@ -365,6 +366,30 @@ function buildHTML(data: any): string {
 
 router.post("/export/pdf", requireAuth, async (req, res) => {
   try {
+    const userId = (req as any).user.id as string;
+
+    const quota = await checkAndIncrementPdfQuota(userId);
+    if (!quota.allowed) {
+      if (quota.limite === 0) {
+        res.status(403).json({
+          error: "plano_insuficiente",
+          message: "O plano Gratuito não inclui exportação de PDF. Faça upgrade para o plano Inicial ou Pro.",
+          plano: quota.plano,
+          limite: quota.limite,
+          usados: quota.usados,
+        });
+      } else {
+        res.status(429).json({
+          error: "limite_pdf_atingido",
+          message: `Você atingiu o limite de ${quota.limite} PDF${quota.limite > 1 ? "s" : ""} por dia do seu plano. O limite renova à meia-noite.`,
+          plano: quota.plano,
+          limite: quota.limite,
+          usados: quota.usados,
+        });
+      }
+      return;
+    }
+
     const data = req.body;
 
     if (!data || !data.resultado) {
