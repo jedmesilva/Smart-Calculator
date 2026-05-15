@@ -166,6 +166,14 @@ export async function registerConsulta(opts: {
 }): Promise<BillingResult | null> {
   const client = await pool.connect();
   try {
+    // 0. Determina plano do usuário ANTES da transação (leitura simples)
+    const planoRes = await client.query(
+      `SELECT COALESCE(plano, 'free') AS plano FROM profiles WHERE id::text = $1 LIMIT 1`,
+      [opts.userId]
+    );
+    const planoUsuario: string = planoRes.rows[0]?.plano ?? "free";
+    const isFree = planoUsuario === "free";
+
     await client.query("BEGIN");
 
     // 1. Busca preço do modelo
@@ -194,29 +202,32 @@ export async function registerConsulta(opts: {
     const cfg: Record<string, number> = {};
     for (const row of cfgRes.rows) cfg[row.chave] = parseFloat(row.valor);
 
-    const cambio           = cfg["usd_brl"]             ?? FALLBACK_USD_BRL;
-    const margemPlataforma = cfg["margem_multiplicador"] ?? FALLBACK_MARGEM;
-    const creditoValor     = cfg["credito_valor_brl"]   ?? FALLBACK_CREDITO_BRL;
-    const taxaImposto      = cfg["taxa_imposto"]         ?? 1.0;   // 100% sobre custo pós-margem
-    const taxaProcessamento= cfg["taxa_processamento"]  ?? 0.03;  // 3% de processamento
-    const subsidioFixo     = cfg["taxa_subsidio_brl"]   ?? 0;     // BRL fixo por consulta para subsidiar free
+    const cambio            = cfg["usd_brl"]             ?? FALLBACK_USD_BRL;
+    const margemPlataforma  = cfg["margem_multiplicador"] ?? FALLBACK_MARGEM;
+    const creditoValor      = cfg["credito_valor_brl"]   ?? FALLBACK_CREDITO_BRL;
+    const taxaImposto       = cfg["taxa_imposto"]         ?? 1.0;
+    const taxaProcessamento = cfg["taxa_processamento"]  ?? 0.03;
+    // Subsídio só é cobrado de usuários PAGANTES — eles arcam com o custo dos free
+    const subsidioFixo      = isFree ? 0 : (cfg["taxa_subsidio_brl"] ?? 0);
 
     // 3. Calcula custo com todos os componentes
-    const custoUsd        = (opts.tokenUsage.inputTokens  / 1_000_000 * precoInput) +
-                            (opts.tokenUsage.outputTokens / 1_000_000 * precoOutput);
-    const custoBase       = custoUsd * cambio;
-    const comMargem       = custoBase * margemPlataforma;          // +100% margem de plataforma
-    const comImposto      = comMargem * (1 + taxaImposto);         // +100% sobre total (imposto)
-    const comProcessamento= comImposto * (1 + taxaProcessamento);  // +3% de processamento
-    const custoFinal      = comProcessamento + subsidioFixo;       // + subsídio por consulta
-    const creditos        = Math.max(1, Math.ceil(custoFinal / creditoValor));
+    const custoUsd         = (opts.tokenUsage.inputTokens  / 1_000_000 * precoInput) +
+                             (opts.tokenUsage.outputTokens / 1_000_000 * precoOutput);
+    const custoBase        = custoUsd * cambio;
+    const comMargem        = custoBase * margemPlataforma;         // +100% margem de plataforma
+    const comImposto       = comMargem * (1 + taxaImposto);        // +100% sobre total (imposto)
+    const comProcessamento = comImposto * (1 + taxaProcessamento); // +3% de processamento
+    const custoFinal       = comProcessamento + subsidioFixo;      // + subsídio por consulta paga
+    const creditos         = Math.max(1, Math.ceil(custoFinal / creditoValor));
 
-    // custoBrl registrado = custo pós-margem (antes de imposto/processamento/subsídio)
-    // para manter compatibilidade histórica da coluna custo_brl
+    // custoBrl = custo pós-margem, registrado na consulta para cálculo histórico do subsídio
     const custoBrl = comMargem;
 
     logger.debug(
-      { custoUsd, custoBase, comMargem, comImposto, comProcessamento, subsidioFixo, custoFinal, creditos },
+      {
+        planoUsuario, isFree, custoUsd, custoBase, comMargem,
+        comImposto, comProcessamento, subsidioFixo, custoFinal, creditos,
+      },
       "billing: breakdown de custo"
     );
 
@@ -231,12 +242,14 @@ export async function registerConsulta(opts: {
 
     const saldoPosterior = saldoAnterior - creditos;
 
-    // 5. Insere consulta
+    // 5. Insere consulta com flag de subsídio
+    //    subsidiado = true  → cálculo gratuito (recebe subsídio dos pagantes)
+    //    subsidiado = false → cálculo pago (arca com o custo dos free)
     const consultaRes = await client.query(
       `INSERT INTO consultas
          (usuario_id, session_id, tipo, modelo, input_tokens, output_tokens,
-          custo_usd, cambio_usado, margem_usada, custo_brl, creditos_debitados)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          custo_usd, cambio_usado, margem_usada, custo_brl, creditos_debitados, subsidiado)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING id`,
       [
         opts.userId,
@@ -247,9 +260,10 @@ export async function registerConsulta(opts: {
         opts.tokenUsage.outputTokens,
         custoUsd,
         cambio,
-        margem,
+        margemPlataforma,
         custoBrl,
         creditos,
+        isFree,  // subsidiado
       ]
     );
     const consultaId = consultaRes.rows[0].id;
@@ -283,8 +297,13 @@ export async function registerConsulta(opts: {
     await client.query("COMMIT");
 
     logger.info(
-      { userId: opts.userId, creditos, saldoPosterior, custoUsd, custoBrl },
+      { userId: opts.userId, planoUsuario, isFree, creditos, saldoPosterior, custoUsd, custoBrl, subsidioFixo },
       "billing: consulta registrada"
+    );
+
+    // 8. Recomputa subsídio imediatamente após cada cálculo (fire-and-forget)
+    recomputeSubsidio().catch((err) =>
+      logger.warn({ err }, "billing: recomputeSubsidio pós-calc falhou")
     );
 
     return { creditosDebitados: creditos, custoUsd, custoBrl, saldoPosterior };
@@ -298,38 +317,36 @@ export async function registerConsulta(opts: {
 }
 
 /* ── Recomputa subsídio do plano gratuito ── */
+// Chamado após cada cálculo (fire-and-forget) para refletir a realidade em tempo real.
+// Fórmula: subsidio_por_calc_pago = Σcusto_brl(subsidiado=true, mês) / COUNT(subsidiado=false, mês)
+// Só existe subsídio quando há calcs pagos no mês — caso contrário permanece 0.
+// Limitado a 5× o custo médio dos calcs gratuitos para evitar distorções extremas.
 export async function recomputeSubsidio(): Promise<void> {
   const client = await pool.connect();
   try {
-    // Busca janela configurada (padrão 30 dias)
-    const cfgRes = await client.query(
-      `SELECT valor FROM configuracoes WHERE chave = 'subsidio_janela_dias'`
-    );
-    const janela = parseInt(cfgRes.rows[0]?.valor ?? "30", 10);
-
-    // Calcula consultas free vs pagas na janela, e custo médio real por consulta
     const statsRes = await client.query(`
       SELECT
-        COUNT(*) FILTER (WHERE COALESCE(p.plano, 'free') = 'free')  AS free_calcs,
-        COUNT(*) FILTER (WHERE COALESCE(p.plano, 'free') != 'free') AS paid_calcs,
-        AVG(c.custo_brl) FILTER (WHERE c.custo_usd > 0)             AS avg_custo_brl
-      FROM consultas c
-      LEFT JOIN profiles p ON p.id::text = c.usuario_id
-      WHERE c.criado_em >= now() - ($1 || ' days')::interval
-    `, [janela]);
+        COALESCE(SUM(custo_brl) FILTER (WHERE subsidiado = true),  0) AS custo_free_total,
+        COALESCE(SUM(custo_brl) FILTER (WHERE subsidiado = false), 0) AS custo_pago_total,
+        COALESCE(COUNT(*)       FILTER (WHERE subsidiado = true),  0) AS calcs_free,
+        COALESCE(COUNT(*)       FILTER (WHERE subsidiado = false), 0) AS calcs_pagas
+      FROM consultas
+      WHERE criado_em >= date_trunc('month', now())
+    `);
 
     const row = statsRes.rows[0];
-    const freeCalcs  = parseInt(row?.free_calcs  ?? "0", 10);
-    const paidCalcs  = parseInt(row?.paid_calcs  ?? "0", 10);
-    const avgCustoBrl= parseFloat(row?.avg_custo_brl ?? "0");
+    const custoFreeTotal = parseFloat(row?.custo_free_total ?? "0");
+    const calcsFree      = parseInt(row?.calcs_free         ?? "0", 10);
+    const calcsPagas     = parseInt(row?.calcs_pagas        ?? "0", 10);
 
-    // subsidio_brl = (consultas_free × custo_médio) / consultas_pagas
-    // Só existe subsídio se houver consultas pagas — caso contrário é 0.
-    // Limitado a 5× o custo médio para evitar distorções extremas.
+    // Custo médio de um cálculo gratuito (para o cap)
+    const custoMedioFree = calcsFree > 0 ? custoFreeTotal / calcsFree : 0;
+
     let subsidio = 0;
-    if (freeCalcs > 0 && paidCalcs > 0 && avgCustoBrl > 0) {
-      const raw = (freeCalcs * avgCustoBrl) / paidCalcs;
-      subsidio = Math.min(raw, avgCustoBrl * 5);
+    if (calcsFree > 0 && calcsPagas > 0 && custoFreeTotal > 0) {
+      const raw = custoFreeTotal / calcsPagas;
+      // Cap: nunca mais que 5× o custo médio de um cálculo gratuito por cálculo pago
+      subsidio = Math.min(raw, custoMedioFree * 5);
     }
 
     await client.query(
@@ -338,7 +355,13 @@ export async function recomputeSubsidio(): Promise<void> {
     );
 
     logger.info(
-      { freeCalcs, paidCalcs, avgCustoBrl: avgCustoBrl.toFixed(4), subsidio: subsidio.toFixed(6), janela },
+      {
+        calcsFree,
+        calcsPagas,
+        custoFreeTotal: custoFreeTotal.toFixed(4),
+        custoMedioFree: custoMedioFree.toFixed(4),
+        subsidio: subsidio.toFixed(6),
+      },
       "billing: subsídio recomputado"
     );
   } catch (err) {

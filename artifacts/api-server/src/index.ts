@@ -29,7 +29,7 @@ async function initStripe() {
 
 // ── Tarefas periódicas de billing ──
 async function initBilling() {
-  // Câmbio e subsídio na inicialização
+  // Câmbio e subsídio na inicialização do servidor
   await Promise.allSettled([
     atualizarCambio(),
     recomputeSubsidio(),
@@ -38,8 +38,7 @@ async function initBilling() {
   // Câmbio: atualiza a cada 6 horas
   setInterval(() => atualizarCambio(), 6 * 60 * 60 * 1000);
 
-  // Subsídio: recomputa a cada hora à medida que a base de usuários evolui
-  setInterval(() => recomputeSubsidio(), 60 * 60 * 1000);
+  // Subsídio: não tem intervalo — recomputa após cada cálculo em registerConsulta()
 }
 
 app.listen(port, (err) => {
