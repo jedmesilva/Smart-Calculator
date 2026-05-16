@@ -380,7 +380,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     paddingVertical: 13,
-    paddingHorizontal: 12,
     borderRadius: 12,
   },
   menuItemText: {
@@ -393,7 +392,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     paddingVertical: 14,
-    paddingHorizontal: 12,
     marginBottom: 8,
   },
   signOutText: {
