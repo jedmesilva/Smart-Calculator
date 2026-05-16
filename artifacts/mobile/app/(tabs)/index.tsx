@@ -668,7 +668,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   displayPanel: {
     flexShrink: 0,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingBottom: 36,
     justifyContent: "space-between",
     minHeight: 300,
