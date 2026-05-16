@@ -40,6 +40,13 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgr
   const { data: carteira, isLoading: carteiraLoading } = useCarteira();
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
+  const renovacaoLabel = (() => {
+    const ur = carteira?.ultimaRenovacao;
+    if (!ur) return "Renova em breve";
+    const hoje = new Date().toISOString().slice(0, 10);
+    return ur >= hoje ? "Renova amanhã à meia-noite" : "Renova em breve";
+  })();
+
   const topPad = insets.top;
   const botPad = insets.bottom;
 
@@ -131,13 +138,16 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgr
             {carteiraLoading ? (
               <ActivityIndicator size={14} color={c.ghost} />
             ) : (
-              <Text style={styles.planCardCredits}>
-                <Text style={styles.planCardCreditsNum}>
-                  {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"}
+              <View style={{ gap: 4 }}>
+                <Text style={styles.planCardCredits}>
+                  <Text style={styles.planCardCreditsNum}>
+                    {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"}
+                  </Text>
+                  {"  "}
+                  <Text style={styles.planCardCreditsSuffix}>créditos disponíveis</Text>
                 </Text>
-                {"  "}
-                <Text style={styles.planCardCreditsSuffix}>créditos disponíveis</Text>
-              </Text>
+                <Text style={styles.planCardRenovacao}>{renovacaoLabel}</Text>
+              </View>
             )}
           </View>
         </Pressable>
@@ -366,6 +376,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Inter_400Regular",
     color: c.faint,
+  },
+  planCardRenovacao: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    color: c.ghost,
   },
   divider: {
     height: 1,

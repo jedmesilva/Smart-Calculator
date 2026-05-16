@@ -420,6 +420,7 @@ export type CarteiraInfo = {
   plano: string;
   pdfUsadosHoje: number;
   pdfLimite: number;
+  ultimaRenovacao: string | null;
 };
 
 export async function fetchDesenvolvimento(

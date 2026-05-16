@@ -50,6 +50,7 @@ export interface CarteiraInfo {
   plano: string;
   pdfUsadosHoje: number;
   pdfLimite: number;
+  ultimaRenovacao: string | null;
 }
 
 // Limites de PDF por plano por dia
@@ -117,7 +118,7 @@ export async function checkSaldo(userId: string): Promise<number> {
   }
 }
 
-/* ── Busca saldo da carteira ── */
+/* ── Busca saldo da carteira (provisiona se não existir) ── */
 export async function getCarteira(userId: string): Promise<CarteiraInfo | null> {
   const client = await pool.connect();
   try {
@@ -129,23 +130,47 @@ export async function getCarteira(userId: string): Promise<CarteiraInfo | null> 
               ), 0) AS total_creditos_consumidos,
               COALESCE(p.plano, 'free') AS plano,
               COALESCE(c.pdf_downloads_hoje, 0) AS pdf_downloads_hoje,
-              c.pdf_ultima_renovacao_pdf
+              c.pdf_ultima_renovacao_pdf,
+              c.ultima_renovacao_diaria
        FROM carteira c
        LEFT JOIN profiles p ON p.id::text = $1
        WHERE c.usuario_id = $1`,
       [userId]
     );
     if (res.rows.length === 0) {
-      return { saldo: WELCOME_CREDITS, totalConsultas: 0, totalGastoBrl: 0, totalCreditosConsumidos: 0, plano: "free", pdfUsadosHoje: 0, pdfLimite: PDF_LIMITS["free"] };
+      // Provisiona carteira para novos usuários — sem isso o job de renovação diária nunca os encontra
+      try {
+        await client.query(
+          `INSERT INTO carteira (usuario_id, saldo_creditos, total_gasto_brl, total_consultas)
+           VALUES ($1, $2, 0, 0) ON CONFLICT (usuario_id) DO NOTHING`,
+          [userId, WELCOME_CREDITS]
+        );
+        await client.query(
+          `INSERT INTO transacoes (usuario_id, tipo, creditos, saldo_anterior, saldo_posterior, descricao)
+           VALUES ($1, 'bonus', $2, 0, $2, 'Créditos de boas-vindas')`,
+          [userId, WELCOME_CREDITS]
+        );
+        logger.info({ userId }, "billing: carteira provisionada via getCarteira");
+      } catch (provErr) {
+        logger.warn({ provErr, userId }, "billing: falha ao provisionar carteira em getCarteira");
+      }
+      return { saldo: WELCOME_CREDITS, totalConsultas: 0, totalGastoBrl: 0, totalCreditosConsumidos: 0, plano: "free", pdfUsadosHoje: 0, pdfLimite: PDF_LIMITS["free"], ultimaRenovacao: null };
     }
     const row = res.rows[0];
     const plano: string = row.plano ?? "free";
     const hoje = new Date().toISOString().slice(0, 10);
-    const ultimaRenovacao = row.pdf_ultima_renovacao_pdf;
-    const ultimaRenovacaoStr = ultimaRenovacao
-      ? (ultimaRenovacao instanceof Date ? ultimaRenovacao.toISOString().slice(0, 10) : String(ultimaRenovacao).slice(0, 10))
+
+    const pdfRenovacao = row.pdf_ultima_renovacao_pdf;
+    const pdfRenovacaoStr = pdfRenovacao
+      ? (pdfRenovacao instanceof Date ? pdfRenovacao.toISOString().slice(0, 10) : String(pdfRenovacao).slice(0, 10))
       : null;
-    const pdfUsadosHoje = ultimaRenovacaoStr === hoje ? parseInt(row.pdf_downloads_hoje ?? "0", 10) : 0;
+    const pdfUsadosHoje = pdfRenovacaoStr === hoje ? parseInt(row.pdf_downloads_hoje ?? "0", 10) : 0;
+
+    const ultimaRenovacaoDiaria = row.ultima_renovacao_diaria;
+    const ultimaRenovacaoStr = ultimaRenovacaoDiaria
+      ? (ultimaRenovacaoDiaria instanceof Date ? ultimaRenovacaoDiaria.toISOString().slice(0, 10) : String(ultimaRenovacaoDiaria).slice(0, 10))
+      : null;
+
     return {
       saldo: row.saldo_creditos,
       totalConsultas: row.total_consultas,
@@ -154,6 +179,7 @@ export async function getCarteira(userId: string): Promise<CarteiraInfo | null> 
       plano,
       pdfUsadosHoje,
       pdfLimite: PDF_LIMITS[plano] ?? 0,
+      ultimaRenovacao: ultimaRenovacaoStr,
     };
   } catch (err) {
     logger.warn({ err, userId }, "billing: getCarteira failed");

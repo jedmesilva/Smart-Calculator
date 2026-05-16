@@ -766,6 +766,13 @@ export function PlanManagementScreen({
   const usedCredits = 10 - (saldo ?? 10);
   const usedPct = Math.min(100, Math.max(0, (usedCredits / 10) * 100));
 
+  const renovacaoLabel = (() => {
+    const ur = carteira?.ultimaRenovacao;
+    if (!ur) return "Renova em breve";
+    const hoje = new Date().toISOString().slice(0, 10);
+    return ur >= hoje ? "Renova amanhã à meia-noite" : "Renova em breve";
+  })();
+
   return (
     <View style={[styles.overlay, { paddingTop: topPad }]}>
       <View style={styles.overlayHeader}>
@@ -808,7 +815,7 @@ export function PlanManagementScreen({
                 </Text>
                 <Text style={styles.mgmtCreditsSuffix}> / 10</Text>
               </View>
-              <Text style={styles.mgmtCreditsNote}>créditos de boas-vindas disponíveis</Text>
+              <Text style={styles.mgmtCreditsNote}>créditos disponíveis · {renovacaoLabel.toLowerCase()}</Text>
 
               {/* Progress bar */}
               <View style={styles.mgmtProgressBg}>
