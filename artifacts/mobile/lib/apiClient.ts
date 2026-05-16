@@ -137,9 +137,12 @@ async function apiFetch(path: string, options: RequestInit = {}): Promise<Respon
   return fetch(`${API_BASE}${path}`, { ...options, headers });
 }
 
+export type InsufficientCreditsError = Error & { code: "saldo_insuficiente" };
+
 export async function calculateStream(
   req: CalcRequest,
   onThinking: (message: string) => void,
+  guestId?: string | null,
 ): Promise<CalcResponse> {
   const { data: { session } } = await supabase.auth.getSession();
   const token = session?.access_token ?? "";
@@ -147,6 +150,7 @@ export async function calculateStream(
     "Content-Type": "application/json",
     Accept: "text/event-stream",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(!token && guestId ? { "X-Guest-ID": guestId } : {}),
   };
 
   const res = await fetch(`${API_BASE}/calculate`, {
@@ -157,6 +161,11 @@ export async function calculateStream(
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
+    if (res.status === 402 || (body as any).error === "saldo_insuficiente") {
+      const err = new Error((body as any).message ?? "Créditos insuficientes") as InsufficientCreditsError;
+      err.code = "saldo_insuficiente";
+      throw err;
+    }
     throw new Error((body as any).message ?? (body as any).error ?? `Erro ${res.status}`);
   }
 

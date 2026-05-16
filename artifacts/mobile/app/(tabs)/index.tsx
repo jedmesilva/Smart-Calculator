@@ -24,7 +24,9 @@ import { QuickActionsBar, SessionCalcsSheet } from "@/components/QuickActionShee
 import type { SessionCalcsSheetHandle } from "@/components/QuickActionSheets";
 import { MenuOverlay } from "@/components/MenuOverlay";
 import { useAuth } from "@/contexts/AuthContext";
-import { calculateStream, predictQuery, fetchSessionMessages, type ResultData, type MissingVariable } from "@/lib/apiClient";
+import { useGuest } from "@/contexts/GuestContext";
+import { AuthBottomSheet } from "@/components/AuthBottomSheet";
+import { calculateStream, predictQuery, fetchSessionMessages, type ResultData, type MissingVariable, type InsufficientCreditsError } from "@/lib/apiClient";
 import { buildContext } from "@/lib/contextBuilder";
 import { createSession, saveMessages, touchSession, fetchSessionSummary } from "@/lib/queries";
 import type { DbSession } from "@/lib/queries";
@@ -182,6 +184,7 @@ export default function PhormulаScreen() {
     Dimensions.get("screen").height - Dimensions.get("window").height
   );
   const { userId, userName, setUserName } = useAuth();
+  const { guestId, guestCredits, guestName: useGuestName, isGuest, setGuestCredits, setGuestName, setShowAuthSheet } = useGuest();
   const queryClient = useQueryClient();
 
   const [query, setQuery] = useState("");
@@ -313,24 +316,27 @@ export default function PhormulаScreen() {
         {
           query: text,
           context,
-          sessionId: currentSessionId ?? undefined,
-          sessionSummary: sessionSummary ?? undefined,
+          sessionId: !isGuest ? (currentSessionId ?? undefined) : undefined,
+          sessionSummary: !isGuest ? (sessionSummary ?? undefined) : undefined,
           messageCount,
-          userName: userName ?? undefined,
+          userName: (isGuest ? (useGuestName ?? undefined) : (userName ?? undefined)),
         },
         (msg) => setThinkingMessage(msg),
+        isGuest ? guestId : null,
       );
 
       const resultId = msgId + "_r";
       const assistantId = msgId + "_a";
 
       // Salva nome capturado pelo Phormula (fire-and-forget)
-      if (!userName) {
-        const capturedName =
-          response.status === "success" || response.status === "conversational"
-            ? response.capturedName
-            : undefined;
-        if (capturedName) {
+      const capturedName =
+        response.status === "success" || response.status === "conversational"
+          ? response.capturedName
+          : undefined;
+      if (capturedName) {
+        if (isGuest) {
+          setGuestName(capturedName);
+        } else if (!userName) {
           setUserName(capturedName);
         }
       }
@@ -358,66 +364,78 @@ export default function PhormulаScreen() {
           ? `${response.message}\n\nSugestão: ${response.suggestion}`
           : response.message;
         setChat((prev) => [...prev, { kind: "error", id: resultId, message: msg }]);
-        // Remove a fórmula incorreta para evitar loop
-        setActiveFormula(null);
       } else if (response.status === "formula_error") {
         setChat((prev) => [...prev, { kind: "error", id: resultId, message: response.message }]);
       }
 
-      // Persist to Supabase
-      let sessId = currentSessionId;
-      if (!sessId) {
-        sessId = await createSession(text);
-        if (sessId) {
-          setCurrentSessionId(sessId);
-          queryClient.invalidateQueries({ queryKey: ["sessions"] });
-        }
-      } else {
-        touchSession(sessId);
+      // Incrementa contador de mensagens para contexto do LLM
+      if (response.status === "success" || response.status === "conversational") {
+        setMessageCount((prev) => prev + 2);
       }
 
-      if (sessId && response.status === "success") {
-        await saveMessages(sessId, text, response.result);
-        // Incrementa contador (user msg + result = 2)
-        const newCount = messageCount + 2;
-        setMessageCount(newCount);
-        // Busca resumo atualizado (fire-and-forget — pode ter sido gerado pelo servidor)
-        fetchSessionSummary(sessId).then((s) => {
-          if (s) setSessionSummary(s);
-        });
+      // Persist to Supabase — apenas para usuários autenticados
+      if (!isGuest) {
+        let sessId = currentSessionId;
+        if (!sessId) {
+          sessId = await createSession(text);
+          if (sessId) {
+            setCurrentSessionId(sessId);
+            queryClient.invalidateQueries({ queryKey: ["sessions"] });
+          }
+        } else {
+          touchSession(sessId);
+        }
+
+        if (sessId && response.status === "success") {
+          await saveMessages(sessId, text, response.result);
+          fetchSessionSummary(sessId).then((s) => {
+            if (s) setSessionSummary(s);
+          });
+        }
       }
-      // Atualiza créditos diretamente com os valores retornados pelo servidor —
-      // sem request extra. O backend inclui billingInfo na própria resposta.
+
+      // Atualiza créditos
       if (response.billingInfo) {
         const { saldoAtualizado, creditosDebitados } = response.billingInfo;
-        queryClient.setQueryData(["carteira", userId], (old: any) =>
-          old
-            ? {
-                ...old,
-                saldo: saldoAtualizado,
-                totalConsultas: old.totalConsultas + 1,
-                totalCreditosConsumidos: old.totalCreditosConsumidos + creditosDebitados,
-              }
-            : old
-        );
-      } else {
+        if (isGuest) {
+          setGuestCredits(saldoAtualizado);
+        } else {
+          queryClient.setQueryData(["carteira", userId], (old: any) =>
+            old
+              ? {
+                  ...old,
+                  saldo: saldoAtualizado,
+                  totalConsultas: old.totalConsultas + 1,
+                  totalCreditosConsumidos: old.totalCreditosConsumidos + creditosDebitados,
+                }
+              : old
+          );
+        }
+      } else if (!isGuest) {
         queryClient.invalidateQueries({ queryKey: ["carteira"] });
       }
     } catch (err: any) {
       const errId = msgId + "_e";
-      setChat((prev) => [
-        ...prev,
-        {
-          kind: "error",
-          id: errId,
-          message: err?.message ?? "Não foi possível processar o cálculo. Tente novamente.",
-        },
-      ]);
+      // Créditos esgotados — mostra bottom sheet em vez de erro no chat
+      if ((err as InsufficientCreditsError).code === "saldo_insuficiente") {
+        setShowAuthSheet(true);
+        // Remove a mensagem do usuário do chat para não deixar sem resposta
+        setChat((prev) => prev.filter((item) => item.id !== msgId));
+      } else {
+        setChat((prev) => [
+          ...prev,
+          {
+            kind: "error",
+            id: errId,
+            message: err?.message ?? "Não foi possível processar o cálculo. Tente novamente.",
+          },
+        ]);
+      }
     } finally {
       setIsLoading(false);
       setThinkingMessage(null);
     }
-  }, [query, isLoading, currentSessionId, sessionSummary, messageCount, queryClient, chat, userName, setUserName]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [query, isLoading, currentSessionId, sessionSummary, messageCount, queryClient, chat, userName, setUserName, isGuest, guestId, useGuestName, setGuestCredits, setGuestName, setShowAuthSheet, userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const canSend = query.trim().length > 0 && !isLoading;
 
@@ -454,14 +472,30 @@ export default function PhormulаScreen() {
             <Pressable onPress={() => setScreen("menu")} style={styles.headerIconBtn} hitSlop={8}>
               <Feather name="menu" size={15} color={c.ghost} />
             </Pressable>
+            {isGuest && (
+              <Pressable
+                onPress={() => setShowAuthSheet(true)}
+                style={styles.guestLoginBtn}
+                hitSlop={8}
+              >
+                <Text style={styles.guestLoginText}>Entrar</Text>
+              </Pressable>
+            )}
           </View>
           <View style={styles.headerRight}>
+            {isGuest && (
+              <View style={styles.guestCreditsBadge}>
+                <Text style={styles.guestCreditsText}>{guestCredits} crédito{guestCredits !== 1 ? "s" : ""}</Text>
+              </View>
+            )}
             <Pressable onPress={handleNewSession} style={styles.headerIconBtn} hitSlop={8}>
               <Feather name="plus" size={16} color={c.ghost} />
             </Pressable>
-            <Pressable onPress={() => setScreen("history")} style={styles.headerIconBtn} hitSlop={8}>
-              <Feather name="clock" size={15} color={c.ghost} />
-            </Pressable>
+            {!isGuest && (
+              <Pressable onPress={() => setScreen("history")} style={styles.headerIconBtn} hitSlop={8}>
+                <Feather name="clock" size={15} color={c.ghost} />
+              </Pressable>
+            )}
           </View>
         </View>
 
@@ -660,6 +694,7 @@ export default function PhormulаScreen() {
           setScreen("calc");
         }}
       />
+      <AuthBottomSheet />
     </View>
   );
 }
@@ -969,4 +1004,29 @@ const styles = StyleSheet.create({
   },
   sendBtnActive: { backgroundColor: "#1A1A18" },
   sendBtnInactive: { backgroundColor: "#DEDED9" },
+  guestLoginBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: "#1A1A18",
+  },
+  guestLoginText: {
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+    color: "#F7F6F3",
+    letterSpacing: 0.1,
+  },
+  guestCreditsBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: "#F0EFEB",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  guestCreditsText: {
+    fontSize: 11,
+    fontFamily: "Inter_500Medium",
+    color: "#6B6B66",
+  },
 });

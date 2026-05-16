@@ -16,6 +16,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { GuestProvider } from "@/contexts/GuestContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -28,22 +29,18 @@ function RootLayoutNav({ fontsReady }: { fontsReady: boolean }) {
 
   const appReady = fontsReady && !loading;
 
-  // Hide splash only when both fonts and session are ready
   useEffect(() => {
     if (appReady) {
       SplashScreen.hideAsync();
     }
   }, [appReady]);
 
-  // Redirect based on session state
+  // Only redirect authenticated users away from auth screens
+  // Guests can access (tabs) directly — no forced /auth redirect
   useEffect(() => {
     if (!appReady) return;
-
     const inAuthGroup = segments[0] === "auth";
-
-    if (!session && !inAuthGroup) {
-      router.replace("/auth");
-    } else if (session && inAuthGroup) {
+    if (session && inAuthGroup) {
       router.replace("/(tabs)");
     }
   }, [session, appReady, segments]);
@@ -76,13 +73,15 @@ export default function RootLayout() {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <BottomSheetModalProvider>
-                <KeyboardProvider>
-                  <RootLayoutNav fontsReady={fontsReady} />
-                </KeyboardProvider>
-              </BottomSheetModalProvider>
-            </GestureHandlerRootView>
+            <GuestProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <BottomSheetModalProvider>
+                  <KeyboardProvider>
+                    <RootLayoutNav fontsReady={fontsReady} />
+                  </KeyboardProvider>
+                </BottomSheetModalProvider>
+              </GestureHandlerRootView>
+            </GuestProvider>
           </AuthProvider>
         </QueryClientProvider>
       </ErrorBoundary>

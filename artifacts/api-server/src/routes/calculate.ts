@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { z } from "zod";
-import { requireAuth } from "../middlewares/auth";
+import { requireAuthOrGuest } from "../middlewares/authOrGuest";
 import { logger } from "../lib/logger";
 import { runCalculationPipeline } from "../lib/orchestrator";
 import { registerConsulta, checkSaldo } from "../lib/billingService";
+import { checkGuestSaldo, debitGuestCredito } from "../lib/guestBilling";
 import { warmDevCache, devCacheKey } from "../lib/devCache";
 
 const router = Router();
@@ -23,7 +24,7 @@ const CalcBody = z.object({
   userName: z.string().max(100).optional(),
 });
 
-router.post("/calculate", requireAuth, async (req, res) => {
+router.post("/calculate", requireAuthOrGuest, async (req, res) => {
   const parsed = CalcBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Dados inválidos", details: parsed.error.issues });
@@ -31,13 +32,23 @@ router.post("/calculate", requireAuth, async (req, res) => {
   }
 
   const { query, formulaId, context = [], sessionId, sessionSummary, messageCount, userName } = parsed.data;
-  const userId = (req as any).user.id as string;
+  const reqUser = (req as any).user as { id: string; isGuest: boolean };
+  const userId = reqUser.id;
+  const isGuest = reqUser.isGuest;
 
-  // Verificação prévia de saldo (sem lock — apenas para UX; o débito real usa FOR UPDATE)
-  const saldo = await checkSaldo(userId);
-  if (saldo <= 0) {
-    res.status(402).json({ error: "saldo_insuficiente", message: "Você não tem créditos suficientes para continuar. Recarregue sua conta." });
-    return;
+  // Verificação prévia de saldo
+  if (isGuest) {
+    const guestCredits = await checkGuestSaldo(userId);
+    if (guestCredits <= 0) {
+      res.status(402).json({ error: "saldo_insuficiente", message: "Seus créditos de visitante acabaram. Crie uma conta gratuita para continuar." });
+      return;
+    }
+  } else {
+    const saldo = await checkSaldo(userId);
+    if (saldo <= 0) {
+      res.status(402).json({ error: "saldo_insuficiente", message: "Você não tem créditos suficientes para continuar. Recarregue sua conta." });
+      return;
+    }
   }
 
   res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
@@ -55,6 +66,9 @@ router.post("/calculate", requireAuth, async (req, res) => {
   };
 
   try {
+    // Get current guest credits before processing (for LLM context)
+    const guestCreditsLeft = isGuest ? await checkGuestSaldo(userId) : undefined;
+
     const result = await runCalculationPipeline({
       query,
       formulaId,
@@ -63,28 +77,39 @@ router.post("/calculate", requireAuth, async (req, res) => {
       sessionSummary,
       messageCount,
       userName,
-      userId,
+      userId: isGuest ? undefined : userId,
       emit,
+      isGuest,
+      guestCreditsLeft,
     });
 
-    // Débito de créditos — aguardado antes de enviar resposta ao cliente.
-    // O resultado do billing é incluído na própria resposta para que o mobile
-    // atualize o cache diretamente, sem precisar de request extra ao /credits.
     let billingInfo: { saldoAtualizado: number; creditosDebitados: number } | undefined;
-    if ((result.status === "success" || result.status === "conversational") && result.tokenUsage) {
-      const billing = await registerConsulta({
-        userId,
-        modelo: result.tokenUsage.model,
-        tipo: result.status === "success" ? "calculo" : "conversacional",
-        sessionId: sessionId ?? null,
-        tokenUsage: result.tokenUsage,
-      }).catch((err) => { logger.warn({ err }, "calculate: billing failed silently"); return null; });
-      if (billing) {
-        billingInfo = { saldoAtualizado: billing.saldoPosterior, creditosDebitados: billing.creditosDebitados };
+
+    if (result.status === "success" || result.status === "conversational") {
+      if (isGuest) {
+        // Guest billing: debit 1 credit
+        const guestBilling = await debitGuestCredito(userId).catch((err) => {
+          logger.warn({ err }, "calculate: guest billing failed silently");
+          return null;
+        });
+        if (guestBilling) {
+          billingInfo = { saldoAtualizado: guestBilling.creditsLeft, creditosDebitados: 1 };
+        }
+      } else if (result.tokenUsage) {
+        const billing = await registerConsulta({
+          userId,
+          modelo: result.tokenUsage.model,
+          tipo: result.status === "success" ? "calculo" : "conversacional",
+          sessionId: sessionId ?? null,
+          tokenUsage: result.tokenUsage,
+        }).catch((err) => { logger.warn({ err }, "calculate: billing failed silently"); return null; });
+        if (billing) {
+          billingInfo = { saldoAtualizado: billing.saldoPosterior, creditosDebitados: billing.creditosDebitados };
+        }
       }
     }
 
-    // Aquece cache do desenvolvimento em background antes de enviar ao cliente
+    // Aquece cache do desenvolvimento em background
     if (result.status === "success" && result.result.desenvolvimentoInput) {
       const di = result.result.desenvolvimentoInput;
       const key = devCacheKey(di.expression, di.solveFor, di.computedValue);

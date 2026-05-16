@@ -561,7 +561,7 @@ function maybeTriggerSummary(opts: {
     { role: "assistant", content: resultText },
   ];
 
-  generateSessionSummary({ sessionId, context: fullContext }).catch((err) =>
+  generateSessionSummary(sessionId, messageCount).catch((err) =>
     logger.warn({ err, sessionId }, "orchestrator: summary generation failed silently")
   );
 }
@@ -581,6 +581,8 @@ export async function runCalculationPipeline(opts: {
   userId?: string;
   precomputedIntent?: IntentResult;
   emit?: (message: string) => void;
+  isGuest?: boolean;
+  guestCreditsLeft?: number;
 }): Promise<OrchestratorResult> {
   const {
     query,
@@ -593,7 +595,13 @@ export async function runCalculationPipeline(opts: {
     userId,
     precomputedIntent,
     emit = () => {},
+    isGuest,
+    guestCreditsLeft,
   } = opts;
+
+  const guestInfo = isGuest && guestCreditsLeft !== undefined
+    ? { creditsLeft: guestCreditsLeft, isFirstCalc: messageCount === 0 }
+    : undefined;
 
   const pipelineStart = Date.now();
   const acc = createTokenAccumulator();
@@ -912,6 +920,7 @@ export async function runCalculationPipeline(opts: {
     sessionSummary,
     userName,
     acc,
+    guestInfo,
   });
 
   const symbolicForResult = (preloadedFormula?.symbolic?.trim())

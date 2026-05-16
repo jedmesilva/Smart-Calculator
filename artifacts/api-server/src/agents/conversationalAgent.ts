@@ -18,10 +18,14 @@ export type GuidanceResponse = {
   capturedName?: string;
 };
 
-function buildConversationalPrompt(userName?: string): string {
+function buildConversationalPrompt(userName?: string, guestInfo?: { creditsLeft: number; isFirstCalc: boolean }): string {
   const nameCtx = userName
     ? `O nome do usuário é ${userName}. Use o nome de forma natural e esporádica — não em toda frase, apenas quando encaixar bem.`
     : `Você ainda não sabe o nome do usuário. Nesta sessão, use "você" normalmente.`;
+
+  const guestCtx = guestInfo
+    ? `\nCONTEXTO DO PLANO: O usuário está no modo visitante com ${guestInfo.creditsLeft} crédito(s) restante(s) de ${guestInfo.creditsLeft + (guestInfo.isFirstCalc ? 1 : 0)} totais.${guestInfo.isFirstCalc ? `\nEsta é a PRIMEIRA interação do visitante. Ao final da sua resposta (depois do CTA normal), adicione uma linha separada — de forma amigável e natural — perguntando o nome do usuário e mencionando que ele está no modo visitante com créditos limitados, mas pode criar uma conta gratuita para ganhar mais créditos diariamente. Exemplo de tom: "Ah, e como posso te chamar? Você está no modo visitante — com créditos gratuitos de teste. Se quiser continuar calculando sem limites, criar uma conta é gratuito e rende créditos diários."` : ""}`
+    : "";
 
   return `Você é Phormula, o mais completo especialista em estruturas matemáticas do universo.
 Você domina tudo: da aritmética cotidiana a física quântica, finanças, geometria, estatística e além.
@@ -67,7 +71,7 @@ CONTEXTO MULTI-TURNO:
 - NUNCA pergunte ou sugira algo que já foi discutido ou respondido no histórico
 
 NÃO use markdown, NÃO use emojis, NÃO use asteriscos.
-O card já mostra o número — não o repita isoladamente.`;
+O card já mostra o número — não o repita isoladamente.${guestCtx}`;
 }
 
 function buildGuidancePrompt(userName?: string): string {
@@ -148,8 +152,9 @@ export async function runConversationalAgent(opts: {
   sessionSummary?: string;
   userName?: string;
   acc?: TokenAccumulator;
+  guestInfo?: { creditsLeft: number; isFirstCalc: boolean };
 }): Promise<string> {
-  const { query, formula, expressionResult, computedValue, validation, context, sessionSummary, userName, acc } = opts;
+  const { query, formula, expressionResult, computedValue, validation, context, sessionSummary, userName, acc, guestInfo } = opts;
 
   const normUnit = normalizeUnit(expressionResult.resultUnit);
   const resultWithUnit = formatWithUnit(computedValue, normUnit);
@@ -167,7 +172,7 @@ export async function runConversationalAgent(opts: {
     `Verificação matemática: ${validation.valid ? `aprovada — ${validation.detail}` : validation.detail}`,
   ].join("\n");
 
-  const messages: any[] = [{ role: "system", content: buildConversationalPrompt(userName) }];
+  const messages: any[] = [{ role: "system", content: buildConversationalPrompt(userName, guestInfo) }];
 
   if (sessionSummary) {
     messages.push({ role: "user", content: `[Histórico resumido da sessão]\n${sessionSummary}` });

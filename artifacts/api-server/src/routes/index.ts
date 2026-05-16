@@ -11,10 +11,12 @@ import creditsRouter from "./credits";
 import calculationsRouter from "./calculations";
 import exportRouter from "./export";
 import stripeRouter from "./stripe";
+import guestRouter from "./guest";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(guestRouter);
 router.use(calculateRouter);
 router.use(predictRouter);
 router.use(preanalyzeRouter);
