@@ -372,8 +372,6 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 12,
-    backgroundColor: c.panel,
     marginBottom: 28,
   },
   header: {
