@@ -668,7 +668,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   displayPanel: {
     flexShrink: 0,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingBottom: 36,
     justifyContent: "space-between",
     minHeight: 300,
@@ -682,9 +682,6 @@ const styles = StyleSheet.create({
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 7 },
   headerRight: { flexDirection: "row", gap: 4 },
   headerIconBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
   },
