@@ -1,11 +1,12 @@
 {
   "expo": {
     "name": "Phormula",
-    "slug": "mobile",
+    "slug": "phormula",
+    "owner": "phormula.ai",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
+    "scheme": "phormula",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -14,9 +15,11 @@
       "backgroundColor": "#F7F6F3"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.phormula.phormulaai"
     },
     "android": {
+      "package": "com.phormula.phormulaai",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#F7F6F3"
@@ -35,6 +38,11 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
     }
   }
 }
