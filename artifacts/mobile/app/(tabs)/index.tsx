@@ -454,7 +454,6 @@ export default function PhormulаScreen() {
             <Pressable onPress={() => setScreen("menu")} style={styles.headerIconBtn} hitSlop={8}>
               <Feather name="menu" size={15} color={c.ghost} />
             </Pressable>
-            <Text style={styles.logo}>Phormula</Text>
           </View>
           <View style={styles.headerRight}>
             <Pressable onPress={handleNewSession} style={styles.headerIconBtn} hitSlop={8}>
@@ -688,12 +687,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
-  },
-  logo: {
-    fontSize: 13,
-    fontFamily: "Inter_700Bold",
-    color: "#1A1A18",
-    letterSpacing: -0.3,
   },
   numSection: {},
   numRow: {
