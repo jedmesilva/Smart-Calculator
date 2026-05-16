@@ -9,7 +9,8 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://phormula.up.railway.app"
+        "EXPO_PUBLIC_API_URL": "https://phormula.up.railway.app",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://cgfccmlrnkvxhsrhyqkh.supabase.co"
       }
     },
     "preview": {
@@ -18,13 +19,15 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://phormula.up.railway.app"
+        "EXPO_PUBLIC_API_URL": "https://phormula.up.railway.app",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://cgfccmlrnkvxhsrhyqkh.supabase.co"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://phormula.up.railway.app"
+        "EXPO_PUBLIC_API_URL": "https://phormula.up.railway.app",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://cgfccmlrnkvxhsrhyqkh.supabase.co"
       }
     }
   },

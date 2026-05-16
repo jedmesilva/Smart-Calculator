@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'artifacts/mobile/**'
+      - 'lib/api-zod/**'
+      - 'lib/api-client-react/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/eas-build.yml'
   workflow_dispatch:
     inputs:
       profile:
@@ -14,14 +20,24 @@ on:
         options:
           - preview
           - production
+      platform:
+        description: 'Platform'
+        required: true
+        default: 'android'
+        type: choice
+        options:
+          - android
+          - ios
+          - all
 
 jobs:
   build:
-    name: EAS Build
+    name: EAS Build (${{ github.event.inputs.platform || 'android' }})
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: artifacts/mobile
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -29,22 +45,43 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 24.x
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+        working-directory: .
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         working-directory: .
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build on EAS
+      - name: Setup EAS
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Run EAS Build
-        run: eas build --platform android --profile ${{ github.event.inputs.profile || 'preview' }} --non-interactive
+        run: |
+          eas build \
+            --platform ${{ github.event.inputs.platform || 'android' }} \
+            --profile ${{ github.event.inputs.profile || 'preview' }} \
+            --non-interactive
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
