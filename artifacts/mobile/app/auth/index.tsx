@@ -4,6 +4,7 @@ import {
   Text,
   Pressable,
   StyleSheet,
+  Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -21,8 +22,11 @@ export default function WelcomeScreen() {
   return (
     <View style={[styles.root, { paddingTop: topPad, paddingBottom: botPad + 24 }]}>
       <View style={styles.brand}>
-        <Text style={styles.sigma}>Φ</Text>
-        <Text style={styles.appName}>Phormula</Text>
+        <Image
+          source={require("@/assets/images/logo-name-symbol.png")}
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
         <Text style={styles.tagline}>CALCULADORA INTELIGENTE</Text>
       </View>
 
@@ -65,19 +69,11 @@ const styles = StyleSheet.create({
   brand: {
     alignItems: "center",
     paddingTop: 32,
-    gap: 4,
+    gap: 8,
   },
-  sigma: {
-    fontSize: 64,
-    color: c.ghost,
-    fontFamily: "Inter_400Regular",
-    lineHeight: 72,
-  },
-  appName: {
-    fontSize: 20,
-    fontFamily: "Inter_700Bold",
-    color: c.text,
-    letterSpacing: -0.5,
+  logoImage: {
+    width: 180,
+    height: 180,
   },
   tagline: {
     fontSize: 9,

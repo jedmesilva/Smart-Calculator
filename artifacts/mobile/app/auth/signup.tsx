@@ -8,6 +8,7 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -193,7 +194,11 @@ export default function SignupScreen() {
         </Pressable>
 
         <View style={styles.header}>
-          <Text style={styles.sigma}>Φ</Text>
+          <Image
+            source={require("@/assets/images/logo-symbol.png")}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
           <Text style={styles.title}>Criar sua conta</Text>
           <Text style={styles.subtitle}>
             Preencha os campos abaixo para começar a usar o Phormula.
@@ -436,11 +441,10 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 32,
   },
-  sigma: {
-    fontSize: 28,
-    fontFamily: "Inter_400Regular",
-    color: c.ghost,
-    lineHeight: 34,
+  logoImage: {
+    width: 40,
+    height: 40,
+    marginBottom: 4,
   },
   title: {
     fontSize: 24,
