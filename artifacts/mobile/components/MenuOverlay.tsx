@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   Pressable,
   StyleSheet,
-  Alert,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import Animated, {
   useSharedValue,
@@ -38,6 +38,7 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgr
   const opacity = useSharedValue(0);
   const translateX = useSharedValue(-280);
   const { data: carteira, isLoading: carteiraLoading } = useCarteira();
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   const topPad = insets.top;
   const botPad = insets.bottom;
@@ -69,21 +70,13 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgr
     : "?";
 
   const handleSignOut = () => {
-    Alert.alert(
-      "Sair da conta",
-      "Tem certeza que deseja sair?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Sair",
-          style: "destructive",
-          onPress: async () => {
-            close();
-            setTimeout(() => signOut(), 300);
-          },
-        },
-      ]
-    );
+    setShowSignOutConfirm(true);
+  };
+
+  const confirmSignOut = async () => {
+    setShowSignOutConfirm(false);
+    close();
+    setTimeout(() => signOut(), 300);
   };
 
   const saldo = carteira?.saldo ?? null;
@@ -181,6 +174,41 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgr
           <Text style={styles.signOutText}>Sair da conta</Text>
         </Pressable>
       </Animated.View>
+
+      {/* Sign Out Confirm Dialog */}
+      <Modal
+        visible={showSignOutConfirm}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={() => setShowSignOutConfirm(false)}
+      >
+        <View style={styles.dialogBackdrop}>
+          <View style={styles.dialogCard}>
+            <View style={styles.dialogIconWrap}>
+              <Feather name="log-out" size={20} color="#ef4444" />
+            </View>
+            <Text style={styles.dialogTitle}>Sair da conta</Text>
+            <Text style={styles.dialogMessage}>
+              Tem certeza que deseja encerrar sua sessão?
+            </Text>
+            <View style={styles.dialogActions}>
+              <Pressable
+                style={({ pressed }) => [styles.dialogBtnCancel, pressed && { opacity: 0.7 }]}
+                onPress={() => setShowSignOutConfirm(false)}
+              >
+                <Text style={styles.dialogBtnCancelText}>Cancelar</Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.dialogBtnConfirm, pressed && { opacity: 0.8 }]}
+                onPress={confirmSignOut}
+              >
+                <Text style={styles.dialogBtnConfirmText}>Sair</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -372,5 +400,79 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Inter_500Medium",
     color: "#ef4444",
+  },
+  dialogBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+  },
+  dialogCard: {
+    backgroundColor: c.background,
+    borderRadius: 24,
+    padding: 28,
+    width: "100%",
+    alignItems: "center",
+    gap: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.14,
+    shadowRadius: 24,
+    elevation: 20,
+  },
+  dialogIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#fef2f2",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
+  },
+  dialogTitle: {
+    fontSize: 17,
+    fontFamily: "Inter_700Bold",
+    color: c.text,
+    letterSpacing: -0.3,
+    textAlign: "center",
+  },
+  dialogMessage: {
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    color: c.faint,
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 8,
+  },
+  dialogActions: {
+    flexDirection: "row",
+    gap: 10,
+    width: "100%",
+    marginTop: 4,
+  },
+  dialogBtnCancel: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: c.panel,
+    alignItems: "center",
+  },
+  dialogBtnCancelText: {
+    fontSize: 15,
+    fontFamily: "Inter_600SemiBold",
+    color: c.mid,
+  },
+  dialogBtnConfirm: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: "#ef4444",
+    alignItems: "center",
+  },
+  dialogBtnConfirmText: {
+    fontSize: 15,
+    fontFamily: "Inter_600SemiBold",
+    color: "#fff",
   },
 });
