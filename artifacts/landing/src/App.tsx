@@ -31,9 +31,9 @@ const testimonials = [
 ];
 
 const features = [
-  { icon: "💬", title: "Linguagem natural", desc: "Escreva como você fala, em português. Sem aprender sintaxe ou fórmulas especiais." },
-  { icon: "📐", title: "13+ fórmulas prontas", desc: "Juros compostos, área, física, estatística. Uma biblioteca completa na palma da mão." },
-  { icon: "🔍", title: "Passo a passo verificado", desc: "Veja como o resultado foi calculado. Fórmula simbólica, valores e prova reversa." },
+  { title: "Linguagem natural", desc: "Escreva como você fala, em português. Sem aprender sintaxe ou fórmulas especiais." },
+  { title: "Qualquer cálculo", desc: "Finanças, física, geometria, estatística — descreva o problema e receba o resultado." },
+  { title: "Passo a passo verificado", desc: "Veja como o resultado foi calculado. Fórmula simbólica, valores e prova reversa." },
 ];
 
 export default function App() {
@@ -167,7 +167,6 @@ export default function App() {
         <div className="feat-grid">
           {features.map((f, i) => (
             <div key={i} className="feat-card">
-              <div className="feat-icon">{f.icon}</div>
               <div className="feat-card-title">{f.title}</div>
               <div className="feat-card-desc">{f.desc}</div>
             </div>
