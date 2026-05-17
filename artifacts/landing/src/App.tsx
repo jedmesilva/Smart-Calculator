@@ -61,8 +61,7 @@ export default function App() {
       {/* Nav */}
       <nav className="nav">
         <div className="logo">
-          <span className="logo-mark">φ</span>
-          <span className="logo-name">Phormula</span>
+          <img src="/logo-name-symbol.png" alt="Phormula" className="logo-img" />
         </div>
         <div className="nav-links">
           <a href="#como-funciona">Como funciona</a>
@@ -129,7 +128,7 @@ export default function App() {
                 </div>
               </div>
               <div className="assistant-row">
-                <div className="avatar">φ</div>
+                <div className="avatar"><img src="/logo-symbol.png" alt="" className="avatar-img" /></div>
                 <div className="assistant-msg">
                   Usando juros compostos, seu investimento rende <strong>R$ 344,27</strong>, totalizando <strong>R$ 5.344,27</strong>.
                 </div>
@@ -138,7 +137,7 @@ export default function App() {
                 <div className="user-msg">E se o prazo for 12 meses?</div>
               </div>
               <div className="assistant-row">
-                <div className="avatar">φ</div>
+                <div className="avatar"><img src="/logo-symbol.png" alt="" className="avatar-img" /></div>
                 <div className="assistant-msg">
                   Em 12 meses: <strong>R$ 5.717,81</strong> com rendimento de R$ 717,81.
                 </div>

@@ -19,9 +19,8 @@ body {
   backdrop-filter: blur(12px);
   z-index: 100;
 }
-.logo { display: flex; align-items: center; gap: 10px; }
-.logo-mark { font-size: 26px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
-.logo-name { font-size: 16px; font-weight: 600; letter-spacing: -0.4px; }
+.logo { display: flex; align-items: center; }
+.logo-img { height: 28px; width: auto; display: block; }
 .nav-links { display: flex; gap: 32px; font-size: 14px; color: #6B6B66; }
 .nav-links a { color: #6B6B66; text-decoration: none; }
 .nav-cta {
@@ -102,10 +101,11 @@ body {
 }
 .assistant-row { display: flex; gap: 7px; }
 .avatar {
-  width: 24px; height: 24px; border-radius: 12px; background-color: #EFEFEC;
+  width: 24px; height: 24px; border-radius: 12px; background-color: #1A1A18;
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; flex-shrink: 0; font-weight: 700;
+  flex-shrink: 0; overflow: hidden;
 }
+.avatar-img { width: 16px; height: 16px; object-fit: contain; }
 .assistant-msg {
   background-color: #EFEFEC; border-radius: 3px 16px 16px 16px;
   padding: 9px 13px; font-size: 12.5px; max-width: 85%; color: #3A3A36; line-height: 1.5;
