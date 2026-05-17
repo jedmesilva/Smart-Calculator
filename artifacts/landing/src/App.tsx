@@ -1,4 +1,6 @@
+import { useState, useEffect } from "react";
 import "./App.css";
+import { getVariant, type Variant } from "./lib/abtest";
 
 const AppleIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -36,7 +38,28 @@ const features = [
   { title: "Passo a passo verificado", desc: "Veja como o resultado foi calculado. Fórmula simbólica, valores e prova reversa." },
 ];
 
+const heroContent: Record<Variant, { headline: JSX.Element; subtitle: string; cta: string }> = {
+  control: {
+    headline: <>Seu gênio<br />matemático<br />pessoal</>,
+    subtitle: "Fale com o Phormula como você fala com um amigo. Ele entende, calcula e explica qualquer conta — em segundos.",
+    cta: "Baixar grátis",
+  },
+  treatment: {
+    headline: <>Calcule<br />qualquer coisa.<br />Em segundos.</>,
+    subtitle: "Digite o problema como quiser. O Phormula entende, calcula e mostra o passo a passo — sem fórmulas ou planilhas.",
+    cta: "Começar agora",
+  },
+};
+
 export default function App() {
+  const [variant, setVariant] = useState<Variant>("control");
+
+  useEffect(() => {
+    setVariant(getVariant());
+  }, []);
+
+  const hero = heroContent[variant];
+
   return (
     <div>
       {/* Nav */}
@@ -50,7 +73,7 @@ export default function App() {
           <a href="#formulas">Fórmulas</a>
           <a href="#depoimentos">Depoimentos</a>
         </div>
-        <button className="nav-cta">Baixar grátis</button>
+        <button className="nav-cta">{hero.cta}</button>
       </nav>
 
       {/* Hero */}
@@ -60,14 +83,8 @@ export default function App() {
             <span className="badge-dot" />
             Disponível no iOS e Android
           </div>
-          <h1>
-            Seu gênio<br />
-            matemático<br />
-            pessoal
-          </h1>
-          <p className="subtitle">
-            Fale com o Phormula como você fala com um amigo. Ele entende, calcula e explica qualquer conta — em segundos.
-          </p>
+          <h1>{hero.headline}</h1>
+          <p className="subtitle">{hero.subtitle}</p>
 
           <div>
             <p className="examples-label">Experimente perguntar:</p>
