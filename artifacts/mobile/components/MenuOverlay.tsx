@@ -133,6 +133,23 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgr
           </View>
         )}
 
+        {/* Credits Card — apenas para visitantes */}
+        {isGuest && (
+          <View style={styles.guestCreditsCard}>
+            <View style={styles.guestCreditsRow}>
+              <Text style={styles.guestCreditsNum}>
+                {guestCredits % 1 === 0
+                  ? guestCredits.toFixed(0)
+                  : guestCredits.toFixed(1)}
+              </Text>
+              <Text style={styles.guestCreditsSuffix}>créditos restantes</Text>
+            </View>
+            <Text style={styles.guestCreditsHint}>
+              Crie uma conta para ganhar mais créditos
+            </Text>
+          </View>
+        )}
+
         {/* Plan Card — apenas para usuários autenticados */}
         {!isGuest && (
           <Pressable
@@ -452,6 +469,36 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 10,
+  },
+  guestCreditsCard: {
+    backgroundColor: c.panel,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 16,
+    marginBottom: 10,
+    gap: 4,
+  },
+  guestCreditsRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 6,
+  },
+  guestCreditsNum: {
+    fontSize: 26,
+    fontFamily: "Inter_700Bold",
+    color: c.text,
+    letterSpacing: -0.5,
+  },
+  guestCreditsSuffix: {
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    color: c.faint,
+  },
+  guestCreditsHint: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    color: c.ghost,
   },
   guestAvatarWrap: {
     width: 44,
