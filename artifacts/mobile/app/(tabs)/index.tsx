@@ -486,7 +486,7 @@ export default function PhormulаScreen() {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Pressable onPress={() => setScreen("menu")} style={styles.headerIconBtn} hitSlop={8}>
-              <Feather name="menu" size={15} color={c.ghost} />
+              <Feather name="menu" size={17} color={c.ghost} />
             </Pressable>
             {isGuest && (
               <Pressable
@@ -505,11 +505,11 @@ export default function PhormulаScreen() {
               </View>
             )}
             <Pressable onPress={handleNewSession} style={styles.headerIconBtn} hitSlop={8}>
-              <Feather name="plus" size={16} color={c.ghost} />
+              <Feather name="plus" size={17} color={c.ghost} />
             </Pressable>
             {!isGuest && (
               <Pressable onPress={() => setScreen("history")} style={styles.headerIconBtn} hitSlop={8}>
-                <Feather name="clock" size={15} color={c.ghost} />
+                <Feather name="clock" size={17} color={c.ghost} />
               </Pressable>
             )}
           </View>
@@ -730,11 +730,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 36,
   },
-  headerLeft: { flexDirection: "row", alignItems: "center", gap: 7 },
-  headerRight: { flexDirection: "row", gap: 4 },
+  headerLeft: { flexDirection: "row", alignItems: "center", gap: 6 },
+  headerRight: { flexDirection: "row", gap: 6 },
   headerIconBtn: {
     alignItems: "center",
     justifyContent: "center",
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "#EFEFEC",
   },
   numSection: {},
   numRow: {
