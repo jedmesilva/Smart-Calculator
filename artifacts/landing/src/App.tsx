@@ -177,7 +177,7 @@ export default function App() {
       {/* Footer CTA */}
       <section className="footer-section">
         <h2 className="footer-h2">Experimente grátis</h2>
-        <p className="footer-sub">Disponível para iOS e Android. Sem cadastro obrigatório.</p>
+        <p className="footer-sub">Disponível para iOS e Android.</p>
         <div className="footer-cta">
           <button className="btn-primary">
             <AppleIcon /> App Store
