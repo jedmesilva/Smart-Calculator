@@ -811,7 +811,7 @@ export function PlanManagementScreen({
             <>
               <View style={styles.mgmtCreditsRow}>
                 <Text style={styles.mgmtCreditsNum}>
-                  {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"}
+                  {saldo !== null ? saldo.toLocaleString("pt-BR") : "0"}
                 </Text>
                 <Text style={styles.mgmtCreditsSuffix}> / 10</Text>
               </View>
@@ -836,7 +836,7 @@ export function PlanManagementScreen({
             <View style={styles.mgmtStatDivider} />
             <View style={styles.mgmtStat}>
               <Text style={styles.mgmtStatNum}>
-                {totalConsultas > 0 ? (totalCreditosConsumidos / totalConsultas).toFixed(1) : "—"}
+                {totalConsultas > 0 ? (totalCreditosConsumidos / totalConsultas).toFixed(1) : "0"}
               </Text>
               <Text style={styles.mgmtStatLabel}>créditos por cálculo</Text>
             </View>

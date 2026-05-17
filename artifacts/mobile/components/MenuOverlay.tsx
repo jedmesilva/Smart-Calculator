@@ -174,7 +174,7 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgr
                 <View style={{ gap: 4 }}>
                   <Text style={styles.planCardCredits}>
                     <Text style={styles.planCardCreditsNum}>
-                      {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"}
+                      {saldo !== null ? saldo.toLocaleString("pt-BR") : "0"}
                     </Text>
                     {"  "}
                     <Text style={styles.planCardCreditsSuffix}>créditos disponíveis</Text>
