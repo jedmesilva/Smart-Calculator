@@ -18,6 +18,7 @@ import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useGuest } from "@/contexts/GuestContext";
 import { useCarteira } from "@/lib/queries";
 import colors from "@/constants/colors";
 
@@ -34,6 +35,7 @@ type Props = {
 export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgrade }: Props) {
   const insets = useSafeAreaInsets();
   const { user, userId, userName, signOut } = useAuth();
+  const { isGuest, guestCredits, setShowAuthSheet } = useGuest();
   const email = user?.email ?? "";
   const opacity = useSharedValue(0);
   const translateX = useSharedValue(-280);
@@ -105,69 +107,86 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgr
           </Pressable>
         </View>
 
-        {/* User Card */}
-        <View style={styles.userCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarInitials}>{initials}</Text>
+        {isGuest ? (
+          /* ── GUEST: card de visitante ── */
+          <View style={styles.guestCard}>
+            <View style={styles.guestAvatarWrap}>
+              <Feather name="user" size={22} color={c.faint} />
+            </View>
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>Visitante</Text>
+              <Text style={styles.userEmail}>Modo visitante</Text>
+            </View>
           </View>
-          <View style={styles.userInfo}>
-            {displayName ? (
-              <Text style={styles.userName} numberOfLines={1}>{displayName}</Text>
-            ) : null}
-            <Text style={styles.userEmail} numberOfLines={1}>{email}</Text>
+        ) : (
+          /* ── AUTENTICADO: user card ── */
+          <View style={styles.userCard}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarInitials}>{initials}</Text>
+            </View>
+            <View style={styles.userInfo}>
+              {displayName ? (
+                <Text style={styles.userName} numberOfLines={1}>{displayName}</Text>
+              ) : null}
+              <Text style={styles.userEmail} numberOfLines={1}>{email}</Text>
+            </View>
           </View>
-        </View>
+        )}
 
-        {/* Plan Card */}
-        <Pressable
-          style={({ pressed }) => [styles.planCard, pressed && { opacity: 0.85 }]}
-          onPress={() => close(onPlan)}
-        >
-          <View style={styles.planCardTop}>
-            <Text style={styles.planCardLabel}>GRATUITO</Text>
-            <Pressable
-              style={({ pressed }) => [styles.upgradeBtn, pressed && { opacity: 0.8 }]}
-              onPress={(e) => { e.stopPropagation(); close(onUpgrade); }}
-              hitSlop={8}
-            >
-              <Text style={styles.upgradeBtnText}>Upgrade</Text>
-              <Feather name="chevron-right" size={12} color={c.background} />
-            </Pressable>
-          </View>
-          <View style={styles.planCardBottom}>
-            {carteiraLoading ? (
-              <ActivityIndicator size={14} color={c.ghost} />
-            ) : (
-              <View style={{ gap: 4 }}>
-                <Text style={styles.planCardCredits}>
-                  <Text style={styles.planCardCreditsNum}>
-                    {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"}
+        {/* Plan Card — apenas para usuários autenticados */}
+        {!isGuest && (
+          <Pressable
+            style={({ pressed }) => [styles.planCard, pressed && { opacity: 0.85 }]}
+            onPress={() => close(onPlan)}
+          >
+            <View style={styles.planCardTop}>
+              <Text style={styles.planCardLabel}>GRATUITO</Text>
+              <Pressable
+                style={({ pressed }) => [styles.upgradeBtn, pressed && { opacity: 0.8 }]}
+                onPress={(e) => { e.stopPropagation(); close(onUpgrade); }}
+                hitSlop={8}
+              >
+                <Text style={styles.upgradeBtnText}>Upgrade</Text>
+                <Feather name="chevron-right" size={12} color={c.background} />
+              </Pressable>
+            </View>
+            <View style={styles.planCardBottom}>
+              {carteiraLoading ? (
+                <ActivityIndicator size={14} color={c.ghost} />
+              ) : (
+                <View style={{ gap: 4 }}>
+                  <Text style={styles.planCardCredits}>
+                    <Text style={styles.planCardCreditsNum}>
+                      {saldo !== null ? saldo.toLocaleString("pt-BR") : "—"}
+                    </Text>
+                    {"  "}
+                    <Text style={styles.planCardCreditsSuffix}>créditos disponíveis</Text>
                   </Text>
-                  {"  "}
-                  <Text style={styles.planCardCreditsSuffix}>créditos disponíveis</Text>
-                </Text>
-                <Text style={styles.planCardRenovacao}>{renovacaoLabel}</Text>
-              </View>
-            )}
-          </View>
-        </Pressable>
+                  <Text style={styles.planCardRenovacao}>{renovacaoLabel}</Text>
+                </View>
+              )}
+            </View>
+          </Pressable>
+        )}
 
         {/* Divider */}
         <View style={styles.divider} />
 
-        {/* Menu Items */}
-        <View style={styles.menuItems}>
-          <MenuItem
-            icon="hash"
-            label="Cálculos"
-            onPress={() => close(onCalculations)}
-          />
-          <MenuItem
-            icon="clock"
-            label="Histórico"
-            onPress={() => close(onHistory)}
-          />
-        </View>
+        {/* Menu Items — apenas para usuários autenticados */}
+        {!isGuest && (
+          <View style={styles.menuItems}>
+            <MenuItem
+              icon="hash"
+              label="Cálculos"
+              onPress={() => close(onCalculations)}
+            />
+            <MenuItem
+              icon="clock"
+              label="Histórico"
+              onPress={() => close(onHistory)}
+            />
+          </View>
+        )}
 
         {/* Spacer */}
         <View style={{ flex: 1 }} />
@@ -175,14 +194,25 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgr
         {/* Divider */}
         <View style={styles.divider} />
 
-        {/* Sign Out */}
-        <Pressable
-          onPress={handleSignOut}
-          style={({ pressed }) => [styles.signOutBtn, pressed && { opacity: 0.7 }]}
-        >
-          <Feather name="log-out" size={15} color="#ef4444" />
-          <Text style={styles.signOutText}>Sair da conta</Text>
-        </Pressable>
+        {isGuest ? (
+          /* ── GUEST: botão de login ── */
+          <Pressable
+            onPress={() => { close(); setTimeout(() => setShowAuthSheet(true), 260); }}
+            style={({ pressed }) => [styles.loginBtn, pressed && { opacity: 0.8 }]}
+          >
+            <Feather name="log-in" size={15} color={c.background} />
+            <Text style={styles.loginBtnText}>Entrar / Criar conta</Text>
+          </Pressable>
+        ) : (
+          /* ── AUTENTICADO: sair da conta ── */
+          <Pressable
+            onPress={handleSignOut}
+            style={({ pressed }) => [styles.signOutBtn, pressed && { opacity: 0.7 }]}
+          >
+            <Feather name="log-out" size={15} color="#ef4444" />
+            <Text style={styles.signOutText}>Sair da conta</Text>
+          </Pressable>
+        )}
       </Animated.View>
 
       {/* Sign Out Confirm Dialog */}
@@ -413,6 +443,42 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Inter_500Medium",
     color: "#ef4444",
+  },
+  guestCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: c.panel,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 10,
+  },
+  guestAvatarWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: c.surface,
+    borderWidth: 1.5,
+    borderColor: c.ghost,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  loginBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: c.text,
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginBottom: 8,
+  },
+  loginBtnText: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    color: c.background,
+    letterSpacing: -0.1,
   },
   dialogBackdrop: {
     flex: 1,
