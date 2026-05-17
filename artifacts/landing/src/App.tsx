@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import "./App.css";
 import { getVariant, type Variant } from "./lib/abtest";
 
@@ -52,11 +52,7 @@ const heroContent: Record<Variant, { headline: ReactNode; subtitle: string; cta:
 };
 
 export default function App() {
-  const [variant, setVariant] = useState<Variant>("control");
-
-  useEffect(() => {
-    setVariant(getVariant());
-  }, []);
+  const [variant] = useState<Variant>(() => getVariant());
 
   const hero = heroContent[variant];
 
