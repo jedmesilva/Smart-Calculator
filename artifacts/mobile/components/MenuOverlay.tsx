@@ -122,7 +122,10 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgr
           </View>
         ) : (
           /* ── AUTENTICADO: user card ── */
-          <View style={styles.userCard}>
+          <Pressable
+            style={({ pressed }) => [styles.userCard, pressed && { opacity: 0.8 }]}
+            onPress={() => close(() => router.push("/account"))}
+          >
             <View style={styles.avatar}>
               <Text style={styles.avatarInitials}>{initials}</Text>
             </View>
@@ -132,7 +135,8 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgr
               ) : null}
               <Text style={styles.userEmail} numberOfLines={1}>{email}</Text>
             </View>
-          </View>
+            <Feather name="chevron-right" size={15} color={c.ghost} />
+          </Pressable>
         )}
 
         {/* Credits Card — apenas para visitantes */}
@@ -203,11 +207,6 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgr
               icon="clock"
               label="Histórico"
               onPress={() => close(onHistory)}
-            />
-            <MenuItem
-              icon="user"
-              label="Minha conta"
-              onPress={() => close(() => router.push("/account"))}
             />
           </View>
         )}
