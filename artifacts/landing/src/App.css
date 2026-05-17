@@ -20,6 +20,7 @@ body {
   z-index: 100;
 }
 .logo { display: flex; align-items: center; }
+.logo-img { height: 26px; width: auto; display: block; }
 .nav-links { display: flex; gap: 32px; font-size: 14px; color: #6B6B66; }
 .nav-links a { color: #6B6B66; text-decoration: none; }
 .nav-cta {
