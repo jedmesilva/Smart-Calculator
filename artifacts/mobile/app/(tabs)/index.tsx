@@ -27,6 +27,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGuest } from "@/contexts/GuestContext";
 import { AuthBottomSheet } from "@/components/AuthBottomSheet";
 import { calculateStream, predictQuery, fetchSessionMessages, type ResultData, type MissingVariable, type InsufficientCreditsError } from "@/lib/apiClient";
+import { Toast } from "@/components/Toast";
 import { buildContext } from "@/lib/contextBuilder";
 import { createSession, saveMessages, touchSession, fetchSessionSummary } from "@/lib/queries";
 import type { DbSession } from "@/lib/queries";
@@ -198,6 +199,8 @@ export default function PhormulаScreen() {
   const [calcOrigin, setCalcOrigin] = useState<"main" | "calculations">("main");
   const [thinkingMessage, setThinkingMessage] = useState<string | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   const sessionCalcsRef = useRef<SessionCalcsSheetHandle>(null);
   const inputRef = useRef<TextInput>(null);
   const predictDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -216,6 +219,11 @@ export default function PhormulаScreen() {
   const topPad = insets.top;
   const botPad = insets.bottom;
   const kbOffset = Platform.OS === "ios" ? 0 : 0;
+
+  const showToast = useCallback((msg: string) => {
+    setToastMessage(msg);
+    setToastVisible(true);
+  }, []);
 
   const handleNewSession = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -419,8 +427,11 @@ export default function PhormulаScreen() {
       // Créditos esgotados — mostra bottom sheet em vez de erro no chat
       if ((err as InsufficientCreditsError).code === "saldo_insuficiente") {
         setShowAuthSheet(true);
-        // Remove a mensagem do usuário do chat para não deixar sem resposta
         setChat((prev) => prev.filter((item) => item.id !== msgId));
+      } else if ((err as any).code === "internal_error" || err?.message === "internal_error") {
+        // Erro interno do servidor (falha no LLM) — remove mensagem do chat e exibe toast
+        setChat((prev) => prev.filter((item) => item.id !== msgId));
+        showToast("Estamos com dificuldades técnicas. Tente novamente em instantes.");
       } else {
         setChat((prev) => [
           ...prev,
@@ -435,7 +446,7 @@ export default function PhormulаScreen() {
       setIsLoading(false);
       setThinkingMessage(null);
     }
-  }, [query, isLoading, currentSessionId, sessionSummary, messageCount, queryClient, chat, userName, setUserName, isGuest, guestId, useGuestName, setGuestCredits, setGuestName, setShowAuthSheet, userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [query, isLoading, currentSessionId, sessionSummary, messageCount, queryClient, chat, userName, setUserName, isGuest, guestId, useGuestName, setGuestCredits, setGuestName, setShowAuthSheet, userId, showToast]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const canSend = query.trim().length > 0 && !isLoading;
 
@@ -465,6 +476,11 @@ export default function PhormulаScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
+      <Toast
+        message={toastMessage}
+        visible={toastVisible}
+        onHide={() => setToastVisible(false)}
+      />
       {/* ── DISPLAY PANEL ── */}
       <View style={[styles.displayPanel, { paddingTop: topPad + 10 }]}>
         <View style={styles.header}>

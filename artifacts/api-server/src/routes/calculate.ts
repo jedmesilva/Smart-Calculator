@@ -85,6 +85,15 @@ router.post("/calculate", requireAuthOrGuest, async (req, res) => {
 
     let billingInfo: { saldoAtualizado: number; creditosDebitados: number } | undefined;
 
+    if (result.status === "internal_error") {
+      try {
+        res.write(`data: ${JSON.stringify({ type: "internal_error" })}\n\n`);
+      } catch (writeErr) {
+        logger.warn({ writeErr }, "calculate: falha ao escrever internal_error");
+      }
+      return;
+    }
+
     if (result.status === "success" || result.status === "conversational") {
       if (isGuest) {
         // Guest billing: custo real em créditos fracionários (mesma infraestrutura dos usuários)

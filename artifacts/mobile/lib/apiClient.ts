@@ -184,6 +184,10 @@ export async function calculateStream(
             return event.data as CalcResponse;
           } else if (event.type === "error") {
             throw new Error(event.message ?? "Erro no servidor");
+          } else if (event.type === "internal_error") {
+            const err = new Error("internal_error") as Error & { code: "internal_error" };
+            err.code = "internal_error";
+            throw err;
           }
         } catch (parseErr: any) {
           // Só suprime SyntaxError real do JSON.parse — re-lança qualquer outro erro (ex: evento de erro do servidor)

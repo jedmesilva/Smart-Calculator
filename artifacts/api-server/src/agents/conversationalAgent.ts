@@ -16,6 +16,7 @@ import type { TokenAccumulator } from "../lib/billingService";
 export type GuidanceResponse = {
   message: string;
   capturedName?: string;
+  isInternalError?: boolean;
 };
 
 function buildConversationalPrompt(userName?: string, guestInfo?: { creditsLeft: number; isFirstCalc: boolean }): string {
@@ -283,7 +284,7 @@ export async function runGuidanceAgent(opts: {
       return { message: raw };
     }
   } catch (err) {
-    logger.warn({ err }, "guidanceAgent: failed, using fallback");
-    return { message: "Não consegui entender o cálculo. Pode descrever com mais detalhes o que quer calcular?" };
+    logger.warn({ err }, "guidanceAgent: LLM call failed, signalling internal_error");
+    return { message: "", isInternalError: true };
   }
 }

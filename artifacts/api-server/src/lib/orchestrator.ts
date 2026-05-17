@@ -70,12 +70,17 @@ export type OrchestratorWrongFormula = {
   tokenUsage?: TokenUsage;
 };
 
+export type OrchestratorInternalError = {
+  status: "internal_error";
+};
+
 export type OrchestratorResult =
   | OrchestratorSuccess
   | OrchestratorNeedsInput
   | OrchestratorConversational
   | OrchestratorFormulaError
-  | OrchestratorWrongFormula;
+  | OrchestratorWrongFormula
+  | OrchestratorInternalError;
 
 /* ══════════════════════════════════════════════════════
    Agent 1 — Intent Detection
@@ -738,6 +743,7 @@ export async function runCalculationPipeline(opts: {
     } catch (err: any) {
       logger.warn({ err }, "orchestrator3: intentAgent failed, fallback guidance");
       const guidance = await runGuidanceAgent({ query, context, sessionSummary, userName, acc });
+      if (guidance.isInternalError) return { status: "internal_error" };
       return {
         status: "conversational",
         message: guidance.message,
@@ -751,6 +757,7 @@ export async function runCalculationPipeline(opts: {
   if (intentResult.status === "conversational") {
     emit("Respondendo…");
     const guidance = await runGuidanceAgent({ query, context, sessionSummary, userName, acc });
+    if (guidance.isInternalError) return { status: "internal_error" };
     return {
       status: "conversational",
       message: guidance.message,
@@ -826,6 +833,7 @@ export async function runCalculationPipeline(opts: {
           userName,
           acc,
         });
+        if (guidance.isInternalError) return { status: "internal_error" };
         return { status: "conversational", message: guidance.message };
       }
       // Na primeira falha, sinaliza erro ao avaliador como feedback e continua
@@ -892,6 +900,7 @@ export async function runCalculationPipeline(opts: {
 
   if (!calcResult) {
     const guidance = await runGuidanceAgent({ query, context, sessionSummary, userName });
+    if (guidance.isInternalError) return { status: "internal_error" };
     return { status: "conversational", message: guidance.message };
   }
 
