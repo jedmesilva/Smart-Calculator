@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import "./App.css";
 import { getVariant, type Variant } from "./lib/abtest";
 
@@ -38,7 +38,7 @@ const features = [
   { title: "Passo a passo verificado", desc: "Veja como o resultado foi calculado. Fórmula simbólica, valores e prova reversa." },
 ];
 
-const heroContent: Record<Variant, { headline: JSX.Element; subtitle: string; cta: string }> = {
+const heroContent: Record<Variant, { headline: ReactNode; subtitle: string; cta: string }> = {
   control: {
     headline: <>Seu gênio<br />matemático<br />pessoal</>,
     subtitle: "Fale com o Phormula como você fala com um amigo. Ele entende, calcula e explica qualquer conta — em segundos.",
