@@ -24,6 +24,10 @@ args = "Start mobile"
 task = "workflow.run"
 args = "Start API server"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "artifacts/landing: Landing Page"
+
 [[workflows.workflow]]
 name = "Start mobile"
 author = "agent"
@@ -46,6 +50,19 @@ outputType = "console"
 task = "shell.exec"
 args = "pnpm --filter @workspace/api-server run dev"
 waitForPort = 8080
+
+[[workflows.workflow]]
+name = "artifacts/landing: Landing Page"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd artifacts/landing && pnpm dev"
+waitForPort = 5173
+
+[workflows.workflow.metadata]
+outputType = "console"
+isCanvasWorkflow = true
 
 [agent]
 stack = "BEST_EFFORT_FALLBACK"
@@ -83,6 +100,10 @@ externalPort = 80
 [[ports]]
 localPort = 18116
 externalPort = 3001
+
+[[ports]]
+localPort = 5173
+externalPort = 5173
 
 [nix]
 channel = "stable-25_05"
