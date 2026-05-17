@@ -20,7 +20,6 @@ body {
   z-index: 100;
 }
 .logo { display: flex; align-items: center; }
-.logo-img { height: 28px; width: auto; display: block; }
 .nav-links { display: flex; gap: 32px; font-size: 14px; color: #6B6B66; }
 .nav-links a { color: #6B6B66; text-decoration: none; }
 .nav-cta {
@@ -99,13 +98,7 @@ body {
   border-radius: 16px 16px 3px 16px; padding: 9px 13px;
   font-size: 12.5px; max-width: 85%; line-height: 1.45;
 }
-.assistant-row { display: flex; gap: 7px; }
-.avatar {
-  width: 24px; height: 24px; border-radius: 12px; background-color: #1A1A18;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; overflow: hidden;
-}
-.avatar-img { width: 16px; height: 16px; object-fit: contain; }
+.assistant-row { display: flex; }
 .assistant-msg {
   background-color: #EFEFEC; border-radius: 3px 16px 16px 16px;
   padding: 9px 13px; font-size: 12.5px; max-width: 85%; color: #3A3A36; line-height: 1.5;
