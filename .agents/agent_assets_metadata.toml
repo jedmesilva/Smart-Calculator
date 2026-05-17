@@ -1,8 +1,13 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "8ecuP-63qf6KtHo0NQgiV"
 uri = "file://artifacts/mobile/assets/images/icon.png"
 type = "image"
 title = "sigma app icon"
+
+[[outputs]]
+id = "s3ILXVQUxGRDi46tai0SU"
+uri = "file://artifacts/mobile/assets/images/logo-symbol.png"
+type = "image"
+title = "logo-symbol.png (atual splash)"
