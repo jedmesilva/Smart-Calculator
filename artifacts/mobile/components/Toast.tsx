@@ -69,7 +69,7 @@ export function Toast({ message, visible, onHide, duration = 3500 }: Props) {
       pointerEvents="none"
     >
       <View style={styles.inner}>
-        <Feather name="alert-triangle" size={15} color="#B45309" />
+        <Feather name="info" size={15} color="#6B6B66" />
         <Text style={styles.text}>{message}</Text>
       </View>
     </Animated.View>
@@ -88,23 +88,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    backgroundColor: "#FEF3C7",
+    backgroundColor: "#EFEFEC",
     borderWidth: 1,
-    borderColor: "#FCD34D",
-    borderRadius: 12,
+    borderColor: "#E8E7E3",
+    borderRadius: 14,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 13,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
   },
   text: {
     flex: 1,
     fontSize: 13.5,
     fontFamily: "Inter_400Regular",
-    color: "#78350F",
+    color: "#1A1A18",
     lineHeight: 19,
+    letterSpacing: -0.1,
   },
 });
