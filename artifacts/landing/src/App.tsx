@@ -1,61 +1,4 @@
-const s: Record<string, React.CSSProperties> = {
-  nav: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 64px", borderBottom: "1px solid #E8E7E3", position: "sticky", top: 0, backgroundColor: "rgba(247,246,243,0.92)", backdropFilter: "blur(12px)", zIndex: 100 },
-  logo: { display: "flex", alignItems: "center", gap: 10 },
-  logoMark: { fontSize: 26, fontWeight: 800, letterSpacing: -1, lineHeight: 1 },
-  logoName: { fontSize: 16, fontWeight: 600, letterSpacing: -0.4 },
-  navLinks: { display: "flex", gap: 32, fontSize: 14, color: "#6B6B66" },
-  navCta: { backgroundColor: "#1A1A18", color: "#F7F6F3", border: "none", borderRadius: 10, padding: "10px 20px", fontSize: 13, fontWeight: 500, cursor: "pointer", letterSpacing: -0.1 },
-  hero: { display: "flex", gap: 72, padding: "80px 64px 60px", alignItems: "flex-start", maxWidth: 1160, margin: "0 auto" },
-  heroLeft: { flex: 1, paddingTop: 12 },
-  badge: { display: "inline-flex", alignItems: "center", gap: 8, backgroundColor: "#EFEFEC", borderRadius: 99, padding: "6px 14px", fontSize: 12, color: "#6B6B66", marginBottom: 32, letterSpacing: 0.1 },
-  badgeDot: { width: 6, height: 6, borderRadius: "50%", backgroundColor: "#34C759", display: "inline-block", flexShrink: 0 },
-  h1: { fontSize: 64, fontWeight: 800, letterSpacing: -3, lineHeight: 1.06, margin: "0 0 20px", color: "#1A1A18" },
-  subtitle: { fontSize: 17, color: "#6B6B66", lineHeight: 1.65, margin: "0 0 36px", maxWidth: 400 },
-  examplesLabel: { fontSize: 12, color: "#AEADA8", marginBottom: 10, letterSpacing: 0.2 },
-  examplesWrap: { display: "flex", flexDirection: "column", gap: 7, marginBottom: 40 },
-  exampleChip: { display: "flex", alignItems: "center", gap: 10, backgroundColor: "#EFEFEC", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#6B6B66", cursor: "pointer", transition: "background 0.15s" },
-  ctaRow: { display: "flex", gap: 10 },
-  btnPrimary: { display: "flex", alignItems: "center", gap: 8, backgroundColor: "#1A1A18", color: "#F7F6F3", border: "none", borderRadius: 14, padding: "13px 22px", fontSize: 13, fontWeight: 600, cursor: "pointer" },
-  btnSecondary: { display: "flex", alignItems: "center", gap: 8, backgroundColor: "#EFEFEC", color: "#1A1A18", border: "none", borderRadius: 14, padding: "13px 22px", fontSize: 13, fontWeight: 500, cursor: "pointer" },
-  heroRight: { flexShrink: 0, width: 380 },
-  phoneCard: { backgroundColor: "#FFFFFF", borderRadius: 28, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.09)", border: "1px solid #E8E7E3" },
-  phoneHeader: { backgroundColor: "#F7F6F3", padding: "18px 20px 16px", borderBottom: "1px solid #E8E7E3" },
-  phoneHeaderBtns: { display: "flex", justifyContent: "space-between", marginBottom: 16 },
-  headerBtn: { width: 28, height: 28, backgroundColor: "#EFEFEC", borderRadius: 8 },
-  displayNum: { fontSize: 44, fontWeight: 800, letterSpacing: -2, lineHeight: 1, color: "#1A1A18" },
-  displayMeta: { display: "flex", justifyContent: "space-between", marginTop: 6 },
-  displayLabel: { fontSize: 10, textTransform: "uppercase" as const, letterSpacing: 0.8, color: "#AEADA8" },
-  verified: { fontSize: 10, color: "#34C759", fontWeight: 600 },
-  chatWrap: { padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10, backgroundColor: "#F7F6F3" },
-  userMsg: { backgroundColor: "#1A1A18", color: "#F7F6F3", borderRadius: "16px 16px 3px 16px", padding: "9px 13px", fontSize: 12.5, maxWidth: "85%", lineHeight: 1.45 },
-  assistantRow: { display: "flex", gap: 7 },
-  avatar: { width: 24, height: 24, borderRadius: 12, backgroundColor: "#EFEFEC", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, flexShrink: 0, fontWeight: 700 },
-  assistantMsg: { backgroundColor: "#EFEFEC", borderRadius: "3px 16px 16px 16px", padding: "9px 13px", fontSize: 12.5, maxWidth: "85%", color: "#3A3A36", lineHeight: 1.5 },
-  inputBar: { padding: "10px 14px 16px", backgroundColor: "#F7F6F3", borderTop: "1px solid #E8E7E3" },
-  inputFake: { backgroundColor: "#EFEFEC", borderRadius: 18, padding: "10px 14px", fontSize: 12.5, color: "#AEADA8" },
-  statsRow: { display: "flex", gap: 10, marginTop: 14 },
-  statCard: { flex: 1, backgroundColor: "#EFEFEC", borderRadius: 12, padding: "10px 12px" },
-  statVal: { fontSize: 15, fontWeight: 700, letterSpacing: -0.5, color: "#1A1A18" },
-  statLabel: { fontSize: 9, color: "#AEADA8", textTransform: "uppercase" as const, letterSpacing: 0.5, marginTop: 2 },
-  socialSection: { backgroundColor: "#EFEFEC", padding: "64px 64px" },
-  socialGrid: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, maxWidth: 920, margin: "0 auto" },
-  testimonialCard: { backgroundColor: "#F7F6F3", borderRadius: 16, padding: 24 },
-  testimonialText: { fontSize: 14, color: "#3A3A36", lineHeight: 1.65, margin: "0 0 16px" },
-  testimonialName: { fontSize: 12, fontWeight: 600, color: "#1A1A18" },
-  testimonialRole: { fontSize: 11, color: "#AEADA8", marginTop: 2 },
-  featSection: { padding: "80px 64px", borderTop: "1px solid #E8E7E3" },
-  featTitle: { textAlign: "center" as const, fontSize: 36, fontWeight: 800, letterSpacing: -1.5, marginBottom: 48, color: "#1A1A18" },
-  featGrid: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24, maxWidth: 960, margin: "0 auto" },
-  featCard: { border: "1px solid #E8E7E3", borderRadius: 16, padding: 28, backgroundColor: "#FFFFFF" },
-  featIcon: { fontSize: 26, marginBottom: 14 },
-  featCardTitle: { fontSize: 16, fontWeight: 700, marginBottom: 8, letterSpacing: -0.4 },
-  featCardDesc: { fontSize: 13.5, color: "#6B6B66", lineHeight: 1.65 },
-  footerSection: { textAlign: "center" as const, padding: "80px 64px 64px", borderTop: "1px solid #E8E7E3" },
-  footerH2: { fontSize: 46, fontWeight: 800, letterSpacing: -2, margin: "0 0 14px" },
-  footerSub: { fontSize: 15, color: "#6B6B66", marginBottom: 40 },
-  footerCta: { display: "flex", gap: 12, justifyContent: "center", marginBottom: 48 },
-  footerMeta: { fontSize: 12, color: "#AEADA8" },
-};
+import "./App.css";
 
 const AppleIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -95,112 +38,110 @@ const features = [
 
 export default function App() {
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif", backgroundColor: "#F7F6F3", color: "#1A1A18" }}>
-
+    <div>
       {/* Nav */}
-      <nav style={s.nav}>
-        <div style={s.logo}>
-          <span style={s.logoMark}>φ</span>
-          <span style={s.logoName}>Phormula</span>
+      <nav className="nav">
+        <div className="logo">
+          <span className="logo-mark">φ</span>
+          <span className="logo-name">Phormula</span>
         </div>
-        <div style={s.navLinks}>
-          <a href="#como-funciona" style={{ color: "#6B6B66", textDecoration: "none" }}>Como funciona</a>
-          <a href="#formulas" style={{ color: "#6B6B66", textDecoration: "none" }}>Fórmulas</a>
-          <a href="#depoimentos" style={{ color: "#6B6B66", textDecoration: "none" }}>Depoimentos</a>
+        <div className="nav-links">
+          <a href="#como-funciona">Como funciona</a>
+          <a href="#formulas">Fórmulas</a>
+          <a href="#depoimentos">Depoimentos</a>
         </div>
-        <button style={s.navCta}>Baixar grátis</button>
+        <button className="nav-cta">Baixar grátis</button>
       </nav>
 
       {/* Hero */}
-      <section style={s.hero}>
-        {/* Left copy */}
-        <div style={s.heroLeft}>
-          <div style={s.badge}>
-            <span style={s.badgeDot} />
+      <section className="hero">
+        <div className="hero-left">
+          <div className="badge">
+            <span className="badge-dot" />
             Disponível no iOS e Android
           </div>
-          <h1 style={s.h1}>
+          <h1>
             Seu gênio<br />
             matemático<br />
             pessoal
           </h1>
-          <p style={s.subtitle}>
+          <p className="subtitle">
             Fale com o Phormula como você fala com um amigo. Ele entende, calcula e explica qualquer conta — em segundos.
           </p>
 
-          <div style={{ marginBottom: 40 }}>
-            <p style={s.examplesLabel}>Experimente perguntar:</p>
-            <div style={s.examplesWrap}>
+          <div>
+            <p className="examples-label">Experimente perguntar:</p>
+            <div className="examples-wrap">
               {examples.map((q, i) => (
-                <div key={i} style={s.exampleChip}>
-                  <span style={{ fontSize: 11, color: "#C8C7C2" }}>→</span>
+                <div key={i} className="example-chip">
+                  <span className="example-arrow">→</span>
                   {q}
                 </div>
               ))}
             </div>
           </div>
 
-          <div style={s.ctaRow}>
-            <button style={s.btnPrimary}>
+          <div className="cta-row">
+            <button className="btn-primary">
               <AppleIcon /> App Store
             </button>
-            <button style={s.btnSecondary}>
+            <button className="btn-secondary">
               <PlayIcon /> Google Play
             </button>
           </div>
         </div>
 
-        {/* Right — app mockup */}
-        <div style={s.heroRight}>
-          <div style={s.phoneCard}>
-            <div style={s.phoneHeader}>
-              <div style={s.phoneHeaderBtns}>
-                <div style={s.headerBtn} />
-                <div style={{ display: "flex", gap: 6 }}>
-                  <div style={s.headerBtn} />
-                  <div style={s.headerBtn} />
+        {/* App mockup */}
+        <div className="hero-right">
+          <div className="phone-card">
+            <div className="phone-header">
+              <div className="phone-header-btns">
+                <div className="header-btn" />
+                <div className="header-btn-group">
+                  <div className="header-btn" />
+                  <div className="header-btn" />
                 </div>
               </div>
-              <div style={s.displayNum}>R$ 5.344</div>
-              <div style={s.displayMeta}>
-                <span style={s.displayLabel}>Rendimento líquido</span>
-                <span style={s.verified}>✓ Verificado</span>
+              <div className="display-num">R$ 5.344</div>
+              <div className="display-meta">
+                <span className="display-label">Rendimento líquido</span>
+                <span className="verified">✓ Verificado</span>
               </div>
             </div>
 
-            <div style={s.chatWrap}>
-              <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <div style={s.userMsg}>
+            <div className="chat-wrap">
+              <div className="user-msg-row">
+                <div className="user-msg">
                   Quanto rende R$ 5k em 6 meses com CDI de 13,75%?
                 </div>
               </div>
-              <div style={s.assistantRow}>
-                <div style={s.avatar}>φ</div>
-                <div style={s.assistantMsg}>
+              <div className="assistant-row">
+                <div className="avatar">φ</div>
+                <div className="assistant-msg">
                   Usando juros compostos, seu investimento rende <strong>R$ 344,27</strong>, totalizando <strong>R$ 5.344,27</strong>.
                 </div>
               </div>
-              <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <div style={s.userMsg}>E se o prazo for 12 meses?</div>
+              <div className="user-msg-row">
+                <div className="user-msg">E se o prazo for 12 meses?</div>
               </div>
-              <div style={s.assistantRow}>
-                <div style={s.avatar}>φ</div>
-                <div style={s.assistantMsg}>
+              <div className="assistant-row">
+                <div className="avatar">φ</div>
+                <div className="assistant-msg">
                   Em 12 meses: <strong>R$ 5.717,81</strong> com rendimento de R$ 717,81.
                 </div>
               </div>
             </div>
 
-            <div style={s.inputBar}>
-              <div style={s.inputFake}>Continue a conversa...</div>
+            <div className="input-bar">
+              <div className="input-fake">Continue a conversa...</div>
             </div>
           </div>
 
-          <div style={s.statsRow}>
+          <div className="stats-row">
             {stats.map((st, i) => (
-              <div key={i} style={s.statCard}>
-                <div style={s.statVal}>{st.val}</div>
-                <div style={s.statLabel}>{st.label}</div>
+              <div key={i} className="stat-card">
+                <div className="stat-val">{st.val}</div>
+                <div className="stat-label">{st.label}</div>
               </div>
             ))}
           </div>
@@ -208,47 +149,46 @@ export default function App() {
       </section>
 
       {/* Testimonials */}
-      <section id="depoimentos" style={s.socialSection}>
-        <div style={s.socialGrid}>
+      <section id="depoimentos" className="social-section">
+        <div className="social-grid">
           {testimonials.map((t, i) => (
-            <div key={i} style={s.testimonialCard}>
-              <p style={s.testimonialText}>{t.text}</p>
-              <div style={s.testimonialName}>{t.name}</div>
-              <div style={s.testimonialRole}>{t.role}</div>
+            <div key={i} className="testimonial-card">
+              <p className="testimonial-text">{t.text}</p>
+              <div className="testimonial-name">{t.name}</div>
+              <div className="testimonial-role">{t.role}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* Features */}
-      <section id="como-funciona" style={s.featSection}>
-        <h2 style={s.featTitle}>Tudo que você precisa calcular</h2>
-        <div style={s.featGrid}>
+      <section id="como-funciona" className="feat-section">
+        <h2 className="feat-title">Tudo que você precisa calcular</h2>
+        <div className="feat-grid">
           {features.map((f, i) => (
-            <div key={i} style={s.featCard}>
-              <div style={s.featIcon}>{f.icon}</div>
-              <div style={s.featCardTitle}>{f.title}</div>
-              <div style={s.featCardDesc}>{f.desc}</div>
+            <div key={i} className="feat-card">
+              <div className="feat-icon">{f.icon}</div>
+              <div className="feat-card-title">{f.title}</div>
+              <div className="feat-card-desc">{f.desc}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* Footer CTA */}
-      <section style={s.footerSection}>
-        <h2 style={s.footerH2}>Experimente grátis</h2>
-        <p style={s.footerSub}>Disponível para iOS e Android. Sem cadastro obrigatório.</p>
-        <div style={s.footerCta}>
-          <button style={s.btnPrimary}>
+      <section className="footer-section">
+        <h2 className="footer-h2">Experimente grátis</h2>
+        <p className="footer-sub">Disponível para iOS e Android. Sem cadastro obrigatório.</p>
+        <div className="footer-cta">
+          <button className="btn-primary">
             <AppleIcon /> App Store
           </button>
-          <button style={s.btnSecondary}>
+          <button className="btn-secondary">
             <PlayIcon /> Google Play
           </button>
         </div>
-        <div style={s.footerMeta}>© 2025 Phormula. Todos os direitos reservados.</div>
+        <div className="footer-meta">© 2025 Phormula. Todos os direitos reservados.</div>
       </section>
-
     </div>
   );
 }
