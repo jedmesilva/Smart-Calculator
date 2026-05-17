@@ -159,7 +159,7 @@ function EmptyChat({ onSuggest, bottomOffset }: { onSuggest: (text: string) => v
     <View style={[styles.emptyWrap, { paddingBottom: bottomOffset, transform: [{ rotate: "180deg" }] }]}>
       <Text style={styles.emptyσ}>σ</Text>
       <Text style={styles.emptyTitle}>O que vamos calcular?</Text>
-      <Text style={styles.emptySubtitle}>Descreva o cálculo em linguagem natural</Text>
+      <Text style={styles.emptySubtitle}>Do mais simples ao mais complexo</Text>
       <View style={styles.emptyChips}>
         {SUGGESTIONS.map((s) => (
           <Pressable
