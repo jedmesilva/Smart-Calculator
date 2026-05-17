@@ -31,7 +31,7 @@ const testimonials = [
 ];
 
 const features = [
-  { title: "Linguagem natural", desc: "Escreva como você fala, em português. Sem aprender sintaxe ou fórmulas especiais." },
+  { title: "Linguagem natural", desc: "Escreva como você fala. Sem aprender sintaxe ou fórmulas especiais." },
   { title: "Qualquer cálculo", desc: "Finanças, física, geometria, estatística — descreva o problema e receba o resultado." },
   { title: "Passo a passo verificado", desc: "Veja como o resultado foi calculado. Fórmula simbólica, valores e prova reversa." },
 ];
