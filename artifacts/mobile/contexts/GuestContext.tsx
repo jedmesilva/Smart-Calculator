@@ -2,10 +2,12 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "./AuthContext";
 
-const GUEST_ID_KEY = "@phormula_guest_id";
-const GUEST_NAME_KEY = "@phormula_guest_name";
+const GUEST_ID_KEY      = "@phormula_guest_id";
+const GUEST_NAME_KEY    = "@phormula_guest_name";
 const GUEST_CREDITS_KEY = "@phormula_guest_credits";
-const GUEST_INITIAL_CREDITS = 3;
+
+// Cota padrão — mesmo valor do servidor (3.0 créditos fracionários)
+export const GUEST_QUOTA_CREDITS = 3.0;
 
 function generateUUID(): string {
   const s4 = () =>
@@ -17,6 +19,7 @@ function generateUUID(): string {
 
 type GuestContextType = {
   guestId: string | null;
+  /** Créditos restantes (float). Cota inicial = GUEST_QUOTA_CREDITS. */
   guestCredits: number;
   guestName: string | null;
   isGuest: boolean;
@@ -28,7 +31,7 @@ type GuestContextType = {
 
 const GuestContext = createContext<GuestContextType>({
   guestId: null,
-  guestCredits: GUEST_INITIAL_CREDITS,
+  guestCredits: GUEST_QUOTA_CREDITS,
   guestName: null,
   isGuest: false,
   setGuestCredits: () => {},
@@ -39,10 +42,10 @@ const GuestContext = createContext<GuestContextType>({
 
 export function GuestProvider({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
-  const [guestId, setGuestId] = useState<string | null>(null);
-  const [guestCredits, setGuestCreditsState] = useState(GUEST_INITIAL_CREDITS);
-  const [guestName, setGuestNameState] = useState<string | null>(null);
-  const [showAuthSheet, setShowAuthSheet] = useState(false);
+  const [guestId, setGuestId]               = useState<string | null>(null);
+  const [guestCredits, setGuestCreditsState] = useState(GUEST_QUOTA_CREDITS);
+  const [guestName, setGuestNameState]       = useState<string | null>(null);
+  const [showAuthSheet, setShowAuthSheet]    = useState(false);
 
   const isGuest = !session && !loading;
 
@@ -70,19 +73,26 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ guestId: id }),
         });
+
         if (res.ok) {
           const data = await res.json();
-          setGuestCreditsState(data.credits ?? GUEST_INITIAL_CREDITS);
-          await AsyncStorage.setItem(GUEST_CREDITS_KEY, String(data.credits ?? GUEST_INITIAL_CREDITS));
+          // Servidor retorna créditos restantes como float
+          const credits = typeof data.credits === "number"
+            ? data.credits
+            : GUEST_QUOTA_CREDITS;
+          setGuestCreditsState(credits);
+          await AsyncStorage.setItem(GUEST_CREDITS_KEY, String(credits));
         } else {
+          // Fallback para cache local
           const cached = await AsyncStorage.getItem(GUEST_CREDITS_KEY);
-          if (cached !== null) setGuestCreditsState(Number(cached));
+          if (cached !== null) setGuestCreditsState(parseFloat(cached));
         }
       } catch {
+        // Sem rede — usa cache local
         const cachedId = await AsyncStorage.getItem(GUEST_ID_KEY);
         if (cachedId) setGuestId(cachedId);
         const cached = await AsyncStorage.getItem(GUEST_CREDITS_KEY);
-        if (cached !== null) setGuestCreditsState(Number(cached));
+        if (cached !== null) setGuestCreditsState(parseFloat(cached));
         const storedName = await AsyncStorage.getItem(GUEST_NAME_KEY);
         if (storedName) setGuestNameState(storedName);
       }

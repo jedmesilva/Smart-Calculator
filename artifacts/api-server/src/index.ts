@@ -1,6 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { atualizarCambio, recomputeSubsidio, ensurePdfQuotaColumns } from "./lib/billingService";
+import { atualizarCambio, recomputeSubsidio, recomputeCreditoValor, ensurePdfQuotaColumns } from "./lib/billingService";
 
 const rawPort = process.env["PORT"];
 
@@ -33,12 +33,13 @@ async function initBilling() {
   await Promise.allSettled([
     atualizarCambio(),
     recomputeSubsidio(),
+    recomputeCreditoValor(),
   ]);
 
   // Câmbio: atualiza a cada 6 horas
   setInterval(() => atualizarCambio(), 6 * 60 * 60 * 1000);
 
-  // Subsídio: não tem intervalo — recomputa após cada cálculo em registerConsulta()
+  // Subsídio e valor do crédito: recomputados após cada cálculo (registerConsulta + registerGuestConsulta)
 }
 
 app.listen(port, (err) => {

@@ -4,7 +4,7 @@ import { requireAuthOrGuest } from "../middlewares/authOrGuest";
 import { logger } from "../lib/logger";
 import { runCalculationPipeline } from "../lib/orchestrator";
 import { registerConsulta, checkSaldo } from "../lib/billingService";
-import { checkGuestSaldo, debitGuestCredito } from "../lib/guestBilling";
+import { checkGuestSaldo, registerGuestConsulta } from "../lib/guestBilling";
 import { warmDevCache, devCacheKey } from "../lib/devCache";
 
 const router = Router();
@@ -39,7 +39,7 @@ router.post("/calculate", requireAuthOrGuest, async (req, res) => {
   // Verificação prévia de saldo
   if (isGuest) {
     const guestCredits = await checkGuestSaldo(userId);
-    if (guestCredits <= 0) {
+    if (guestCredits < 0.01) {
       res.status(402).json({ error: "saldo_insuficiente", message: "Seus créditos de visitante acabaram. Crie uma conta gratuita para continuar." });
       return;
     }
@@ -87,13 +87,23 @@ router.post("/calculate", requireAuthOrGuest, async (req, res) => {
 
     if (result.status === "success" || result.status === "conversational") {
       if (isGuest) {
-        // Guest billing: debit 1 credit
-        const guestBilling = await debitGuestCredito(userId).catch((err) => {
-          logger.warn({ err }, "calculate: guest billing failed silently");
-          return null;
-        });
+        // Guest billing: custo real em créditos fracionários (mesma infraestrutura dos usuários)
+        const guestBilling = result.tokenUsage
+          ? await registerGuestConsulta({
+              guestId: userId,
+              modelo: result.tokenUsage.model,
+              tipo: result.status === "success" ? "calculo" : "conversacional",
+              tokenUsage: result.tokenUsage,
+            }).catch((err) => {
+              logger.warn({ err }, "calculate: guest billing failed silently");
+              return null;
+            })
+          : null;
         if (guestBilling) {
-          billingInfo = { saldoAtualizado: guestBilling.creditsLeft, creditosDebitados: 1 };
+          billingInfo = {
+            saldoAtualizado: guestBilling.creditsLeft,
+            creditosDebitados: guestBilling.creditosDebitados,
+          };
         }
       } else if (result.tokenUsage) {
         const billing = await registerConsulta({

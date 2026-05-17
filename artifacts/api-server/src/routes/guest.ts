@@ -1,34 +1,24 @@
 import { Router } from "express";
 import { pool } from "@workspace/db";
 import { logger } from "../lib/logger";
+import {
+  ensureGuestTables,
+  checkGuestSaldo,
+  GUEST_QUOTA_CREDITS,
+} from "../lib/guestBilling";
 
 const router = Router();
 
-const GUEST_INITIAL_CREDITS = 3;
-
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export async function ensureGuestTable() {
-  const client = await pool.connect();
-  try {
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS guest_sessions (
-        id UUID PRIMARY KEY,
-        credits INTEGER NOT NULL DEFAULT ${GUEST_INITIAL_CREDITS},
-        guest_name TEXT,
-        created_at TIMESTAMP DEFAULT NOW()
-      )
-    `);
-  } catch (err) {
-    logger.warn({ err }, "guest: falha ao criar tabela guest_sessions");
-  } finally {
-    client.release();
-  }
-}
+/* Garante tabelas ao iniciar o servidor */
+ensureGuestTables();
 
-ensureGuestTable();
-
-/* POST /api/guest/init — cria ou busca sessão de visitante */
+/* ══════════════════════════════════════════════════════
+   POST /api/guest/init
+   Cria ou recupera sessão de visitante.
+   Retorna créditos restantes (quota − gastos).
+   ══════════════════════════════════════════════════════ */
 router.post("/guest/init", async (req, res) => {
   const { guestId } = req.body ?? {};
   if (!guestId || !UUID_RE.test(guestId)) {
@@ -38,14 +28,16 @@ router.post("/guest/init", async (req, res) => {
 
   const client = await pool.connect();
   try {
-    const result = await client.query(
-      `INSERT INTO guest_sessions (id, credits)
-       VALUES ($1, $2)
-       ON CONFLICT (id) DO UPDATE SET id = EXCLUDED.id
-       RETURNING credits`,
-      [guestId, GUEST_INITIAL_CREDITS]
+    /* Cria sessão se não existir — não sobrescreve gastos existentes */
+    await client.query(
+      `INSERT INTO guest_sessions (id, creditos_gastos, creditos_quota)
+       VALUES ($1, 0, $2)
+       ON CONFLICT (id) DO NOTHING`,
+      [guestId, GUEST_QUOTA_CREDITS]
     );
-    res.json({ guestId, credits: result.rows[0].credits as number });
+
+    const creditsLeft = await checkGuestSaldo(guestId);
+    res.json({ guestId, credits: creditsLeft, quota: GUEST_QUOTA_CREDITS });
   } catch (err) {
     logger.error({ err }, "guest/init: erro");
     res.status(500).json({ error: "Erro ao inicializar sessão de visitante" });
@@ -54,7 +46,10 @@ router.post("/guest/init", async (req, res) => {
   }
 });
 
-/* GET /api/guest/credits — retorna créditos restantes */
+/* ══════════════════════════════════════════════════════
+   GET /api/guest/credits
+   Retorna créditos restantes em tempo real.
+   ══════════════════════════════════════════════════════ */
 router.get("/guest/credits", async (req, res) => {
   const guestId = req.headers["x-guest-id"] as string | undefined;
   if (!guestId || !UUID_RE.test(guestId)) {
@@ -62,23 +57,19 @@ router.get("/guest/credits", async (req, res) => {
     return;
   }
 
-  const client = await pool.connect();
   try {
-    const result = await client.query(
-      `SELECT credits FROM guest_sessions WHERE id = $1`,
-      [guestId]
-    );
-    const credits = result.rows.length > 0 ? (result.rows[0].credits as number) : GUEST_INITIAL_CREDITS;
-    res.json({ credits });
+    const creditsLeft = await checkGuestSaldo(guestId);
+    res.json({ credits: creditsLeft, quota: GUEST_QUOTA_CREDITS });
   } catch (err) {
     logger.error({ err }, "guest/credits: erro");
     res.status(500).json({ error: "Erro ao buscar créditos" });
-  } finally {
-    client.release();
   }
 });
 
-/* PATCH /api/guest/name — atualiza nome do visitante */
+/* ══════════════════════════════════════════════════════
+   PATCH /api/guest/name
+   Atualiza nome do visitante (informado após 1º cálculo).
+   ══════════════════════════════════════════════════════ */
 router.patch("/guest/name", async (req, res) => {
   const guestId = req.headers["x-guest-id"] as string | undefined;
   const { name } = req.body ?? {};
