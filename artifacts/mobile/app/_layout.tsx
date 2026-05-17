@@ -51,6 +51,7 @@ function RootLayoutNav({ fontsReady }: { fontsReady: boolean }) {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="auth" />
+      <Stack.Screen name="account" options={{ animation: "slide_from_right" }} />
       <Stack.Screen name="+not-found" />
     </Stack>
   );

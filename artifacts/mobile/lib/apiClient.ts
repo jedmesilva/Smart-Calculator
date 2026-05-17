@@ -533,3 +533,13 @@ export async function createStripePortal(): Promise<{ url: string }> {
   }
   return res.json();
 }
+
+/* ──── ACCOUNT ──── */
+
+export async function deleteAccount(): Promise<void> {
+  const res = await apiFetch("/users/me", { method: "DELETE" });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as any).error ?? "Não foi possível excluir a conta");
+  }
+}

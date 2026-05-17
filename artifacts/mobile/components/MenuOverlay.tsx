@@ -17,6 +17,7 @@ import Animated, {
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useEffect } from "react";
+import { useRouter } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuest } from "@/contexts/GuestContext";
 import { useCarteira } from "@/lib/queries";
@@ -34,6 +35,7 @@ type Props = {
 
 export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgrade }: Props) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { user, userId, userName, signOut } = useAuth();
   const { isGuest, guestCredits, setShowAuthSheet } = useGuest();
   const email = user?.email ?? "";
@@ -201,6 +203,11 @@ export function MenuOverlay({ onClose, onCalculations, onHistory, onPlan, onUpgr
               icon="clock"
               label="Histórico"
               onPress={() => close(onHistory)}
+            />
+            <MenuItem
+              icon="user"
+              label="Minha conta"
+              onPress={() => close(() => router.push("/account"))}
             />
           </View>
         )}
